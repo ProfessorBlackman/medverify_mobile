@@ -9,7 +9,7 @@ class AppTheme {
   static const Color textLight = Color(0xFF111813);
   static const Color textDark = Color(0xFFECFDF3);
   static const Color warningRed = Color(0xFFEF4444);
-  static const Color expiredOrange = Color(0xFFF59E0B); // Example orange
+  static const Color warningOrange = Color(0xFFF59E0B); // Was expiredOrange
   static const Color recalledBlack = Color(0xFF000000); // Or dark grey
 
   static ThemeData get lightTheme {
@@ -19,7 +19,6 @@ class AppTheme {
       scaffoldBackgroundColor: backgroundLight,
       colorScheme: const ColorScheme.light(
         primary: primaryGreen,
-        background: backgroundLight,
         surface: Colors.white,
         onPrimary: Colors.black, // Text on green should be dark
         onSurface: textLight,
@@ -64,7 +63,6 @@ class AppTheme {
       scaffoldBackgroundColor: backgroundDark,
       colorScheme: const ColorScheme.dark(
         primary: primaryGreen,
-        background: backgroundDark,
         surface: Color(0xFF1A2C20), // Slightly lighter than bg
         onPrimary: Colors.black,
         onSurface: textDark,

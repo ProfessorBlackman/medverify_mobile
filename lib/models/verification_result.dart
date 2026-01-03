@@ -1,9 +1,12 @@
 enum VerificationStatus {
   verified,
+  valid,
+  invalid,
   unregistered,
   expired,
   recalled,
-  nearExpired
+  near_expiry,
+  pending,
 }
 
 class VerificationResult {

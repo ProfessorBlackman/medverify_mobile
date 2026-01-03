@@ -37,8 +37,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
       if (results.isNotEmpty) {
         setState(() => _isLoading = false);
-        print("results: $results");
-        Navigator.pushNamed(context, '/results', arguments: results.first);
+        Navigator.pushNamed(context, '/results', arguments: results.toList());
       } else {
         setState(() {
           _isLoading = false;
@@ -100,10 +99,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Widget _buildStatusCard() {
     if (_errorMessage != null) {
       return Card(
-        color: AppTheme.warningRed.withOpacity(0.1),
+        color: AppTheme.warningRed.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppTheme.warningRed.withOpacity(0.2)),
+          side: BorderSide(color: AppTheme.warningRed.withValues(alpha: 0.2)),
         ),
         elevation: 0,
         child: Padding(
@@ -133,10 +132,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
     if (_noResults) {
       return Card(
-        color: AppTheme.primaryGreen.withOpacity(0.1),
+        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppTheme.primaryGreen.withOpacity(0.2)),
+          side: BorderSide(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
         ),
         elevation: 0,
         child: const Padding(

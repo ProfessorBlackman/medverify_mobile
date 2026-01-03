@@ -7,10 +7,85 @@ import '../theme.dart';
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
 
+  Color _getStatusColor(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return AppTheme.primaryGreen;
+      case VerificationStatus.near_expiry:
+        return AppTheme.warningOrange;
+      default:
+        return AppTheme.warningRed;
+    }
+  }
+
+  IconData _getStatusIcon(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return Icons.verified_user;
+      case VerificationStatus.near_expiry:
+        return Icons.warning_amber_rounded;
+      default:
+        return Icons.report_problem;
+    }
+  }
+
+  String _getStatusTitle(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return 'Verified Safe';
+      case VerificationStatus.near_expiry:
+        return 'Nearing Expiry';
+      case VerificationStatus.expired:
+        return 'License Expired';
+      case VerificationStatus.recalled:
+        return 'Product Recalled';
+      case VerificationStatus.unregistered:
+        return 'Unregistered Product';
+      default:
+        return 'Unknown Status';
+    }
+  }
+
+  String _getSubtitle(VerificationResult result) {
+    if (result.status == VerificationStatus.verified || result.status == VerificationStatus.valid) {
+      return 'Authenticity confirmed by FDA Ghana';
+    }
+    return result.message ?? 'No additional details available.';
+  }
+
+  bool _showReportButton(VerificationStatus? status) {
+    return status != VerificationStatus.verified && status != VerificationStatus.valid && status != VerificationStatus.near_expiry;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final result =
-        ModalRoute.of(context)!.settings.arguments as VerificationResult;
+    final arguments = ModalRoute.of(context)!.settings.arguments;
+    final List<VerificationResult> results;
+
+    if (arguments is List<VerificationResult>) {
+      if (arguments.isEmpty) {
+        return Scaffold(
+          appBar: AppBar(),
+          body: const Center(child: Text('No results found.')),
+        );
+      }
+      results = arguments;
+    } else if (arguments is VerificationResult) {
+      results = [arguments];
+    } else {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(
+          child: Text('Invalid data provided to results screen.'),
+        ),
+      );
+    }
+
+    final result = results.first;
+    final otherResults = results.skip(1).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -32,15 +107,16 @@ class ResultsScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 120.0),
-        // Padding at bottom for floating buttons
         child: Column(
           children: [
             _buildStatusHeader(context, result),
             const SizedBox(height: 24),
             _buildProductInfoCard(context, result),
             const SizedBox(height: 16),
-            if (result.status == VerificationStatus.verified)
+            if (result.status == VerificationStatus.verified || result.status == VerificationStatus.valid)
               _buildLicenseDetailsCard(context, result),
+            const SizedBox(height: 24),
+            if (otherResults.isNotEmpty) _buildOtherMatches(context, otherResults),
             const SizedBox(height: 16),
             _buildImproveCard(context),
             const SizedBox(height: 16),
@@ -60,15 +136,10 @@ class ResultsScreen extends StatelessWidget {
   }
 
   Widget _buildStatusHeader(BuildContext context, VerificationResult result) {
-    final isVerified = result.status == VerificationStatus.verified;
-    final primaryColor = isVerified
-        ? AppTheme.primaryGreen
-        : AppTheme.warningRed;
+    final color = _getStatusColor(result.status);
+    final icon = _getStatusIcon(result.status);
     final title = _getStatusTitle(result.status);
-    final subtitle = isVerified
-        ? 'Authenticity confirmed by FDA Ghana'
-        : (result.message ?? '');
-    final icon = isVerified ? Icons.verified_user : Icons.warning_amber_rounded;
+    final subtitle = _getSubtitle(result);
 
     return Column(
       children: [
@@ -76,10 +147,10 @@ class ResultsScreen extends StatelessWidget {
           width: 96,
           height: 96,
           decoration: BoxDecoration(
-            color: primaryColor.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Center(child: Icon(icon, size: 56, color: primaryColor)),
+          child: Center(child: Icon(icon, size: 56, color: color)),
         ),
         const SizedBox(height: 16),
         Text(
@@ -101,10 +172,7 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductInfoCard(
-    BuildContext context,
-    VerificationResult result,
-  ) {
+  Widget _buildProductInfoCard(BuildContext context, VerificationResult result) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -149,7 +217,6 @@ class ResultsScreen extends StatelessWidget {
                             AppTheme.primaryGreen,
                           ),
                         const SizedBox(width: 8),
-                        // _buildTag('500MG', Colors.grey.shade200, Colors.grey.shade700),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -194,10 +261,7 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLicenseDetailsCard(
-    BuildContext context,
-    VerificationResult result,
-  ) {
+  Widget _buildLicenseDetailsCard(BuildContext context, VerificationResult result) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -227,22 +291,90 @@ class ResultsScreen extends StatelessWidget {
               Icons.event_busy,
               'Expiry Date',
               DateFormat('dd MMM yyyy').format(result.expiryDate!),
-              valueColor: result.status == VerificationStatus.expired
-                  ? AppTheme.expiredOrange
-                  : AppTheme.primaryGreen,
+              valueColor: _getStatusColor(result.status),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value, {
-    Color? valueColor,
-  }) {
+  Widget _buildOtherMatches(BuildContext context, List<VerificationResult> otherResults) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            'Other Possible Matches',
+            style: GoogleFonts.publicSans(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textLight,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: otherResults.length,
+          itemBuilder: (context, index) {
+            final otherResult = otherResults[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 0,
+              color: Colors.white,
+              child: ExpansionTile(
+                title: Text(
+                  otherResult.productName ?? 'Unknown Product',
+                  style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  otherResult.manufacturer ?? 'Unknown Manufacturer',
+                  style: GoogleFonts.publicSans(color: Colors.grey[600]),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Column(
+                      children: [
+                        const Divider(height: 1),
+                        const SizedBox(height: 15),
+                        _buildDetailRow(
+                          context,
+                          Icons.badge,
+                          'Reg. Number',
+                          otherResult.regNumber ?? 'N/A',
+                        ),
+                        if (otherResult.approvalDate != null)
+                          _buildDetailRow(
+                            context,
+                            Icons.event_available,
+                            'Approval Date',
+                            DateFormat('dd MMM yyyy').format(otherResult.approvalDate!),
+                          ),
+                        if (otherResult.expiryDate != null)
+                          _buildDetailRow(
+                            context,
+                            Icons.event_busy,
+                            'Expiry Date',
+                            DateFormat('dd MMM yyyy').format(otherResult.expiryDate!),
+                            valueColor: _getStatusColor(otherResult.status),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -320,11 +452,7 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImproveButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-  }) {
+  Widget _buildImproveButton(BuildContext context, {required IconData icon, required String label}) {
     return GestureDetector(
       onTap: () {},
       child: Container(
@@ -349,7 +477,7 @@ class ResultsScreen extends StatelessWidget {
   }
 
   Widget _buildBottomActions(BuildContext context, VerificationResult result) {
-    final isWarning = result.status != VerificationStatus.verified;
+    final showReport = _showReportButton(result.status);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -362,28 +490,22 @@ class ResultsScreen extends StatelessWidget {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: () {
-                if (isWarning) {
+                if (showReport) {
                   Navigator.pushNamed(context, '/info');
                 } else {
                   Navigator.pop(context);
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isWarning
-                    ? AppTheme.warningRed
-                    : AppTheme.primaryGreen,
-                foregroundColor: isWarning
-                    ? Colors.white
-                    : const Color(0xFF102216),
+                backgroundColor: _getStatusColor(result.status),
+                foregroundColor: showReport ? Colors.white : const Color(0xFF102216),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(
-                isWarning ? Icons.report_problem : Icons.qr_code_scanner,
-              ),
+              icon: Icon(showReport ? Icons.report_problem : Icons.qr_code_scanner),
               label: Text(
-                isWarning ? 'Report to FDA' : 'Scan Another Product',
+                showReport ? 'Report to FDA' : 'Scan Another Product',
                 style: GoogleFonts.publicSans(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -391,7 +513,7 @@ class ResultsScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (!isWarning) ...[
+          if (!showReport) ...[
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: () {
@@ -410,22 +532,5 @@ class ResultsScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getStatusTitle(VerificationStatus? status) {
-    switch (status) {
-      case VerificationStatus.verified:
-        return 'Verified Safe';
-      case VerificationStatus.unregistered:
-        return 'Unregistered Product';
-      case VerificationStatus.expired:
-        return 'License Expired';
-      case VerificationStatus.recalled:
-        return 'Product Recalled';
-      case VerificationStatus.nearExpired:
-        return 'Product Near Expired';
-      default:
-        return 'Unknown Status';
-    }
   }
 }

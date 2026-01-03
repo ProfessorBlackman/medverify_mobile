@@ -137,7 +137,7 @@ class HistoryScreen extends StatelessWidget {
 
     final color = isVerified
         ? AppTheme.primaryGreen
-        : (isWarning ? AppTheme.warningRed : AppTheme.expiredOrange);
+        : (isWarning ? AppTheme.warningRed : AppTheme.warningOrange);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
