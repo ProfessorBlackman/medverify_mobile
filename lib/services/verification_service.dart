@@ -62,7 +62,7 @@ class VerificationService {
 
   //   verify using fuzzy search
   Future<Set<VerificationResult>> verifyFuzzySearch(String drugName) async {
-    final url = Uri.parse('http://localhost:8000/search/$drugName');
+    final url = Uri.parse('https://8e28daff9252.ngrok-free.app/search?search_term=$drugName');
 
     try {
       final response = await http.get(url);

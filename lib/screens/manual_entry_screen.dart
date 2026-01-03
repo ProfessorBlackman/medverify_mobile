@@ -16,51 +16,42 @@ class ManualEntryScreen extends StatefulWidget {
 class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final _textController = TextEditingController();
   bool _isLoading = false;
+  String? _errorMessage;
+  bool _noResults = false;
 
   Future<void> _performSearch() async {
-    if (_textController.text.trim().isEmpty) return;
+    final query = _textController.text.trim();
+    if (query.isEmpty) return;
 
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
+      _noResults = false;
     });
 
-    final service = context.read<VerificationService>();
     try {
-      final results = await service.verifyFuzzySearch(
-        _textController.text.trim(),
-      );
+      final service = context.read<VerificationService>();
+      final results = await service.verifyFuzzySearch(query);
 
       if (!mounted) return;
 
-      setState(() {
-        _isLoading = false;
-      });
-
       if (results.isNotEmpty) {
+        setState(() => _isLoading = false);
+        print("results: $results");
         Navigator.pushNamed(context, '/results', arguments: results.first);
       } else {
-        // Handle no results found
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-            const SnackBar(content: Text('No matching drug found.')));
+        setState(() {
+          _isLoading = false;
+          _noResults = true;
+        });
       }
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         _isLoading = false;
+        _errorMessage =
+            'An error occurred. Please check your connection and try again.';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An error occurred: ${e.toString()}'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: _performSearch,
-          ),
-        ),
-      );
     }
   }
 
@@ -97,11 +88,70 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             _buildExamplesCard(),
             const SizedBox(height: 24),
             _buildHelpLink(),
+            const SizedBox(height: 24),
+            _buildStatusCard(),
           ],
         ),
       ),
       bottomNavigationBar: _buildSearchButton(),
     );
+  }
+
+  Widget _buildStatusCard() {
+    if (_errorMessage != null) {
+      return Card(
+        color: AppTheme.warningRed.withOpacity(0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppTheme.warningRed.withOpacity(0.2)),
+        ),
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppTheme.warningRed, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _performSearch,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.warningRed,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Retry'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_noResults) {
+      return Card(
+        color: AppTheme.primaryGreen.withOpacity(0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppTheme.primaryGreen.withOpacity(0.2)),
+        ),
+        elevation: 0,
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'No matching drug found. Please check your spelling or try a different search term.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: AppTheme.primaryGreen, fontWeight: FontWeight.w500),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildWarningBanner() {
