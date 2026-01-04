@@ -349,22 +349,77 @@ class _ResultsScreenState extends State<ResultsScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                  image: result.imageUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(result.imageUrl!),
-                          fit: BoxFit.cover,
-                        )
+              GestureDetector(
+                onLongPress: () {
+                  if (result.imageUrl != null) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          backgroundColor: Colors.transparent,
+                          insetPadding: const EdgeInsets.all(10),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              InteractiveViewer(
+                                child: Image.network(
+                                  result.imageUrl!,
+                                  fit: BoxFit.contain,
+                                  loadingBuilder: (BuildContext context,
+                                      Widget child,
+                                      ImageChunkEvent? loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () => Navigator.of(context).pop(),
+                                  child: const CircleAvatar(
+                                    backgroundColor: Colors.black54,
+                                    child: Icon(Icons.close, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    image: result.imageUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(result.imageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: result.imageUrl == null
+                      ? const Icon(Icons.medication,
+                          size: 40, color: Colors.grey)
                       : null,
                 ),
-                child: result.imageUrl == null
-                    ? const Icon(Icons.medication, size: 40, color: Colors.grey)
-                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
