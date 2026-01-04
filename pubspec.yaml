@@ -47,6 +47,8 @@ dependencies:
   sentry_flutter: ^9.9.1
   http: ^1.6.0
   image_picker: ^1.2.1
+  file_picker: ^10.3.8
+  mime: ^2.0.0
 
 dev_dependencies:
   sentry_dart_plugin: ^3.2.0
