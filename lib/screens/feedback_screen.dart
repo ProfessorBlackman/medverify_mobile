@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import '../services/feedback_service.dart';
 import '../theme.dart';
 
@@ -9,7 +10,7 @@ class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
 
   @override
-  _FeedbackScreenState createState() => _FeedbackScreenState();
+  State<FeedbackScreen> createState() => _FeedbackScreenState();
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
@@ -68,13 +69,132 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Future<void> _pickAttachment() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Pick Images from Gallery'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImages();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.video_library),
+                title: const Text('Pick Video from Gallery'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickVideo();
+                },
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Text(
+                  'Note: You can attach up to 5 images (max 5MB each) and 1 video (max 20MB).',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
+  Future<void> _pickImages() async {
+    final imageCount = _attachments
+        .where((f) => (lookupMimeType(f.path) ?? '').startsWith('image/'))
+        .length;
+    final slotsAvailable = 5 - imageCount;
+
+    if (slotsAvailable <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('You have already attached the maximum of 5 images.')),
+        );
+      }
+      return;
+    }
+
+    final picker = ImagePicker();
+    final pickedFiles = await picker.pickMultiImage(imageQuality: 70);
+
+    if (pickedFiles.isNotEmpty) {
+      final validFiles = <File>[];
+      final oversizedFiles = <String>[];
+
+      final filesToProcess = pickedFiles.take(slotsAvailable);
+
+      for (var xfile in filesToProcess) {
+        final file = File(xfile.path);
+        if (await file.length() > 5 * 1024 * 1024) {
+          // 5MB limit
+          oversizedFiles.add(xfile.name);
+        } else {
+          validFiles.add(file);
+        }
+      }
+
+      if (validFiles.isNotEmpty) {
+        setState(() {
+          _attachments.addAll(validFiles);
+        });
+      }
+
+      if (mounted) {
+        if (pickedFiles.length > slotsAvailable) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'You can only attach up to 5 images. Some images were not added.')),
+          );
+        }
+        if (oversizedFiles.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Some images were not added because they exceed the 5MB limit.')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final hasVideo = _attachments
+        .any((f) => (lookupMimeType(f.path) ?? '').startsWith('video/'));
+    if (hasVideo) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You can only attach one video.')),
+        );
+      }
+      return;
+    }
+
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
     if (pickedFile != null) {
-      setState(() {
-        _attachments.add(File(pickedFile.path));
-      });
+      final file = File(pickedFile.path);
+      if (await file.length() > 20 * 1024 * 1024) {
+        // 20MB limit
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'The selected video exceeds the 20MB size limit and was not added.')),
+          );
+        }
+      } else {
+        setState(() {
+          _attachments.add(file);
+        });
+      }
     }
   }
 

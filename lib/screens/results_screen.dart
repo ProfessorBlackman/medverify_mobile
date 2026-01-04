@@ -1,11 +1,30 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../models/verification_result.dart';
-import '../theme.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-class ResultsScreen extends StatelessWidget {
+import '../models/verification_result.dart';
+import '../services/flile_upload_service.dart';
+import '../theme.dart';
+import '../widgets/barcode_scanner_modal.dart';
+
+class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  final FileUploadService _fileUploadService = FileUploadService();
+  bool _isUploadingPhoto = false;
+  bool _isSendingBarcode = false;
 
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
@@ -50,14 +69,157 @@ class ResultsScreen extends StatelessWidget {
   }
 
   String _getSubtitle(VerificationResult result) {
-    if (result.status == VerificationStatus.verified || result.status == VerificationStatus.valid) {
+    if (result.status == VerificationStatus.verified ||
+        result.status == VerificationStatus.valid) {
       return 'Authenticity confirmed by FDA Ghana';
     }
     return result.message ?? 'No additional details available.';
   }
 
   bool _showReportButton(VerificationStatus? status) {
-    return status != VerificationStatus.verified && status != VerificationStatus.valid && status != VerificationStatus.near_expiry;
+    return status != VerificationStatus.verified &&
+        status != VerificationStatus.valid &&
+        status != VerificationStatus.near_expiry;
+  }
+
+  Future<void> _takeAndUploadPhoto(VerificationResult result) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile == null) return;
+
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile.path,
+      aspectRatio: CropAspectRatio(ratioX: 16, ratioY: 9),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: AppTheme.primaryGreen,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+        ),
+        IOSUiSettings(title: 'Crop Image'),
+      ],
+    );
+
+    if (croppedFile == null) return;
+
+    setState(() {
+      _isUploadingPhoto = true;
+    });
+
+    final uploadedUrl = await _fileUploadService.uploadFile(
+      File(croppedFile.path),
+      FilePurpose.improve,
+    );
+    final response = await _uploadProductImprovements(
+      null,
+      uploadedUrl,
+      result.regNumber!,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(uploadedUrl != null && response?.statusCode == 200
+              ? 'Thank you for helping improve our data!'
+              : 'Photo upload failed.'),
+          backgroundColor: response?.statusCode == 200 && uploadedUrl != null
+              ? AppTheme.primaryGreen
+              : AppTheme.warningRed,
+        ),
+      );
+      setState(() {
+        _isUploadingPhoto = false;
+      });
+    }
+  }
+
+  Future<http.Response?> _uploadProductImprovements(
+    String? barcode,
+    String? imageUrl,
+    String regNumber,
+  ) async {
+    if (barcode == null && imageUrl == null) {
+      return null;
+    }
+    final url = Uri.parse(
+      '${FileUploadService.baseUrl}/update_product',
+    );
+    Map<String, String> body = {'registration_number': regNumber};
+    if (barcode != null && barcode.isNotEmpty) {
+      body['barcode'] = barcode;
+    }
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      body['image_url'] = imageUrl;
+    }
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      );
+      return response;
+    } catch (e) {
+      await Sentry.captureException(e, stackTrace: StackTrace.current);
+      return null;
+    }
+  }
+
+  Future<void> _scanAndAddBarcode(VerificationResult result) async {
+    if (result.regNumber == null ||
+        result.regNumber!.isEmpty ||
+        result.regNumber == 'N/A') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot add barcode without a registration number.'),
+          backgroundColor: AppTheme.warningRed,
+        ),
+      );
+      return;
+    }
+
+    final barcode = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const BarcodeScannerModal(),
+    );
+
+    if (barcode == null || barcode.isEmpty) {
+      return; // User cancelled or failed to scan.
+    }
+
+    setState(() {
+      _isSendingBarcode = true;
+    });
+
+    final response = await _uploadProductImprovements(
+      barcode,
+      null,
+      result.regNumber!,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response?.statusCode == 200
+                ? 'Barcode added successfully! Thank you.'
+                : 'Failed to add barcode. Please try again.',
+          ),
+          backgroundColor: response?.statusCode == 200
+              ? AppTheme.primaryGreen
+              : AppTheme.warningRed,
+        ),
+      );
+    }
+
+    setState(() {
+      _isSendingBarcode = false;
+    });
   }
 
   @override
@@ -113,12 +275,14 @@ class ResultsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildProductInfoCard(context, result),
             const SizedBox(height: 16),
-            if (result.status == VerificationStatus.verified || result.status == VerificationStatus.valid)
+            if (result.status == VerificationStatus.verified ||
+                result.status == VerificationStatus.valid)
               _buildLicenseDetailsCard(context, result),
             const SizedBox(height: 24),
-            if (otherResults.isNotEmpty) _buildOtherMatches(context, otherResults),
+            if (otherResults.isNotEmpty)
+              _buildOtherMatches(context, otherResults),
             const SizedBox(height: 16),
-            _buildImproveCard(context),
+            _buildImproveCard(context, result),
             const SizedBox(height: 16),
             Text(
               'Scan results are based on the latest data from the Food and Drugs Authority (FDA) Ghana.',
@@ -261,7 +425,8 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLicenseDetailsCard(BuildContext context, VerificationResult result) {
+  Widget _buildLicenseDetailsCard(
+      BuildContext context, VerificationResult result) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -298,7 +463,8 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOtherMatches(BuildContext context, List<VerificationResult> otherResults) {
+  Widget _buildOtherMatches(
+      BuildContext context, List<VerificationResult> otherResults) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -322,7 +488,8 @@ class ResultsScreen extends StatelessWidget {
             final otherResult = otherResults[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               elevation: 0,
               color: Colors.white,
               child: ExpansionTile(
@@ -352,14 +519,16 @@ class ResultsScreen extends StatelessWidget {
                             context,
                             Icons.event_available,
                             'Approval Date',
-                            DateFormat('dd MMM yyyy').format(otherResult.approvalDate!),
+                            DateFormat('dd MMM yyyy')
+                                .format(otherResult.approvalDate!),
                           ),
                         if (otherResult.expiryDate != null)
                           _buildDetailRow(
                             context,
                             Icons.event_busy,
                             'Expiry Date',
-                            DateFormat('dd MMM yyyy').format(otherResult.expiryDate!),
+                            DateFormat('dd MMM yyyy')
+                                .format(otherResult.expiryDate!),
                             valueColor: _getStatusColor(otherResult.status),
                           ),
                       ],
@@ -374,7 +543,8 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label,
+      String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -402,7 +572,7 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImproveCard(BuildContext context) {
+  Widget _buildImproveCard(BuildContext context, VerificationResult result) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -435,6 +605,8 @@ class ResultsScreen extends StatelessWidget {
                   context,
                   icon: Icons.qr_code_scanner,
                   label: 'Scan Barcode',
+                  isLoading: _isSendingBarcode,
+                  onTap: () => _scanAndAddBarcode(result),
                 ),
               ),
               const SizedBox(width: 16),
@@ -443,6 +615,8 @@ class ResultsScreen extends StatelessWidget {
                   context,
                   icon: Icons.photo_camera,
                   label: 'Take Photo of Front',
+                  isLoading: _isUploadingPhoto,
+                  onTap: () => _takeAndUploadPhoto(result),
                 ),
               ),
             ],
@@ -452,9 +626,14 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImproveButton(BuildContext context, {required IconData icon, required String label}) {
+  Widget _buildImproveButton(BuildContext context, {
+    required IconData icon,
+    required String label,
+    bool isLoading = false,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: isLoading ? null : onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
@@ -464,7 +643,14 @@ class ResultsScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppTheme.textLight, size: 28),
+            if (isLoading)
+              const SizedBox(
+                height: 28,
+                width: 28,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(icon, color: AppTheme.textLight, size: 28),
             const SizedBox(height: 8),
             Text(
               label,
@@ -493,17 +679,19 @@ class ResultsScreen extends StatelessWidget {
                 if (showReport) {
                   Navigator.pushNamed(context, '/info');
                 } else {
-                  Navigator.pop(context);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getStatusColor(result.status),
-                foregroundColor: showReport ? Colors.white : const Color(0xFF102216),
+                foregroundColor:
+                    showReport ? Colors.white : const Color(0xFF102216),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(showReport ? Icons.report_problem : Icons.qr_code_scanner),
+              icon:
+                  Icon(showReport ? Icons.report_problem : Icons.qr_code_scanner),
               label: Text(
                 showReport ? 'Report to FDA' : 'Scan Another Product',
                 style: GoogleFonts.publicSans(

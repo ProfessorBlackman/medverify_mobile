@@ -63,7 +63,7 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 // Hero Image / Animation Placeholder
                 Container(
-                  height: 350,
+                  height: 330,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),

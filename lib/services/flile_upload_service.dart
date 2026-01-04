@@ -5,14 +5,19 @@ import 'dart:convert';
 import 'package:mime/mime.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+enum FilePurpose {
+  feedback,
+  improve,
+}
+
 class FileUploadService {
   static const String baseUrl =
       'https://a0869a4b009d.ngrok-free.app'; // Using the feedback service base URL
 
-  Future<String?> uploadFile(File file) async {
+  Future<String?> uploadFile(File file, FilePurpose purpose) async {
     try {
       // Step 1: Get presigned URL from backend
-      final presignedUrlResponse = await _getPresignedUrl(file);
+      final presignedUrlResponse = await _getPresignedUrl(file, purpose);
       if (presignedUrlResponse == null) return null;
 
       // Step 2: Upload file directly to S3
@@ -37,7 +42,8 @@ class FileUploadService {
     }
   }
 
-  Future<Map<String, dynamic>?> _getPresignedUrl(File file) async {
+  Future<Map<String, dynamic>?> _getPresignedUrl(
+      File file, FilePurpose purpose) async {
     final fileName = file.path.split('/').last;
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
@@ -48,7 +54,11 @@ class FileUploadService {
         // Add your authentication headers here if needed
         // 'Authorization': 'Bearer $token',
       },
-      body: json.encode({'file_name': fileName, 'content_type': mimeType}),
+      body: json.encode({
+        'file_name': fileName,
+        'content_type': mimeType,
+        'file_purpose': purpose.name,
+      }),
     );
 
     if (response.statusCode == 200) {
@@ -60,7 +70,7 @@ class FileUploadService {
         'content_type': mimeType,
       };
     }
-
+    await Sentry.captureMessage('Server error: ${response.statusCode}');
     return null;
   }
 

@@ -9,7 +9,8 @@ class FeedbackService {
   final String _endpoint = 'https://a0869a4b009d.ngrok-free.app/feedback';
   final FileUploadService _uploadService;
 
-  FeedbackService({FileUploadService? uploadService}) : _uploadService = uploadService ?? FileUploadService();
+  FeedbackService({FileUploadService? uploadService})
+      : _uploadService = uploadService ?? FileUploadService();
 
   Future<bool> sendFeedback({
     String? name,
@@ -22,13 +23,12 @@ class FeedbackService {
       List<String> attachmentUrls = [];
       if (attachments != null && attachments.isNotEmpty) {
         for (final file in attachments) {
-          final url = await _uploadService.uploadFile(file);
+          final url = await _uploadService.uploadFile(file, FilePurpose.feedback);
           if (url != null) {
             attachmentUrls.add(url);
           }
         }
       }
-
 
       final response = await http.post(
         Uri.parse(_endpoint),
@@ -38,7 +38,7 @@ class FeedbackService {
           'email': email,
           'feedback_type': feedbackType,
           'message': message,
-          'attachments': attachmentUrls,
+          'attachment_urls': attachmentUrls,
         }),
       );
 
