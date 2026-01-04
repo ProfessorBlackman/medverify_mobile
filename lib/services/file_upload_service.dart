@@ -5,14 +5,15 @@ import 'dart:convert';
 import 'package:mime/mime.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import '../utils/variables.dart';
+
 enum FilePurpose {
   feedback,
   improve,
 }
 
 class FileUploadService {
-  static const String baseUrl =
-      'https://a0869a4b009d.ngrok-free.app'; // Using the feedback service base URL
+  static final String baseUrl = backendUrl; // Using the feedback service base URL
 
   Future<String?> uploadFile(File file, FilePurpose purpose) async {
     try {

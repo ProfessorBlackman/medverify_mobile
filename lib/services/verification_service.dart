@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../models/verification_result.dart';
+import '../utils/variables.dart';
 
 class VerificationService {
   Future<VerificationResult> verifyBarcode(String barcode) async {
@@ -62,7 +63,7 @@ class VerificationService {
 
   //   verify using fuzzy search
   Future<Set<VerificationResult>> verifyFuzzySearch(String drugName) async {
-    final url = Uri.parse('https://a0869a4b009d.ngrok-free.app/search?search_term=$drugName');
+    final url = Uri.parse('$backendUrl/search?search_term=$drugName');
 
     try {
       final response = await http.get(url);

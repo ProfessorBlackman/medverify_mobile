@@ -60,7 +60,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
                 // Hero Image / Animation Placeholder
                 Container(
                   height: 330,
@@ -76,7 +76,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 25),
 
                 // Title
                 Text(
@@ -86,7 +86,7 @@ class WelcomeScreen extends StatelessWidget {
                     context,
                   ).textTheme.displayLarge?.copyWith(fontSize: 28),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // Subtitle
                 Text(
@@ -96,7 +96,7 @@ class WelcomeScreen extends StatelessWidget {
                     context,
                   ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
 
                 // Trust Badge
                 Row(
@@ -113,7 +113,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // Start Button
                 SizedBox(
@@ -127,7 +127,7 @@ class WelcomeScreen extends StatelessWidget {
                     label: const Text('Start Scanning'),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -141,8 +141,9 @@ class WelcomeScreen extends StatelessWidget {
                     'Learn how it works',
                     style: GoogleFonts.publicSans(
                       color: AppTheme.textLight,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),

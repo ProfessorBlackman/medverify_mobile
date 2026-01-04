@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../models/verification_result.dart';
-import '../services/flile_upload_service.dart';
+import '../services/file_upload_service.dart';
 import '../theme.dart';
 import '../widgets/barcode_scanner_modal.dart';
 
@@ -90,7 +90,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: pickedFile.path,
-      aspectRatio: CropAspectRatio(ratioX: 16, ratioY: 9),
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',

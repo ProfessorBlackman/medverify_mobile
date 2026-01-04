@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'flile_upload_service.dart'; // Corrected import
+import '../utils/variables.dart';
+import 'file_upload_service.dart'; // Corrected import
 
 class FeedbackService {
-  final String _endpoint = 'https://a0869a4b009d.ngrok-free.app/feedback';
+  final String _endpoint = '$backendUrl/feedback';
   final FileUploadService _uploadService;
 
   FeedbackService({FileUploadService? uploadService})
