@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../providers/app_provider.dart';
 import '../models/verification_result.dart';
 import '../theme.dart';
+import '../widgets/dashboard_widgets.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -99,29 +100,7 @@ class HistoryScreen extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/scanner');
-        },
-        backgroundColor: AppTheme.primaryGreen,
-        child: const Icon(Icons.qr_code_scanner, color: Colors.black),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // History
-        selectedItemColor: AppTheme.primaryGreen,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/'); // Home
-          } else if (index == 2) {
-            // Profile placeholder
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
+      bottomNavigationBar: const CustomBottomNavBar(),
     );
   }
 
