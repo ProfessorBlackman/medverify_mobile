@@ -11,7 +11,7 @@ class DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -21,10 +21,10 @@ class DashboardHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Good Morning,',
+                    'Hello',
                     style: GoogleFonts.publicSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.grey[500],
                     ),
                   ),
@@ -271,53 +271,44 @@ class QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: iconColor, size: 24),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: GoogleFonts.publicSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textLight,
-                ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.publicSans(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textLight,
               ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: GoogleFonts.publicSans(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: GoogleFonts.publicSans(
+                fontSize: 12,
+                color: Colors.grey[500],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -330,105 +321,96 @@ class RecentScanItem extends StatelessWidget {
   final String time;
   final bool isSafe;
   final String? imageUrl;
+  final Color statusColor;
+  final VoidCallback onTap;
 
   const RecentScanItem({
     super.key,
     required this.name,
     required this.status,
     required this.time,
-    required this.isSafe,
+    this.isSafe = true,
     this.imageUrl,
+    required this.statusColor,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[200],
-              image: imageUrl != null
-                  ? DecorationImage(image: NetworkImage(imageUrl!), fit: BoxFit.cover)
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[100],
+                image: imageUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(imageUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: imageUrl == null
+                  ? Icon(Icons.medication_outlined, color: Colors.grey[400])
                   : null,
             ),
-            child: imageUrl == null ? const Icon(Icons.medication, size: 40, color: Colors.grey) : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        name,
-                        style: GoogleFonts.publicSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textLight,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.publicSans(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isSafe ? Colors.green[100] : Colors.red[100],
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSafe ? Icons.verified : Icons.warning,
-                            size: 12,
-                            color: isSafe ? Colors.green[700] : Colors.red[700],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            status,
-                            style: GoogleFonts.publicSans(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isSafe ? Colors.green[700] : Colors.red[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  time,
-                  style: GoogleFonts.publicSans(
-                    fontSize: 12,
-                    color: Colors.grey[500],
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 4),
+                  Text(
+                    time,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    status,
+                    style: GoogleFonts.publicSans(
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

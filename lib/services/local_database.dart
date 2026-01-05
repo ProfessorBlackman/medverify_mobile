@@ -1,4 +1,4 @@
-import 'package:hive_ce/hive_ce.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/verification_result.dart';
 
 class LocalDatabase {
@@ -9,7 +9,9 @@ class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._();
 
   Future<void> init() async {
-    // No need to initialize with a path for hive_ce in-memory
+    // This ensures Hive is initialized in a Flutter environment.
+    await Hive.initFlutter();
+    // Now, it's safe to open a box.
     await Hive.openBox<Map>(_historyBoxName);
   }
 

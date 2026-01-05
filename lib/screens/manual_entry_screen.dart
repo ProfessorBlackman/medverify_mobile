@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../models/verification_result.dart';
+import '../providers/app_provider.dart';
 import '../services/verification_service.dart';
 import '../theme.dart';
 
@@ -37,6 +39,27 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
       if (results.isNotEmpty) {
         setState(() => _isLoading = false);
+        final bestMatch = results.first;
+        final resultWithTimestamp = VerificationResult(
+          status: bestMatch.status,
+          productName: bestMatch.productName,
+          manufacturer: bestMatch.manufacturer,
+          countryOrigin: bestMatch.countryOrigin,
+          region: bestMatch.region,
+          regNumber: bestMatch.regNumber,
+          expiryDate: bestMatch.expiryDate,
+          activeIngredient: bestMatch.activeIngredient,
+          email: bestMatch.email,
+          approvalDate: bestMatch.approvalDate,
+          postalAddress: bestMatch.postalAddress,
+          registrationType: bestMatch.registrationType,
+          imageUrl: bestMatch.imageUrl,
+          barcode: bestMatch.barcode,
+          category: bestMatch.category,
+          message: bestMatch.message,
+          scannedAt: DateTime.now(),
+        );
+        context.read<AppProvider>().addScan(resultWithTimestamp);
         Navigator.pushNamed(context, '/results', arguments: results.toList());
       } else {
         setState(() {

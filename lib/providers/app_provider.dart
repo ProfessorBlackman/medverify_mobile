@@ -13,7 +13,6 @@ class AppProvider with ChangeNotifier {
     _loadHistoryFromDb();
   }
 
-  // Load from SQLite on startup
   Future<void> _loadHistoryFromDb() async {
     _isLoading = true;
     notifyListeners();
@@ -24,19 +23,13 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Add to both Memory AND Database
   Future<void> addScan(VerificationResult result) async {
-    // 1. Update Database
     await LocalDatabase.instance.insertResult(result);
-
-    // 2. Update Memory for immediate UI feedback
     _scanHistory.insert(0, result);
     notifyListeners();
   }
 
-  // Fast lookup for OCR logic
   Future<VerificationResult?> checkLocalLookup(String query) async {
-    // Logic: Look through memory first (it's fastest)
     try {
       return _scanHistory.firstWhere(
               (element) => element.regNumber == query ||
@@ -50,20 +43,13 @@ class AppProvider with ChangeNotifier {
   List<VerificationResult> get todayScans {
     final now = DateTime.now();
     return _scanHistory.where((scan) {
-      // In the modified toMap, we'd need to store scannedAt to filter properly
-      // For now, returning the list
       return true;
     }).toList();
   }
 
   Future<void> clearHistory() async {
-    // 1. Clear the persistent storage
     await LocalDatabase.instance.clearAllHistory();
-
-    // 2. Clear the in-memory list
     _scanHistory = [];
-
-    // 3. Notify UI to refresh (History screen will become empty)
     notifyListeners();
   }
 }

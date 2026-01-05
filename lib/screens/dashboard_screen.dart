@@ -1,10 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../models/verification_result.dart';
+import '../providers/app_provider.dart';
 import '../theme.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+
+  String _getStatusText(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return 'Verified';
+      case VerificationStatus.near_expiry:
+        return 'Nearing Expiry';
+      default:
+        return 'Unverified';
+    }
+  }
+
+  Color _getStatusColor(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return AppTheme.primaryGreen;
+      case VerificationStatus.near_expiry:
+        return AppTheme.warningOrange;
+      default:
+        return AppTheme.warningRed;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +45,6 @@ class DashboardScreen extends StatelessWidget {
           children: [
             SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 100),
-              // Space for bottom nav
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -102,27 +130,46 @@ class DashboardScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        RecentScanItem(
-                          name: 'Panadol Extra',
-                          status: 'Safe',
-                          time: 'Verified today, 10:23 AM',
-                          isSafe: true,
-                          imageUrl:
-                              'https://lh3.googleusercontent.com/aida-public/AB6AXuALsqbI4fGCGMFGnmwV4e3w_LO3FKu981EIl_c2fN1sN00hBzmP-zWanWzpuLKQGyr2_dEKxAk1SXjGYpwkbtrZqs4cMPOytDh1X-KVYuTc3nGdwuo9KLxMqc9N15DpUpaHq68V36gutclmQ480XYLTHhavp7ZY1iWYCd3RgRvOe8ObbnmoAlyF34fEGhDuzHGSBRapnwbT93M_ydH4CHgcIWJ8aeYiLTc6oYk5Aw_GyVrNnUJPxjkq49MpRQLuX_ktFIq58kJf858',
+                  Consumer<AppProvider>(
+                    builder: (context, provider, child) {
+                      final recentScans = provider.scanHistory.take(3).toList();
+                      if (recentScans.isEmpty) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Text('No recent scans to show.'),
+                          ),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: recentScans.length,
+                          itemBuilder: (context, index) {
+                            final scan = recentScans[index];
+                            final statusText = _getStatusText(scan.status);
+                            final statusColor = _getStatusColor(scan.status);
+                            return RecentScanItem(
+                              name: scan.productName ?? 'Unknown Product',
+                              status: statusText,
+                              time: scan.scannedAt != null
+                                  ? DateFormat('MMM d, h:mm a')
+                                      .format(scan.scannedAt!)
+                                  : 'N/A',
+                              isSafe: statusText == 'Verified',
+                              imageUrl: scan.imageUrl,
+                              statusColor: statusColor,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/results',
+                                    arguments: scan);
+                              },
+                            );
+                          },
                         ),
-                        SizedBox(height: 8),
-                        RecentScanItem(
-                          name: 'Unknown Amoxicillin',
-                          status: 'Unverified',
-                          time: 'Scanned yesterday',
-                          isSafe: false,
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),

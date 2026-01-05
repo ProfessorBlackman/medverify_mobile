@@ -47,6 +47,26 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
         if (!mounted) return;
 
+        final resultWithTimestamp = VerificationResult(
+          status: result.status,
+          productName: result.productName,
+          manufacturer: result.manufacturer,
+          countryOrigin: result.countryOrigin,
+          region: result.region,
+          regNumber: result.regNumber,
+          expiryDate: result.expiryDate,
+          activeIngredient: result.activeIngredient,
+          email: result.email,
+          approvalDate: result.approvalDate,
+          postalAddress: result.postalAddress,
+          registrationType: result.registrationType,
+          imageUrl: result.imageUrl,
+          barcode: result.barcode,
+          category: result.category,
+          message: result.message,
+          scannedAt: DateTime.now(),
+        );
+
         if (result.status == VerificationStatus.unregistered) {
           Navigator.push(
             context,
@@ -56,8 +76,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
           );
         } else {
-          context.read<AppProvider>().addScan(result);
-          await Navigator.pushNamed(context, '/results', arguments: result);
+          context.read<AppProvider>().addScan(resultWithTimestamp);
+          await Navigator.pushNamed(context, '/results', arguments: resultWithTimestamp);
         }
       } finally {
         if (mounted) {
