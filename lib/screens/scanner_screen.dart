@@ -41,6 +41,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
             await service.verifyBarcode(barcodes.first.rawValue!);
 
         if (!mounted) return;
+        if (results.isEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+              const ManualEntryScreen(fromScanningError: true),
+            ),
+          );
+        }
 
         final bestResult = results.first;
 

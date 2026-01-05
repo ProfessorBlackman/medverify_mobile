@@ -68,7 +68,7 @@ class HowItWorksScreen extends StatelessWidget {
                   'Our app instantly validates the code against the our database.',
             ),
             _buildStep(
-              icon: Icons.cloud_sync,
+              icon: Icons.loop,
               title: '3. Fallback To Manual Entry',
               subtitle:
               'If the scan fails, you can enter the durg name or it\'s registration number to check',

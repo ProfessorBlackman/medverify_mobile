@@ -284,7 +284,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             _buildImproveCard(context, result),
             const SizedBox(height: 16),
             Text(
-              'Scan results are based on the latest data from the Food and Drugs Authority (FDA) Ghana.',
+              'Scan results are based on data from the Food and Drugs Authority (FDA) Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 12,

@@ -26,8 +26,8 @@ class InfoHubScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.grey[300], // Placeholder for image
                 borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage('https://placehold.co/600x400/png'),
+                image: DecorationImage(
+                  image: Image.asset('assets/images/info_hub.png').image,
                   // Placeholder
                   fit: BoxFit.cover,
                 ),
