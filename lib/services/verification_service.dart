@@ -7,41 +7,29 @@ import '../models/verification_result.dart';
 import '../utils/variables.dart';
 
 class VerificationService {
-  Future<VerificationResult> verifyBarcode(String barcode) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
+  Future<Set<VerificationResult>> verifyBarcode(String barcode) async {
+    final url = Uri.parse('$backendUrl/barcode?bc=$barcode');
 
-    if (barcode.startsWith('000')) {
-      return VerificationResult(
-        status: VerificationStatus.unregistered,
-        productName: 'Unknown Product',
-        manufacturer: 'Unknown Manufacturer',
-        regNumber: 'N/A',
-        message: 'Product Not Found in FDA Database',
-        category: "UNKNOWN",
-      );
-    } else if (barcode.startsWith('999')) {
-      return VerificationResult(
-        status: VerificationStatus.recalled,
-        productName: 'Dangerous Product',
-        manufacturer: 'Bad Pharma Inc.',
-        regNumber: 'FDA/GHA/99999',
-        message: 'This batch has been recalled by the FDA for safety reasons.',
-        category: "DRUG",
-      );
-    } else {
-      // Default to Verified (Amoxicillin example)
-      return VerificationResult(
-        status: VerificationStatus.verified,
-        productName: 'Amoxicillin Capsules BP',
-        manufacturer: 'Ernest Chemists Ltd.',
-        regNumber: 'FDA/GHA/12345',
-        approvalDate: DateTime(2023, 1, 12),
-        expiryDate: DateTime(2025, 10, 15),
-        message: 'Authenticity confirmed by FDA Ghana',
-        category: "DRUG",
-      );
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        // Assuming your VerificationResult has a fromJson factory constructor
+        // If not, you'll need to create one.
+        return data.map((json) => VerificationResult.fromJson(json)).toSet();
+      } else {
+        // Handle server errors (e.g., 500, 404)
+        await Sentry.captureMessage('Server error: ${response.statusCode}');
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle network errors (e.g., no connection)
+      await Sentry.captureException(e);
+      throw Exception('Failed to perform search: $e');
     }
+
+
   }
 
 //   verify using the FDA number

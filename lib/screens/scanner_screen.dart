@@ -37,37 +37,34 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       try {
         final service = context.read<VerificationService>();
-        VerificationResult result;
-
-        if (barcodes.first.rawValue!.startsWith('FDA/')) {
-          result = await service.verifyFDANumber(barcodes.first.rawValue!);
-        } else {
-          result = await service.verifyBarcode(barcodes.first.rawValue!);
-        }
+        Set<VerificationResult> results =
+            await service.verifyBarcode(barcodes.first.rawValue!);
 
         if (!mounted) return;
 
+        final bestResult = results.first;
+
         final resultWithTimestamp = VerificationResult(
-          status: result.status,
-          productName: result.productName,
-          manufacturer: result.manufacturer,
-          countryOrigin: result.countryOrigin,
-          region: result.region,
-          regNumber: result.regNumber,
-          expiryDate: result.expiryDate,
-          activeIngredient: result.activeIngredient,
-          email: result.email,
-          approvalDate: result.approvalDate,
-          postalAddress: result.postalAddress,
-          registrationType: result.registrationType,
-          imageUrl: result.imageUrl,
-          barcode: result.barcode,
-          category: result.category,
-          message: result.message,
+          status: bestResult.status,
+          productName: bestResult.productName,
+          manufacturer: bestResult.manufacturer,
+          countryOrigin: bestResult.countryOrigin,
+          region: bestResult.region,
+          regNumber: bestResult.regNumber,
+          expiryDate: bestResult.expiryDate,
+          activeIngredient: bestResult.activeIngredient,
+          email: bestResult.email,
+          approvalDate: bestResult.approvalDate,
+          postalAddress: bestResult.postalAddress,
+          registrationType: bestResult.registrationType,
+          imageUrl: bestResult.imageUrl,
+          barcode: bestResult.barcode,
+          category: bestResult.category,
+          message: bestResult.message,
           scannedAt: DateTime.now(),
         );
 
-        if (result.status == VerificationStatus.unregistered) {
+        if (resultWithTimestamp.status == VerificationStatus.unregistered) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -77,8 +74,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
           );
         } else {
           context.read<AppProvider>().addScan(resultWithTimestamp);
-          await Navigator.pushNamed(context, '/results', arguments: resultWithTimestamp);
+          await Navigator.pushNamed(context, '/results',
+              arguments: resultWithTimestamp);
         }
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const ManualEntryScreen(fromScanningError: true),
+          ),
+        );
       } finally {
         if (mounted) {
           setState(() {
