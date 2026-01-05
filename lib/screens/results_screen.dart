@@ -8,6 +8,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/verification_result.dart';
 import '../services/file_upload_service.dart';
@@ -729,10 +730,19 @@ class _ResultsScreenState extends State<ResultsScreen> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 if (showReport) {
-                  Navigator.pushNamed(context, '/info');
+                  final url = Uri.parse('https://fdaghana.gov.gh/submit-a-complaint/');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  } else {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Could not launch complaint form')),
+                    );
+                  }
                 } else {
+                  if (!mounted) return;
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 }
               },
