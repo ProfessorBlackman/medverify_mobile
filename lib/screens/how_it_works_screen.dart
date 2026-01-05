@@ -59,13 +59,19 @@ class HowItWorksScreen extends StatelessWidget {
               icon: Icons.qr_code_scanner,
               title: '1. Scan the Code',
               subtitle:
-                  'Locate the barcode or QR code on the drug packaging and point your camera at it. Ensure there is good lighting.',
+                  'Locate the barcode on the drug packaging and point your camera at it. Ensure there is good lighting.',
             ),
             _buildStep(
               icon: Icons.cloud_sync,
               title: '2. Instant Check',
               subtitle:
-                  'Our app instantly validates the code against the official FDA Ghana database in real-time.',
+                  'Our app instantly validates the code against the our database.',
+            ),
+            _buildStep(
+              icon: Icons.cloud_sync,
+              title: '3. Fallback To Manual Entry',
+              subtitle:
+              'If the scan fails, you can enter the durg name or it\'s registration number to check',
             ),
             _buildStep(
               icon: Icons.verified_user,
@@ -100,31 +106,6 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 100),
           ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.pushNamed(context, '/scanner');
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryGreen,
-            foregroundColor: const Color(0xFF102216),
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          icon: const Icon(Icons.center_focus_weak),
-          label: Text(
-            'Start Scanning Now',
-            style: GoogleFonts.publicSans(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ),
       ),
     );
