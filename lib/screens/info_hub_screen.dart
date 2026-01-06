@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 
-class InfoHubScreen extends StatelessWidget {
+class InfoHubScreen extends StatefulWidget {
   const InfoHubScreen({super.key});
 
+  @override
+  State<InfoHubScreen> createState() => _InfoHubScreenState();
+}
+
+class _InfoHubScreenState extends State<InfoHubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,31 +112,52 @@ class InfoHubScreen extends StatelessWidget {
             _buildInfoCard(
               context,
               icon: Icons.verified_user,
-              title: 'Inspect the Seal',
+              title: 'Look For The FDA Reg. Number',
               description:
-                  'Ensure the security seal is intact and matches the manufacturer standard.',
+                  'The FDA requires all drugs to have the FDA registration number on the packaging. The number looks like this: FDA/CE 24-669',
               color: Colors.blue[50]!,
               iconColor: Colors.blue,
+            ),
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              context,
+              icon: Icons.report,
+              title: 'Report To The FDA',
+              description:
+                  'If a drug is counterfeit, please report it to the FDA.',
+              color: Colors.green[50]!,
+              iconColor: Colors.green,
+            ),
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              context,
+              icon: Icons.front_hand,
+              title: 'Do Not Use Counterfeit Drugs',
+              description:
+              'If a drug is counterfeit, do not use it. Your life is worth more than your wallet. \n'
+                  'Do not use that counterfeit drug',
+              color: Colors.red[50]!,
+              iconColor: Colors.red,
             ),
 
             const SizedBox(height: 32),
 
             // How to Report
-            const Text(
-              'How to Report Suspicious Drugs',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStep(context, '1', Icons.do_not_touch, 'Do not use'),
-                Container(width: 30, height: 1, color: Colors.grey[300]),
-                _buildStep(context, '2', Icons.camera_alt, 'Take Photo'),
-                Container(width: 30, height: 1, color: Colors.grey[300]),
-                _buildStep(context, '3', Icons.send, 'Submit', isActive: true),
-              ],
-            ),
+            // const Text(
+            //   'How to Report Suspicious Drugs',
+            //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // ),
+            // const SizedBox(height: 24),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //   children: [
+            //     _buildStep(context, '1', Icons.do_not_touch, 'Do not use'),
+            //     Container(width: 30, height: 1, color: Colors.grey[300]),
+            //     _buildStep(context, '2', Icons.camera_alt, 'Take Photo'),
+            //     Container(width: 30, height: 1, color: Colors.grey[300]),
+            //     _buildStep(context, '3', Icons.send, 'Submit', isActive: true),
+            //   ],
+            // ),
 
             const SizedBox(height: 32),
 
@@ -143,14 +170,20 @@ class InfoHubScreen extends StatelessWidget {
             _buildFAQItem(
               'What if the barcode won\'t scan?',
               'Try cleaning your camera lens or moving to a brighter area.',
+              null,
             ),
             _buildFAQItem(
               'Is this app official?',
-              'Yes, this app is powered by the FDA Ghana.',
+              'No, this is a personal project built by a concerned Ghanaian, \n'
+                  'this app relies on data from the official database of FDA Ghana.\n'
+                  'Find out more about him here:',
+              'https://methuselah.site',
             ),
             _buildFAQItem(
-              'How do I verify the batch number?',
-              'The batch number is automatically verified when you scan the barcode.',
+              'Does this app collect any personal data?',
+              'No the only data collected from you is the photo you take, the barcode you scan and any feedback you give us.\n'
+                  'We also collect analytics data to fix bugs and improve the app',
+              null,
             ),
 
             const SizedBox(height: 32),
@@ -163,9 +196,9 @@ class InfoHubScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildContactButton(Icons.phone, 'Helpline')),
+                Expanded(child: _buildContactButton(Icons.phone, 'Helpline', 'tel:0302235100')),
                 const SizedBox(width: 16),
-                Expanded(child: _buildContactButton(Icons.email, 'Email Us')),
+                Expanded(child: _buildContactButton(Icons.email, 'Email Us', 'mailto:fda@fda.gov.gh')),
               ],
             ),
 
@@ -262,7 +295,7 @@ class InfoHubScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFAQItem(String question, String answer) {
+  Widget _buildFAQItem(String question, String answer, String? url) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -277,25 +310,65 @@ class InfoHubScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Text(answer, style: TextStyle(color: Colors.grey[600])),
           ),
+          if (url != null)
+            Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: TextButton(
+                onPressed: () async {
+                  final Uri uri = Uri.parse(url);
+                  final bool canLaunch = await canLaunchUrl(uri);
+                  if (!mounted) return;
+                  if (canLaunch) {
+                    await launchUrl(uri);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Could not launch $url'),
+                      ),
+                    );
+                  }
+                },
+                child: Text(url, style: TextStyle(color: Colors.blue[600], decoration: TextDecoration.underline)),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildContactButton(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.primaryGreen),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
+  Widget _buildContactButton(IconData icon, String label, String url) {
+    return InkWell(
+      onTap: () async {
+        final Uri uri = Uri.parse(url);
+        final bool canLaunch = await canLaunchUrl(uri);
+
+        if (!mounted) return;
+
+        if (canLaunch) {
+          await launchUrl(uri);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not open $label. Is the required app installed?'),
+            ),
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppTheme.primaryGreen),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }

@@ -1,1 +1,1 @@
-String backendUrl="https://ddf4ba073323.ngrok-free.app";
+String backendUrl="https://medverify-api.methuselah.site";

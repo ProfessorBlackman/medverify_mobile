@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medverify_mobile/screens/feedback_screen.dart';
 import 'package:medverify_mobile/screens/how_it_works_screen.dart';
+import 'package:medverify_mobile/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'services/local_database.dart';
 import 'theme.dart';
@@ -51,7 +52,8 @@ class DrugCheckerApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => const WelcomeScreen(),
+        '/': (context) => const SplashScreen(),
+        '/welcome': (context) => const WelcomeScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/scanner': (context) => const ScannerScreen(),
         '/manual': (context) => const ManualEntryScreen(),

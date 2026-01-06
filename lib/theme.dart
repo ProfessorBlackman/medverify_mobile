@@ -8,6 +8,7 @@ class AppTheme {
   static const Color backgroundDark = Color(0xFF102216);
   static const Color textLight = Color(0xFF111813);
   static const Color textDark = Color(0xFFECFDF3);
+  static const Color secondaryText = Color(0xFF618983);
   static const Color warningRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF59E0B); // Was expiredOrange
   static const Color recalledBlack = Color(0xFF000000); // Or dark grey
