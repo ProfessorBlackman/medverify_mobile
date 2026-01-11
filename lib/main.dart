@@ -1,8 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:medverify_mobile/screens/feedback_screen.dart';
 import 'package:medverify_mobile/screens/how_it_works_screen.dart';
 import 'package:medverify_mobile/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'api/firebase_api.dart';
+import 'firebase_options.dart';
 import 'services/local_database.dart';
 import 'theme.dart';
 import 'providers/app_provider.dart';
@@ -16,10 +19,18 @@ import 'screens/info_hub_screen.dart';
 import 'screens/manual_entry_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // This must be called before any Hive operation.
   await LocalDatabase.instance.init();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FirebaseApi().initNotifications();
 
   await SentryFlutter.init(
     (options) {
@@ -38,6 +49,11 @@ Future<void> main() async {
       ),
     ),
   );
+
+
+
+  // Initialize your FCM helper
+  await FirebaseApi().initNotifications();
 }
 
 class DrugCheckerApp extends StatelessWidget {
@@ -47,6 +63,7 @@ class DrugCheckerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DrugChecker',
+      navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
