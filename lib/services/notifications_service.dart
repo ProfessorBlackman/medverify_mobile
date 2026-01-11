@@ -1,17 +1,22 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:medverify_mobile/utils/variables.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 
+import '../utils/globals.dart';
 import '../utils/user_identification.dart';
 
 // ⚠️ TOP-LEVEL FUNCTION: Must be outside the class and annotated
 // This handles messages when the app is completely closed (Terminated)
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  print('Background Message: ${message.notification?.title}');
-  print('Payload: ${message.data}');
+  if (kDebugMode) {
+    print('Background Message: ${message.notification?.title}');
+    print('Payload: ${message.data}');
+  }
 }
 
 class FirebaseApi {
@@ -33,15 +38,22 @@ class FirebaseApi {
 
     // 2. Fetch the FCM Token
     final fCMToken = await _firebaseMessaging.getToken();
-    print('FCM Token: $fCMToken');
+
+    await _firebaseMessaging.subscribeToTopic('news');
+    await _firebaseMessaging.subscribeToTopic('info');
 
     // 1. Upload this token to your server immediately
     await uploadTokenToServer(fCMToken);
 
     // 2. Listen for refreshes (Crucial!)
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+    _firebaseMessaging.onTokenRefresh.listen((newToken) {
       uploadTokenToServer(newToken);
     });
+    // 1. APP TERMINATED: User taps notification while app is completely closed
+    _firebaseMessaging.getInitialMessage().then(handleMessage);
+
+    // 2. APP IN BACKGROUND: User taps notification while app is minimized
+    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
 
     // 3. Initialize background settings
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
@@ -61,14 +73,10 @@ class FirebaseApi {
       Uri.parse('$backendUrl/register-user'),
       headers: {
         'Content-Type': 'application/json',
-        'User-ID': userId,  // Attach the UUID here
+        'User-ID': userId, // Attach the UUID here
       },
-      body: jsonEncode({
-        token: token
-      }),
+      body: jsonEncode({'token': token}),
     );
-
-    print("Token saved to server: $token");
   }
 
   Future<void> initPushNotifications() async {
@@ -114,15 +122,32 @@ class FirebaseApi {
     );
 
     // Create the channel on Android
-    final platform = _localNotifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final platform = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     await platform?.createNotificationChannel(_androidChannel);
   }
 
-  void handleMessage(RemoteMessage? message) {
+  void handleMessage(RemoteMessage? message) async {
     if (message == null) return;
 
-    // Logic to navigate to a specific screen when notification is tapped
-    // navigatorKey.currentState?.pushNamed('/notification_screen', arguments: message);
+    // 1. Extract the data
+    final data = message.data;
+
+    // 2. Check if a URL exists in the payload
+    if (data.containsKey('url')) {
+      final urlString = data['url'];
+      final uri = Uri.parse(urlString);
+
+      if (await canLaunchUrl(uri)) {
+        // mode: LaunchMode.externalApplication ensures it opens in Chrome/Safari, not inside the app
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    }
+    // 3. (Optional) Keep your existing navigation logic
+    else if (data.containsKey('route')) {
+      navigatorKey.currentState?.pushNamed(data['route']);
+    }
   }
 }

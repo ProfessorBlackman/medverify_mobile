@@ -26,6 +26,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   final FileUploadService _fileUploadService = FileUploadService();
   bool _isUploadingPhoto = false;
   bool _isSendingBarcode = false;
+  bool _isAddingPrice = false;
 
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
@@ -122,9 +123,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(uploadedUrl != null && response?.statusCode == 200
-              ? 'Thank you for helping improve our data!'
-              : 'Photo upload failed.'),
+          content: Text(
+            uploadedUrl != null && response?.statusCode == 200
+                ? 'Thank you for helping improve our data!'
+                : 'Photo upload failed.',
+          ),
           backgroundColor: response?.statusCode == 200 && uploadedUrl != null
               ? AppTheme.primaryGreen
               : AppTheme.warningRed,
@@ -144,9 +147,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     if (barcode == null && imageUrl == null) {
       return null;
     }
-    final url = Uri.parse(
-      '${FileUploadService.baseUrl}/update_product',
-    );
+    final url = Uri.parse('${FileUploadService.baseUrl}/update_product');
     Map<String, String> body = {'registration_number': regNumber};
     if (barcode != null && barcode.isNotEmpty) {
       body['barcode'] = barcode;
@@ -219,6 +220,140 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
     setState(() {
       _isSendingBarcode = false;
+    });
+  }
+
+  Future<void> _showPriceInputDialog(VerificationResult result) async {
+    final priceController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final price = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                const Text(
+                  'Contribute Price',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Prices are shared with the community to help others find affordable medicine in Ghana.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: priceController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Drug Price (Retail)',
+                    prefixText: 'GHS ',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a price';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        Navigator.of(context).pop(priceController.text);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryGreen,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Submit Price',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: AppTheme.textLight)),
+                ),
+                const SizedBox(height: 29),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (price != null && price.isNotEmpty) {
+      await _uploadPrice(result, price);
+    }
+  }
+
+  Future<void> _uploadPrice(VerificationResult result, String price) async {
+    if (result.regNumber == null ||
+        result.regNumber!.isEmpty ||
+        result.regNumber == 'N/A') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot add price without a registration number.'),
+          backgroundColor: AppTheme.warningRed,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isAddingPrice = true;
+    });
+
+    final response = await _uploadProductImprovements(
+      null,
+      null,
+      result.regNumber!,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response?.statusCode == 200
+                ? 'Price added successfully! Thank you.'
+                : 'Failed to add price. Please try again.',
+          ),
+          backgroundColor: response?.statusCode == 200
+              ? AppTheme.primaryGreen
+              : AppTheme.warningRed,
+        ),
+      );
+    }
+
+    setState(() {
+      _isAddingPrice = false;
     });
   }
 
@@ -336,7 +471,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _buildProductInfoCard(BuildContext context, VerificationResult result) {
+  Widget _buildProductInfoCard(
+    BuildContext context,
+    VerificationResult result,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -366,23 +504,29 @@ class _ResultsScreenState extends State<ResultsScreen> {
                                 child: Image.network(
                                   result.imageUrl!,
                                   fit: BoxFit.contain,
-                                  loadingBuilder: (BuildContext context,
-                                      Widget child,
-                                      ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                    .cumulativeBytesLoaded /
+                                  loadingBuilder:
+                                      (
+                                        BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent? loadingProgress,
+                                      ) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value:
                                                 loadingProgress
-                                                    .expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        );
+                                      },
                                 ),
                               ),
                               Positioned(
@@ -392,7 +536,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                                   onTap: () => Navigator.of(context).pop(),
                                   child: const CircleAvatar(
                                     backgroundColor: Colors.black54,
-                                    child: Icon(Icons.close, color: Colors.white),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -417,8 +564,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
                         : null,
                   ),
                   child: result.imageUrl == null
-                      ? const Icon(Icons.medication,
-                          size: 40, color: Colors.grey)
+                      ? const Icon(
+                          Icons.medication,
+                          size: 40,
+                          color: Colors.grey,
+                        )
                       : null,
                 ),
               ),
@@ -481,7 +631,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Widget _buildLicenseDetailsCard(
-      BuildContext context, VerificationResult result) {
+    BuildContext context,
+    VerificationResult result,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -519,7 +671,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Widget _buildOtherMatches(
-      BuildContext context, List<VerificationResult> otherResults) {
+    BuildContext context,
+    List<VerificationResult> otherResults,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -544,7 +698,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
               color: Colors.white,
               child: ExpansionTile(
@@ -574,16 +729,18 @@ class _ResultsScreenState extends State<ResultsScreen> {
                             context,
                             Icons.event_available,
                             'Approval Date',
-                            DateFormat('dd MMM yyyy')
-                                .format(otherResult.approvalDate!),
+                            DateFormat(
+                              'dd MMM yyyy',
+                            ).format(otherResult.approvalDate!),
                           ),
                         if (otherResult.expiryDate != null)
                           _buildDetailRow(
                             context,
                             Icons.event_busy,
                             'Expiry Date',
-                            DateFormat('dd MMM yyyy')
-                                .format(otherResult.expiryDate!),
+                            DateFormat(
+                              'dd MMM yyyy',
+                            ).format(otherResult.expiryDate!),
                             valueColor: _getStatusColor(otherResult.status),
                           ),
                       ],
@@ -598,8 +755,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, IconData icon, String label,
-      String value, {Color? valueColor}) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -638,7 +800,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       child: Column(
         children: [
           Text(
-            'Does this box have a barcode?',
+            'Help us improve the database!',
             style: GoogleFonts.publicSans(
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -646,7 +808,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Help us improve!',
+            'Contribute missing information to improve our data.',
             style: GoogleFonts.publicSans(
               color: AppTheme.secondGreen,
               fontSize: 14,
@@ -676,12 +838,78 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _isAddingPrice ? null : () => _showPriceInputDialog(result),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (_isAddingPrice)
+                    Padding(
+                      padding: const EdgeInsetsGeometry.all(10),
+                      child: const SizedBox(
+                        height: 28,
+                        width: 28,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  else
+                    Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondaryBackground,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Padding(padding: const EdgeInsetsGeometry.all(13),
+                        child: Icon(
+                          Icons.price_change,
+                          color: AppTheme.textLight,
+                          size: 28,
+                        ),
+                        )
+                      ),
+                  const SizedBox(height: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Add Price',
+                        style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Report current market price',
+                        style: GoogleFonts.publicSans(fontWeight: FontWeight.normal, color: AppTheme.secondaryText),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                  Padding(
+                      padding: const EdgeInsetsGeometry.all(10),
+                    child: Icon(
+                      Icons.arrow_forward_ios_outlined,
+                      color: Colors.grey[500],
+                      size: 20,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildImproveButton(BuildContext context, {
+  Widget _buildImproveButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     bool isLoading = false,
@@ -710,6 +938,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             Text(
               label,
               style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -732,13 +961,17 @@ class _ResultsScreenState extends State<ResultsScreen> {
             child: ElevatedButton.icon(
               onPressed: () async {
                 if (showReport) {
-                  final url = Uri.parse('https://fdaghana.gov.gh/submit-a-complaint/');
+                  final url = Uri.parse(
+                    'https://fdaghana.gov.gh/submit-a-complaint/',
+                  );
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url);
                   } else {
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Could not launch complaint form')),
+                      const SnackBar(
+                        content: Text('Could not launch complaint form'),
+                      ),
                     );
                   }
                 } else {
@@ -748,14 +981,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getStatusColor(result.status),
-                foregroundColor:
-                    showReport ? Colors.white : const Color(0xFF102216),
+                foregroundColor: showReport
+                    ? Colors.white
+                    : const Color(0xFF102216),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon:
-                  Icon(showReport ? Icons.report_problem : Icons.qr_code_scanner),
+              icon: Icon(
+                showReport ? Icons.report_problem : Icons.qr_code_scanner,
+              ),
               label: Text(
                 showReport ? 'Report to FDA' : 'Scan Another Product',
                 style: GoogleFonts.publicSans(

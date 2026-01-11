@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:medverify_mobile/screens/feedback_screen.dart';
 import 'package:medverify_mobile/screens/how_it_works_screen.dart';
 import 'package:medverify_mobile/screens/splash_screen.dart';
+import 'package:medverify_mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
-import 'api/firebase_api.dart';
+import 'services/notifications_service.dart';
 import 'firebase_options.dart';
 import 'services/local_database.dart';
 import 'theme.dart';
@@ -19,17 +20,13 @@ import 'screens/info_hub_screen.dart';
 import 'screens/manual_entry_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-final navigatorKey = GlobalKey<NavigatorState>();
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // This must be called before any Hive operation.
   await LocalDatabase.instance.init();
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseApi().initNotifications();
 
   await SentryFlutter.init(
@@ -49,8 +46,6 @@ Future<void> main() async {
       ),
     ),
   );
-
-
 
   // Initialize your FCM helper
   await FirebaseApi().initNotifications();
