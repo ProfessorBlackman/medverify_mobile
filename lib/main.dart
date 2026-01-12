@@ -6,6 +6,7 @@ import 'package:medverify_mobile/screens/splash_screen.dart';
 import 'package:medverify_mobile/services/analytics_service.dart';
 import 'package:medverify_mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/notifications_service.dart';
 import 'firebase_options.dart';
 import 'services/local_database.dart';
@@ -30,6 +31,10 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseApi().initNotifications();
 
+  // Check shared preferences before running the app
+  final prefs = await SharedPreferences.getInstance();
+  final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
   await SentryFlutter.init(
     (options) {
       options.dsn =
@@ -43,7 +48,7 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) => AppProvider()),
           Provider(create: (_) => VerificationService()),
         ],
-        child: SentryWidget(child: const DrugCheckerApp()),
+        child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
       ),
     ),
   );
@@ -53,7 +58,8 @@ Future<void> main() async {
 }
 
 class DrugCheckerApp extends StatelessWidget {
-  const DrugCheckerApp({super.key});
+  final bool isFirstTime;
+  const DrugCheckerApp({super.key, required this.isFirstTime});
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +73,7 @@ class DrugCheckerApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => const SplashScreen(),
+        '/': (context) => isFirstTime ? const WelcomeScreen() : const SplashScreen(),
         '/welcome': (context) => const WelcomeScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/scanner': (context) => const ScannerScreen(),

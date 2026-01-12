@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medverify_mobile/screens/scanner_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
+import 'dashboard_screen.dart';
 import 'how_it_works_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
+
+  // Inside your Onboarding Screen's button action:
+  void _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstTime', false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +57,8 @@ class WelcomeScreen extends StatelessWidget {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/dashboard');
+                      _completeOnboarding();
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardScreen()),);
                     },
                     child: Text(
                       'Go to Dashboard',
@@ -121,7 +131,12 @@ class WelcomeScreen extends StatelessWidget {
                   height: 56,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/scanner');
+                      _completeOnboarding();
+                      MaterialPageRoute(builder: (context) => const ScannerScreen());
+                      Navigator.pushReplacement(
+                        context,
+                          MaterialPageRoute(builder: (context) => const ScannerScreen())
+                      );
                     },
                     icon: const Icon(Icons.qr_code_scanner),
                     label: const Text('Start Scanning'),
@@ -130,7 +145,8 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
+                    _completeOnboarding();
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const HowItWorksScreen(),
