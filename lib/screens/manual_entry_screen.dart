@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/verification_result.dart';
 import '../providers/app_provider.dart';
+import '../services/analytics_service.dart';
 import '../services/verification_service.dart';
 import '../theme.dart';
 
@@ -60,8 +61,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           scannedAt: DateTime.now(),
         );
         context.read<AppProvider>().addScan(resultWithTimestamp);
+        AnalyticsService.instance.logDrugScan(
+            drugName: query,
+            regNumber: resultWithTimestamp.regNumber ?? "",
+            status: "${resultWithTimestamp.status}"
+        );
         Navigator.pushNamed(context, '/results', arguments: results.toList());
       } else {
+        AnalyticsService.instance.logDrugScan(
+            drugName: query,
+            regNumber: "",
+            status: "Not Found",
+        );
         setState(() {
           _isLoading = false;
           _noResults = true;
@@ -136,7 +147,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 _errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: AppTheme.warningRed, fontWeight: FontWeight.w500),
+                  color: AppTheme.warningRed,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -146,7 +159,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Retry'),
-              )
+              ),
             ],
           ),
         ),
@@ -167,7 +180,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             'No matching drug found. Please check your spelling or try a different search term.',
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: AppTheme.primaryGreen, fontWeight: FontWeight.w500),
+              color: AppTheme.primaryGreen,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       );

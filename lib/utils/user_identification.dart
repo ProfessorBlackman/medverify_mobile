@@ -21,3 +21,24 @@ Future<String> getUserId() async {
     return storedUserId;
   }
 }
+
+Future<String> getUserUniqueId() async {
+  // Create an instance of UUID
+  var uuid = Uuid();
+
+  // Access Shared Preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Check if the UUID is already stored
+  String? storedUserId = prefs.getString('unique_id');
+
+  if (storedUserId == null) {
+    // Generate a new UUID and store it
+    String newUserUniqueId = uuid.v4();
+    await prefs.setString('unique_id', newUserUniqueId);
+    return newUserUniqueId;
+  } else {
+    // Return the existing UUID
+    return storedUserId;
+  }
+}

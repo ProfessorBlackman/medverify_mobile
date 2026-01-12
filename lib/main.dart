@@ -1,8 +1,10 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:medverify_mobile/screens/feedback_screen.dart';
 import 'package:medverify_mobile/screens/how_it_works_screen.dart';
 import 'package:medverify_mobile/screens/splash_screen.dart';
+import 'package:medverify_mobile/services/analytics_service.dart';
 import 'package:medverify_mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
 import 'services/notifications_service.dart';
@@ -54,11 +56,16 @@ Future<void> main() async {
 class DrugCheckerApp extends StatelessWidget {
   const DrugCheckerApp({super.key});
 
+  // Create a singleton instance
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(analytics: analytics);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DrugChecker',
       navigatorKey: navigatorKey,
+      navigatorObservers: [AnalyticsService.instance.observer],
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
