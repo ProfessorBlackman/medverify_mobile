@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:medverify_mobile/services/analytics_service.dart';
+import 'package:medverify_mobile/widgets/location_input_dialog.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -27,6 +29,36 @@ class _ResultsScreenState extends State<ResultsScreen> {
   bool _isUploadingPhoto = false;
   bool _isSendingBarcode = false;
   bool _isAddingPrice = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = ModalRoute.of(context)!.settings.arguments;
+      if (arguments is VerificationResult) {
+        _showLocationDialog(arguments);
+      } else if (arguments is List<VerificationResult> && arguments.isNotEmpty) {
+        _showLocationDialog(arguments.first);
+      }
+    });
+  }
+
+  Future<void> _showLocationDialog(VerificationResult result) async {
+    final location = await showDialog<String>(
+      context: context,
+      builder: (context) => const LocationInputDialog(),
+    );
+
+    if (location != null && location.isNotEmpty) {
+      AnalyticsService.instance.logDrugScan(
+        drugName: result.productName ?? 'N/A',
+        regNumber: result.regNumber ?? 'N/A',
+        status: result.status.toString(),
+        source: location,
+      );
+    }
+  }
+
 
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
@@ -303,7 +335,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
                 const SizedBox(height: 29),
               ],
-            ),
+            ), 
           ),
         );
       },

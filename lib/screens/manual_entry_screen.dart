@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/verification_result.dart';
 import '../providers/app_provider.dart';
-import '../services/analytics_service.dart';
 import '../services/verification_service.dart';
 import '../theme.dart';
 
@@ -61,18 +60,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           scannedAt: DateTime.now(),
         );
         context.read<AppProvider>().addScan(resultWithTimestamp);
-        AnalyticsService.instance.logDrugScan(
-            drugName: query,
-            regNumber: resultWithTimestamp.regNumber ?? "",
-            status: "${resultWithTimestamp.status}"
-        );
         Navigator.pushNamed(context, '/results', arguments: results.toList());
       } else {
-        AnalyticsService.instance.logDrugScan(
-            drugName: query,
-            regNumber: "",
-            status: "Not Found",
-        );
         setState(() {
           _isLoading = false;
           _noResults = true;

@@ -19,6 +19,18 @@ class AnalyticsService {
   // Getter for the NavigatorObserver (used in MaterialApp)
   FirebaseAnalyticsObserver get observer => FirebaseAnalyticsObserver(analytics: _analytics);
 
+  Future<void> _askPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+  }
+
+  Future<void> init(){
+    return _askPermission();
+  }
+
   /// 1. Request Location Permission & Get Coordinates
   Future<Position?> _getCurrentLocation() async {
     bool serviceEnabled;
@@ -67,7 +79,7 @@ class AnalyticsService {
         'source': "$source",
         'lat': pos?.latitude ?? 0.0,
         'lng': pos?.longitude ?? 0.0,
-        'region_tag': region,
+        'region': region,
         'scanned_by': userId,
       },
     );
