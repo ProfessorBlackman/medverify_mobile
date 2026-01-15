@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:medverify_mobile/screens/privacy_policy_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 
@@ -196,12 +198,72 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildContactButton(Icons.phone, 'Helpline', 'tel:0302235100')),
+                Expanded(child: _buildContactButton(Icons.phone, 'Tel', 'tel:0302235100')),
                 const SizedBox(width: 16),
-                Expanded(child: _buildContactButton(Icons.email, 'Email Us', 'mailto:fda@fda.gov.gh')),
+                Expanded(child: _buildContactButton(Icons.email, 'Email', 'mailto:fda@fda.gov.gh')),
               ],
             ),
 
+            const SizedBox(height: 25),
+            // Legal
+            const Text(
+              'Legal',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PrivacyPolicyScreen(initialTabIndex: 0),
+                  ),
+                );
+
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Privacy Policy',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 15,
+                      color: AppTheme.backgroundDark,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.backgroundDark),
+                ],
+              ),
+
+            ),
+            const SizedBox(height: 5,),
+            const Divider(thickness: 1, color: Colors.grey),
+            const SizedBox(height: 5,),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PrivacyPolicyScreen(initialTabIndex: 1),
+                  ),
+                );
+
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      'Terms of Service',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 15,
+                      color: AppTheme.backgroundDark,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.backgroundDark),
+                ],
+              ),
+
+            ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -262,36 +324,6 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStep(
-    BuildContext context,
-    String number,
-    IconData icon,
-    String label, {
-    bool isActive = false,
-  }) {
-    return Column(
-      children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: isActive ? AppTheme.primaryGreen : Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isActive ? AppTheme.primaryGreen : Colors.grey[300]!,
-            ),
-          ),
-          child: Icon(icon, color: isActive ? Colors.black : Colors.black),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '$number. $label',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
-      ],
     );
   }
 
