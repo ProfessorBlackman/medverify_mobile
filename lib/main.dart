@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:medverify_mobile/screens/feedback_screen.dart';
 import 'package:medverify_mobile/screens/how_it_works_screen.dart';
+import 'package:medverify_mobile/screens/privacy_policy_screen.dart';
 import 'package:medverify_mobile/screens/splash_screen.dart';
 import 'package:medverify_mobile/services/analytics_service.dart';
 import 'package:medverify_mobile/utils/globals.dart';
@@ -83,6 +84,7 @@ class DrugCheckerApp extends StatelessWidget {
         '/info': (context) => const InfoHubScreen(),
         '/feedback': (context) => const FeedbackScreen(),
         '/how_it_works': (context) => const HowItWorksScreen(),
+        '/privacy': (context) => const PrivacyPolicyScreen(),
       },
     );
   }

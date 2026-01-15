@@ -1,0 +1,51 @@
+name: Release APK
+
+on:
+  push:
+    branches:
+      - release
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Get Commit Message
+        id: get_commit_message
+        run: |
+          echo "commit_msg=$(git log -1 --pretty=%B | head -n 1)" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/${{ steps.get_commit_message.outputs.commit_msg }}.apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_commit_message.outputs.commit_msg }}
+          name: ${{ steps.get_commit_message.outputs.commit_msg }}
+          files: build/app/outputs/flutter-apk/${{ steps.get_commit_message.outputs.commit_msg }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medverify_mobile/screens/scanner_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
 import 'dashboard_screen.dart';
-import 'how_it_works_screen.dart';
+import 'package:flutter/gestures.dart';
+import 'privacy_policy_screen.dart';
 
 import 'dart:async'; // Add this import
 
@@ -91,6 +91,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _skipToLast() {
     _pageController.jumpToPage(_slides.length - 1);
+  }
+
+  void _openPrivacyPolicy(int initialTab) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrivacyPolicyScreen(initialTabIndex: initialTab),
+      ),
+    );
+
+    if (result == true) {
+      setState(() {
+        _agreedToTerms = true;
+      });
+    }
   }
 
   @override
@@ -218,6 +233,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                           fontWeight: FontWeight.bold,
                                           decoration: TextDecoration.underline,
                                         ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            _openPrivacyPolicy(0);
+                                          },
                                       ),
                                       const TextSpan(text: ' and '),
                                       TextSpan(
@@ -227,6 +246,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                           fontWeight: FontWeight.bold,
                                           decoration: TextDecoration.underline,
                                         ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            _openPrivacyPolicy(1);
+                                          },
                                       ),
                                     ],
                                   ),
