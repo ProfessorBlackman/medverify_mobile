@@ -20,6 +20,20 @@ class LocalDatabase {
     await box.add(result.toMap());
   }
 
+  Future<void> updateResult(VerificationResult result) async {
+    final box = Hive.box<Map>(_historyBoxName);
+    final key = box.keys.firstWhere((k) {
+      final val = box.get(k);
+      final scannedAtStr = val?['scannedAt'];
+      if (scannedAtStr == null) return false;
+      return scannedAtStr == result.scannedAt?.toIso8601String();
+    }, orElse: () => null);
+
+    if (key != null) {
+      await box.put(key, result.toMap());
+    }
+  }
+
   Future<List<VerificationResult>> fetchHistory() async {
     final box = Hive.box<Map>(_historyBoxName);
     return box.values

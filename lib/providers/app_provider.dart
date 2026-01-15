@@ -29,6 +29,17 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateResult(VerificationResult oldResult, String newSource) async {
+    final newResult = oldResult.copyWith(source: newSource);
+    await LocalDatabase.instance.updateResult(newResult);
+
+    final index = _scanHistory.indexOf(oldResult);
+    if (index != -1) {
+      _scanHistory[index] = newResult;
+      notifyListeners();
+    }
+  }
+
   Future<VerificationResult?> checkLocalLookup(String query) async {
     try {
       return _scanHistory.firstWhere(
@@ -41,7 +52,6 @@ class AppProvider with ChangeNotifier {
   }
 
   List<VerificationResult> get todayScans {
-    final now = DateTime.now();
     return _scanHistory.where((scan) {
       return true;
     }).toList();

@@ -27,6 +27,9 @@ class VerificationResult {
   final String? category;
   final String? message;
   final DateTime? scannedAt;
+  final String? price;
+  final String? source;
+
 
 
   VerificationResult({
@@ -47,6 +50,8 @@ class VerificationResult {
     this.category,
     this.message,
     this.scannedAt,
+    this.price,
+    this.source,
   });
 
   Map<String, dynamic> toMap() {
@@ -68,6 +73,8 @@ class VerificationResult {
       'category': category,
       'message': message,
       'scannedAt': scannedAt?.toIso8601String(),
+      'price': price,
+      'source': source,
     };
   }
 
@@ -90,6 +97,8 @@ class VerificationResult {
       expiryDate: map['expiryDate'] != null ? DateTime.tryParse(map['expiryDate']) : null,
       approvalDate: map['approvalDate'] != null ? DateTime.tryParse(map['approvalDate']) : null,
       scannedAt: map['scannedAt'] != null ? DateTime.tryParse(map['scannedAt']) : null,
+      price: map['price'],
+      source: map['source'],
     );
   }
 
@@ -114,6 +123,53 @@ class VerificationResult {
       barcode: json['barcode'],
       approvalDate: json['registration_date'] != null ? DateTime.tryParse(json['registration_date'] as String) : null,
       expiryDate: json['expiry_date'] != null ? DateTime.tryParse(json['expiry_date'] as String) : null,
+      price: json['price'],
+      source: json['source'],
+
+    );
+  }
+
+  VerificationResult copyWith({
+    VerificationStatus? status,
+    String? productName,
+    String? manufacturer,
+    String? countryOrigin,
+    String? region,
+    String? regNumber,
+    DateTime? expiryDate,
+    String? activeIngredient,
+    String? email,
+    DateTime? approvalDate,
+    String? postalAddress,
+    String? registrationType,
+    String? imageUrl,
+    String? barcode,
+    String? category,
+    String? message,
+    DateTime? scannedAt,
+    String? price,
+    String? source,
+  }) {
+    return VerificationResult(
+      status: status ?? this.status,
+      productName: productName ?? this.productName,
+      manufacturer: manufacturer ?? this.manufacturer,
+      countryOrigin: countryOrigin ?? this.countryOrigin,
+      region: region ?? this.region,
+      regNumber: regNumber ?? this.regNumber,
+      expiryDate: expiryDate ?? this.expiryDate,
+      activeIngredient: activeIngredient ?? this.activeIngredient,
+      email: email ?? this.email,
+      approvalDate: approvalDate ?? this.approvalDate,
+      postalAddress: postalAddress ?? this.postalAddress,
+      registrationType: registrationType ?? this.registrationType,
+      imageUrl: imageUrl ?? this.imageUrl,
+      barcode: barcode ?? this.barcode,
+      category: category ?? this.category,
+      message: message ?? this.message,
+      scannedAt: scannedAt ?? this.scannedAt,
+      price: price ?? this.price,
+      source: source ?? this.source,
     );
   }
 }

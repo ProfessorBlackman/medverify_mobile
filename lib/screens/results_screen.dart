@@ -17,6 +17,9 @@ import '../services/file_upload_service.dart';
 import '../theme.dart';
 import '../widgets/barcode_scanner_modal.dart';
 
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
 
@@ -36,9 +39,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final arguments = ModalRoute.of(context)!.settings.arguments;
       if (arguments is VerificationResult) {
-        _showLocationDialog(arguments);
+         if (arguments.source == null) {
+           _showLocationDialog(arguments);
+         }
       } else if (arguments is List<VerificationResult> && arguments.isNotEmpty) {
-        _showLocationDialog(arguments.first);
+        if (arguments.first.source == null) {
+           _showLocationDialog(arguments.first);
+        }
       }
     });
   }
@@ -50,6 +57,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
 
     if (location != null && location.isNotEmpty) {
+      if (mounted) {
+        await context.read<AppProvider>().updateResult(result, location);
+      }
+      
       AnalyticsService.instance.logDrugScan(
         drugName: result.productName ?? 'N/A',
         regNumber: result.regNumber ?? 'N/A',
@@ -149,6 +160,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final response = await _uploadProductImprovements(
       null,
       uploadedUrl,
+      null,
       result.regNumber!,
     );
 
@@ -174,9 +186,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Future<http.Response?> _uploadProductImprovements(
     String? barcode,
     String? imageUrl,
+    String? price,
     String regNumber,
   ) async {
-    if (barcode == null && imageUrl == null) {
+    if (barcode == null && imageUrl == null && price == null) {
       return null;
     }
     final url = Uri.parse('${FileUploadService.baseUrl}/update_product');
@@ -186,6 +199,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
     }
     if (imageUrl != null && imageUrl.isNotEmpty) {
       body['image_url'] = imageUrl;
+    }
+    if (price != null && price.isNotEmpty) {
+      body['price'] = price;
     }
 
     try {
@@ -231,6 +247,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
     final response = await _uploadProductImprovements(
       barcode,
+      null,
       null,
       result.regNumber!,
     );
@@ -366,6 +383,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final response = await _uploadProductImprovements(
       null,
       null,
+      price,
       result.regNumber!,
     );
 
@@ -687,6 +705,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
               Icons.event_available,
               'Approval Date',
               DateFormat('dd MMM yyyy').format(result.approvalDate!),
+            ),
+          const Divider(height: 1, color: Colors.transparent),
+          if (result.price != null)
+            _buildDetailRow(
+              context,
+              Icons.event_busy,
+              'Price',
+              'GH₵ ${result.price}',
+              valueColor: AppTheme.textLight,
             ),
           const Divider(height: 1, color: Colors.transparent),
           if (result.expiryDate != null)
