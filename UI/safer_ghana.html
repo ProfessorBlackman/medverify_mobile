@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding - Consent &amp; Get Started</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111813] dark:text-white antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="flex items-center p-4 justify-between">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[#111813] dark:text-white">arrow_back_ios_new</span>
+</button>
+<div class="flex items-center justify-end">
+<p class="text-[#61896f] text-base font-bold leading-normal tracking-[0.015em] cursor-pointer opacity-0 pointer-events-none">Skip</p>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center px-6">
+<div class="w-full max-w-[340px] aspect-square mt-4 mb-8 relative flex items-center justify-center bg-white dark:bg-[#1a2e21] rounded-3xl shadow-sm overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+<div class="relative w-full h-full flex items-center justify-center p-8">
+<div class="grid grid-cols-2 gap-4 w-full h-full">
+<div class="flex flex-col items-center justify-center bg-primary/20 rounded-xl p-4">
+<span class="material-symbols-outlined text-4xl text-[#111813] dark:text-primary mb-2">sell</span>
+<span class="text-xs font-bold text-center">Track Prices</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary/20 rounded-xl p-4">
+<span class="material-symbols-outlined text-4xl text-[#111813] dark:text-primary mb-2">location_on</span>
+<span class="text-xs font-bold text-center">Find Pharmacies</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary/20 rounded-xl p-4 col-span-2">
+<span class="material-symbols-outlined text-4xl text-[#111813] dark:text-primary mb-2">groups</span>
+<span class="text-xs font-bold text-center">Empowered Community</span>
+</div>
+</div>
+</div>
+<img alt="Group of people helping each other with drug verification icons" class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" data-alt="Community of people sharing drug price and location data" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDSWXvMEqgvkJ4mLG-fNOnr-HHfxjvztGJTzZ3GhJ61I_gAWlfZICfHJtT1RcVKTZYW2H2W_9HW3aXfnPLSR3CgP43cWCd9s4U2cFz43URDx128sggVIk89vbkuD_7IukneiLCMWhUe0L0pXhO3b52kz5O2Lhtz1s2vo6MtTaHkRkRDjEP9chigIlV8vH_hmo1fnJHxjFNJGpCHolZpbWtaCoJduYZfzEp7ngyoZF6GQgmfDz9CkE9hK3Wh273MAI2zk0AzUJ0jl8"/>
+</div>
+<h2 class="text-[#111813] dark:text-white tracking-tight text-[28px] font-bold leading-tight text-center pb-3">
+            Build a Safer Ghana
+        </h2>
+<p class="text-[#111813] dark:text-gray-300 text-base font-normal leading-relaxed text-center max-w-sm">
+            Contribute to our database by sharing prices and purchase locations to help others find affordable and authentic drugs.
+        </p>
+<div class="flex w-full flex-row items-center justify-center gap-3 py-8 mt-auto">
+<div class="h-2 w-2 rounded-full bg-[#dbe6df] dark:bg-gray-700"></div>
+<div class="h-2 w-2 rounded-full bg-[#dbe6df] dark:bg-gray-700"></div>
+<div class="h-2.5 w-8 rounded-full bg-primary"></div>
+</div>
+<div class="w-full pb-10">
+<div class="flex items-start gap-3 mb-6 px-2">
+<div class="flex items-center h-5">
+<input class="h-5 w-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary dark:bg-gray-800" id="terms" name="terms" type="checkbox"/>
+</div>
+<label class="text-sm text-[#111813] dark:text-gray-300 leading-tight" for="terms">
+                    I agree to the <a class="text-primary font-semibold underline decoration-primary/30" href="#">Terms of Service</a> and <a class="text-primary font-semibold underline decoration-primary/30" href="#">Privacy Policy</a>
+</label>
+</div>
+<button class="w-full bg-primary text-[#102216] font-bold py-4 rounded-xl text-lg shadow-lg active:scale-[0.98] transition-all">
+                Get Started
+            </button>
+</div>
+</main>
+<div class="h-5 bg-transparent"></div>
+</div>
+
+</body></html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<div class="flex items-center bg-transparent p-4 pb-2 justify-between safe-top">
+<div class="text-[#111813] dark:text-white flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined cursor-pointer">arrow_back_ios</span>
+</div>
+<h2 class="text-[#111813] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Authenticity Verify</h2>
+<div class="flex size-12 shrink-0 items-center justify-end">
+<button class="text-[#111813]/60 dark:text-white/60 text-sm font-semibold">Skip</button>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="flex-1 flex flex-col justify-center px-6">
+<!-- Header Image / Illustration -->
+<div class="relative w-full aspect-square max-w-[320px] mx-auto mb-8">
+<!-- Background Decorative Element -->
+<div class="absolute inset-0 bg-primary/10 rounded-full scale-90 blur-3xl"></div>
+<!-- Illustration Content -->
+<div class="relative w-full h-full flex items-center justify-center">
+<!-- Representative Illustration for Ghana FDA and Verification -->
+<div class="w-full h-full bg-center bg-no-repeat bg-contain flex flex-col justify-center items-center rounded-xl overflow-hidden" data-alt="Illustration of Ghana FDA logo with a green verified checkmark badge" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_ovS3EVU4drQHL8YBb-aLV_nEpUATJrTrEHE93ZdqIyVs7gq2F20xVo3p8O5G2Vh9wFfzUoMeDkllC4B4OJqcqsUV35-fvHp7ipxttx533y1mHix6ArieakP_rmTixS1eg7CY1IoBOhSKMZDhhw-eyhTlzBFu-f8-iYeE46zdgDIqEI2y7IRAcrVsr__G_sw9Lwm8efEGvKutATcNUn98xN-VHpEDX7ZxnDqAF3hSLu2XrZ5kNJHr0l9vK6BG8arnIuRvoooSICY");'>
+<div class="relative">
+<!-- Abstract FDA Seal Representation -->
+<div class="w-32 h-32 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-primary/20">
+<span class="material-symbols-outlined text-6xl text-background-dark/80">account_balance</span>
+</div>
+<!-- Verified Badge -->
+<div class="absolute -bottom-2 -right-2 bg-primary text-white p-3 rounded-full shadow-xl border-4 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Text Content -->
+<div class="space-y-4">
+<h2 class="text-[#111813] dark:text-white tracking-tight text-[28px] font-bold leading-tight text-center">
+                Direct FDA Database
+            </h2>
+<p class="text-[#111813]/80 dark:text-white/80 text-base font-normal leading-relaxed text-center px-2">
+                Access real-time information from the FDA of Ghana to ensure the medicines you buy are licensed and safe for use.
+            </p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 pb-12 pt-6 flex flex-col items-center gap-8">
+<!-- Page Indicators -->
+<div class="flex w-full flex-row items-center justify-center gap-3">
+<div class="h-2 w-2 rounded-full bg-[#dbe6df] dark:bg-white/20"></div>
+<div class="h-2 w-6 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-[#dbe6df] dark:bg-white/20"></div>
+</div>
+<!-- Navigation Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-[#102216] font-bold py-4 px-6 rounded-xl transition-colors text-lg shadow-lg shadow-primary/20">
+            Next Step
+        </button>
+<!-- Safe Area Spacer for iOS -->
+<div class="h-4"></div>
+</div>
+</body></html>

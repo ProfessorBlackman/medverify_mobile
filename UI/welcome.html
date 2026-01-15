@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedVerify - Welcome</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "text-dark": "#111813",
+                        "text-light": "#ecfdf3",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-dark dark:text-text-light antialiased selection:bg-primary selection:text-black">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top Status Bar Simulation (Optional visual spacer) -->
+<div class="h-2 w-full"></div>
+<!-- Logo Area -->
+<div class="flex items-center justify-center pt-6 pb-2">
+<div class="flex items-center gap-2">
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-text-dark">
+<span class="material-symbols-outlined text-[20px] font-bold">verified_user</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-text-dark dark:text-white">MedVerify</span>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 flex flex-col overflow-y-auto no-scrollbar">
+<!-- Hero Image Section -->
+<div class="@container px-6 py-4">
+<div class="w-full aspect-[4/5] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-2xl shadow-sm relative group" data-alt="Close up of a hand holding a smartphone scanning a medicine bottle in a bright modern setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCh0UHBzx6w7XsOj5hDUQzAR_j7SpPLJ2voMSOZXbEsJtnlLKmJ976Eh5VC9-CFTJ8WWMhpsyUohGzHGkHjs9CNRvjz46fIPClTHLNMotoXc0bdcWCQi4Ji1Lu1PJ2e85tVK-OFpmSDiDm2tgtqym87USHLKTaNy3_pJ9c9RYCSE0BYgpIBCGO3tT3Ilk66sC_7CRNCAp_9Sjx7upZYawswPAuG9GqauPXPsI7wvlbaqARi27ew6kPWGjV3eUFKuhv-9XNFXMvVENs");'>
+<!-- Overlay Gradient for text readability if needed, though design uses white space below -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+<!-- Decorative Scan Overlay -->
+<div class="absolute inset-0 flex items-center justify-center opacity-80">
+<div class="w-48 h-48 border-2 border-primary/70 rounded-xl relative">
+<div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary -mt-1 -ml-1"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary -mt-1 -mr-1"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary -mb-1 -ml-1"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1"></div>
+<!-- Scan line animation -->
+<div class="absolute top-1/2 left-2 right-2 h-0.5 bg-primary shadow-[0_0_10px_#13ec5b] animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Text Content -->
+<div class="px-6 pb-4">
+<h1 class="text-text-dark dark:text-white tracking-tight text-[32px] font-extrabold leading-[1.1] text-center pb-3 pt-2">
+                    Verify Your Medicine Instantly
+                </h1>
+<p class="text-gray-600 dark:text-gray-300 text-base font-normal leading-relaxed text-center max-w-[320px] mx-auto">
+                    Don't guess with your health. Use MedVerify to instantly check if your medication is licensed by the <span class="font-semibold text-text-dark dark:text-white">Food and Drugs Authority (FDA)</span> of Ghana.
+                </p>
+</div>
+<!-- Trust Indicator -->
+<div class="flex items-center justify-center gap-2 pb-6 opacity-70">
+<span class="material-symbols-outlined text-green-600 dark:text-primary text-[18px]">security</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Powered by Official FDA Data</span>
+</div>
+</div>
+<!-- Sticky Bottom Actions -->
+<div class="mt-auto w-full bg-background-light dark:bg-background-dark px-6 pb-8 pt-2">
+<!-- Primary Action -->
+<div class="flex mb-3">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-primary hover:bg-opacity-90 transition-colors text-[#102216] gap-2.5 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[24px]">qr_code_scanner</span>
+<span class="text-base font-bold leading-normal tracking-[0.015em]">Start Scanning</span>
+</button>
+</div>
+<!-- Secondary Action -->
+<div class="flex">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-text-dark dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Learn How It Works</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
