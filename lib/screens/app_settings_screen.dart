@@ -158,7 +158,7 @@ class AppSettingsScreen extends StatelessWidget {
             ),
              const SizedBox(height: 32),
              Text(
-              'FDA Ghana Verifier v2.1.0',
+              'MedVerify v1.0.0',
               style: GoogleFonts.publicSans(
                 fontSize: 12,
                 color: Colors.grey[500],

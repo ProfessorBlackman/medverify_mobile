@@ -92,45 +92,45 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: AppTheme.backgroundLight,
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              AppTheme.backgroundLight,
-              Colors.white,
-            ],
-            stops: [0.0, 1.0],
-          ),
-        ),
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context, true); // Return true to indicate acceptance
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'I Understand & Accept',
-              style: GoogleFonts.publicSans(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-          ),
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   padding: const EdgeInsets.all(16),
+      //   decoration: const BoxDecoration(
+      //     color: AppTheme.backgroundLight,
+      //     gradient: LinearGradient(
+      //       begin: Alignment.bottomCenter,
+      //       end: Alignment.topCenter,
+      //       colors: [
+      //         AppTheme.backgroundLight,
+      //         Colors.white,
+      //       ],
+      //       stops: [0.0, 1.0],
+      //     ),
+      //   ),
+      //   child: SizedBox(
+      //     width: double.infinity,
+      //     height: 56,
+      //     child: ElevatedButton(
+      //       onPressed: () {
+      //         Navigator.pop(context, true); // Return true to indicate acceptance
+      //       },
+      //       style: ElevatedButton.styleFrom(
+      //         backgroundColor: AppTheme.primaryGreen,
+      //         elevation: 4,
+      //         shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(12),
+      //         ),
+      //       ),
+      //       child: Text(
+      //         'I Understand & Accept',
+      //         style: GoogleFonts.publicSans(
+      //           fontSize: 16,
+      //           fontWeight: FontWeight.bold,
+      //           color: AppTheme.textDark,
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
 

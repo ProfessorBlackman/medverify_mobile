@@ -18,7 +18,7 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool _agreedToTerms = false;
+
   Timer? _timer;
 
   @override
@@ -94,18 +94,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _openPrivacyPolicy(int initialTab) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PrivacyPolicyScreen(initialTabIndex: initialTab),
       ),
     );
-
-    if (result == true) {
-      setState(() {
-        _agreedToTerms = true;
-      });
-    }
   }
 
   @override
@@ -151,7 +145,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Image
-                         Container(
+                        Container(
                           height: 330,
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -171,9 +165,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         Text(
                           _slides[index]['title']!,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                                fontSize: 28,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.displayLarge?.copyWith(fontSize: 28),
                         ),
                         const SizedBox(height: 16),
 
@@ -181,21 +175,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         Text(
                           _slides[index]['description']!,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
-                        
+
                         if (index == 0) ...[
                           const SizedBox(height: 20),
-                           Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.security, color: Colors.green, size: 20),
+                              const Icon(
+                                Icons.security,
+                                color: Colors.green,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Powered by Official FDA Data',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
                                       color: Colors.grey[500],
                                       fontSize: 12,
                                     ),
@@ -206,56 +204,47 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                         if (index == _slides.length - 1) ...[
                           const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _agreedToTerms,
-                                activeColor: AppTheme.primaryGreen,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _agreedToTerms = value ?? false;
-                                  });
-                                },
-                              ),
-                              Expanded(
-                                child: Text.rich(
-                                  TextSpan(
-                                    text: 'I agree to the ',
-                                    style: GoogleFonts.publicSans(
-                                      fontSize: 12,
-                                      color: Colors.grey[700],
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                        text: 'Terms of Service',
-                                        style: GoogleFonts.publicSans(
-                                          color: AppTheme.primaryGreen,
-                                          fontWeight: FontWeight.bold,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            _openPrivacyPolicy(0);
-                                          },
-                                      ),
-                                      const TextSpan(text: ' and '),
-                                      TextSpan(
-                                        text: 'Privacy Policy',
-                                        style: GoogleFonts.publicSans(
-                                          color: AppTheme.primaryGreen,
-                                          fontWeight: FontWeight.bold,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            _openPrivacyPolicy(1);
-                                          },
-                                      ),
-                                    ],
-                                  ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'By using this app you agree to the ',
+                                style: GoogleFonts.publicSans(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
                                 ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Terms of Service',
+                                    style: GoogleFonts.publicSans(
+                                      color: AppTheme.primaryGreen,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        _openPrivacyPolicy(0);
+                                      },
+                                  ),
+                                  const TextSpan(text: ' and '),
+                                  TextSpan(
+                                    text: 'Privacy Policy',
+                                    style: GoogleFonts.publicSans(
+                                      color: AppTheme.primaryGreen,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        _openPrivacyPolicy(1);
+                                      },
+                                  ),
+                                ],
                               ),
-                            ],
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ],
                       ],
@@ -264,7 +253,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 },
               ),
             ),
-            
+
             // Bottom Controls
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -296,7 +285,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: _currentPage == _slides.length - 1
-                          ? (_agreedToTerms ? _completeOnboarding : null)
+                          ? _completeOnboarding
                           : _nextPage,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryGreen,
@@ -312,7 +301,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         style: GoogleFonts.publicSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _currentPage == _slides.length - 1 && !_agreedToTerms ? Colors.grey[500] : Colors.black,
+                          color: Colors.black,
                         ),
                       ),
                     ),
