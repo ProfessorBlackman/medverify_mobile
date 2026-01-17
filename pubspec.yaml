@@ -93,6 +93,7 @@ flutter:
     - assets/images/instant_scanning.png
     - assets/images/official_fda_data.png
     - assets/images/safer_ghana.png
+    - assets/images/logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

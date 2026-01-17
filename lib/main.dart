@@ -22,6 +22,8 @@ import 'screens/history_screen.dart';
 import 'screens/info_hub_screen.dart';
 import 'screens/manual_entry_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'screens/app_settings_screen.dart';
+import 'screens/about_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +87,8 @@ class DrugCheckerApp extends StatelessWidget {
         '/feedback': (context) => const FeedbackScreen(),
         '/how_it_works': (context) => const HowItWorksScreen(),
         '/privacy': (context) => const PrivacyPolicyScreen(),
+        '/settings': (context) => const AppSettingsScreen(),
+        '/about': (context) => const AboutScreen(),
       },
     );
   }

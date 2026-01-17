@@ -13,6 +13,8 @@ class AppTheme {
   static const Color warningRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF59E0B); // Was expiredOrange
   static const Color recalledBlack = Color(0xFF000000); // Or dark grey
+  static const Color logoColor = Color(0xFFD0F2ED); // Or dark grey
+  static const Color logoColor2 = Color(0xFF26C2AD); // Or dark grey
 
   static ThemeData get lightTheme {
     return ThemeData(

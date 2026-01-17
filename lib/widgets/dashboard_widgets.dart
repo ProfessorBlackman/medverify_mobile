@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/feedback_screen.dart';
-import '../screens/how_it_works_screen.dart';
 import '../screens/scanner_screen.dart';
 import '../theme.dart';
 
@@ -47,13 +46,9 @@ class DashboardHeader extends StatelessWidget {
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.help_outline, color: AppTheme.textLight),
+              icon: const Icon(Icons.settings, color: AppTheme.textLight),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const HowItWorksScreen()),
-                );
+                Navigator.pushNamed(context, '/settings');
               },
               padding: EdgeInsets.zero,
             ),
