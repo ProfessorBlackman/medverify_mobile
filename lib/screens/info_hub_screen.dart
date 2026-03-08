@@ -18,7 +18,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
       appBar: AppBar(
         title: const Text('Information Hub'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),
         ),
       ),

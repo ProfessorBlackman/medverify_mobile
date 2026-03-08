@@ -131,15 +131,15 @@ class AppSettingsScreen extends StatelessWidget {
                     },
                     isFirst: true,
                   ),
-                  _buildDivider(),
-                  _buildSettingItem(
-                    icon: Icons.storage,
-                    title: 'Offline Database',
-                    subtitle: 'Last updated: 2 days ago', // Could be dynamic
-                    iconColor: Colors.grey[600]!,
-                    iconBgColor: Colors.grey[50]!,
-                    onTap: () {},
-                  ),
+                  // _buildDivider(),
+                  // _buildSettingItem(
+                  //   icon: Icons.storage,
+                  //   title: 'Offline Database',
+                  //   subtitle: 'Last updated: 2 days ago', // Could be dynamic
+                  //   iconColor: Colors.grey[600]!,
+                  //   iconBgColor: Colors.grey[50]!,
+                  //   onTap: () {},
+                  // ),
                   _buildDivider(),
                     _buildSettingItem(
                     icon: Icons.delete_outline,
