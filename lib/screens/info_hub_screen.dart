@@ -171,7 +171,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             const SizedBox(height: 16),
             _buildFAQItem(
               'What if the barcode won\'t scan?',
-              'Try cleaning your camera lens or moving to a brighter area.',
+              'Try cleaning your camera lens or moving to a brighter area. You can also fall back to our manual search feature to enter the drug\'s name or registration number.',
               null,
             ),
             _buildFAQItem(
@@ -183,8 +183,13 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             ),
             _buildFAQItem(
               'Does this app collect any personal data?',
-              'No the only data collected from you is the photo you take, the barcode you scan and any feedback you give us.\n'
-                  'We also collect analytics data to fix bugs and improve the app',
+              'No, the only data collected from you is the photo you take, the barcode you scan and any feedback you give us.\n'
+                  'We also collect analytics data to fix bugs and improve the app.',
+              null,
+            ),
+            _buildFAQItem(
+              'How can I help the community?',
+              'After verifying a drug, you can voluntarily submit the pharmacy name where you bought it, take a picture of the drug, and provide the price you paid. This helps map authentic medicine availability and average prices for everyone.',
               null,
             ),
 
@@ -272,8 +277,8 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/scanner');
                 },
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Scan Drug Now'),
+                icon: const Icon(Icons.search),
+                label: const Text('Scan or Search Drug'),
               ),
             ),
           ],

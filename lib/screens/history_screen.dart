@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/app_provider.dart';
@@ -13,9 +14,19 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan History'),
-        automaticallyImplyLeading: false, // Hide back button if using BottomNav
-        actions: [IconButton(icon: const Icon(Icons.tune), onPressed: () {})],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textLight),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Scan History',
+          style: GoogleFonts.publicSans(
+            color: AppTheme.textLight,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Consumer<AppProvider>(
         builder: (context, provider, child) {

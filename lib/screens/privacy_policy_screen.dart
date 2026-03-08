@@ -92,45 +92,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           ],
         ),
       ),
-      // bottomNavigationBar: Container(
-      //   padding: const EdgeInsets.all(16),
-      //   decoration: const BoxDecoration(
-      //     color: AppTheme.backgroundLight,
-      //     gradient: LinearGradient(
-      //       begin: Alignment.bottomCenter,
-      //       end: Alignment.topCenter,
-      //       colors: [
-      //         AppTheme.backgroundLight,
-      //         Colors.white,
-      //       ],
-      //       stops: [0.0, 1.0],
-      //     ),
-      //   ),
-      //   child: SizedBox(
-      //     width: double.infinity,
-      //     height: 56,
-      //     child: ElevatedButton(
-      //       onPressed: () {
-      //         Navigator.pop(context, true); // Return true to indicate acceptance
-      //       },
-      //       style: ElevatedButton.styleFrom(
-      //         backgroundColor: AppTheme.primaryGreen,
-      //         elevation: 4,
-      //         shape: RoundedRectangleBorder(
-      //           borderRadius: BorderRadius.circular(12),
-      //         ),
-      //       ),
-      //       child: Text(
-      //         'I Understand & Accept',
-      //         style: GoogleFonts.publicSans(
-      //           fontSize: 16,
-      //           fontWeight: FontWeight.bold,
-      //           color: AppTheme.textDark,
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
     );
   }
 
@@ -181,34 +142,35 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         _buildSectionTitle('User Conduct'),
         const SizedBox(height: 8),
         Text(
-          'By using this application to scan pharmaceutical products, you agree to provide accurate information and use the scanner only for its intended purpose of verifying drug authenticity with the FDA of Ghana.',
+          'By using this application to scan or search pharmaceutical products, you agree to provide accurate information and use the tool only for its intended purpose of verifying drug authenticity with the FDA of Ghana. You may also voluntarily contribute pricing and location data to help the community.',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
         const SizedBox(height: 16),
         Text(
-          'Users are prohibited from attempting to bypass security protocols, spoofing geolocation data, or reverse-engineering the scanning algorithm to generate fraudulent verification results.',
+          'Users are prohibited from attempting to bypass security protocols, spoofing geolocation data, or submitting false information regarding drug prices, images, or pharmacy locations.',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
         const SizedBox(height: 24),
         _buildSectionTitle('Data Collection'),
         const SizedBox(height: 8),
         Text(
-          'To ensure the safety of the pharmaceutical supply chain in Ghana, we collect the following information during each scan: ',
+          'To ensure the safety of the pharmaceutical supply chain in Ghana, we collect the following information from your interactions: ',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
         const SizedBox(height: 16),
         Column(
           children: [
-            _buildBulletPoint('Batch numbers and manufacturing dates on the product.'),
+            _buildBulletPoint('Drug barcodes, search queries, and manual entries for verification.'),
+            _buildBulletPoint('Optional user contributions: Drug images, purchase prices, and pharmacy names/locations.'),
             _buildBulletPoint('Device geolocation to track potential areas of counterfeit distribution.'),
             _buildBulletPoint('Device metadata for security and performance auditing.'),
-    ]
+          ],
         ),
         const SizedBox(height: 24),
         _buildSectionTitle('Accountability'),
         const SizedBox(height: 8),
         Text(
-          'Counterfeit drug detection is a critical public health initiative. If a product is flagged as "Invalid" or "Counterfeit," the application may prompt you to report the location of purchase to the FDA authorities. This reporting is voluntary but encouraged for public safety.',
+          'Counterfeit drug detection is a critical public health initiative. If a product is flagged as "Invalid" or "Counterfeit," you are encouraged to report it. Additionally, sharing accurate prices and pharmacy sources helps protect other users and builds a safer community.',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
       ],
@@ -234,18 +196,19 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         _buildSectionTitle('Data Collection'),
         const SizedBox(height: 8),
         Text(
-          'To ensure the safety of the pharmaceutical supply chain in Ghana, we collect the following information during each scan:',
+          'To ensure the safety of the pharmaceutical supply chain in Ghana and provide accurate verification, we collect the following information:',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
         const SizedBox(height: 16),
-        _buildBulletPoint('Batch numbers and manufacturing dates on the product.'),
+        _buildBulletPoint('Information you provide: Barcode scans, search queries, and manually entered registration numbers.'),
+        _buildBulletPoint('Optional community data: Drug images, purchase prices, and pharmacy locations you choose to share.'),
         _buildBulletPoint('Device geolocation to track potential areas of counterfeit distribution.'),
         _buildBulletPoint('Device metadata for security and performance auditing.'),
         const SizedBox(height: 24),
-        _buildSectionTitle('Data Protection'),
+        _buildSectionTitle('Data Usage & Protection'),
         const SizedBox(height: 8),
         Text(
-          'Your data is encrypted using industry-standard protocols. We do not sell your personal information to third parties. All scanned data is stored securely and only used for authenticity verification and public health reporting to the FDA Ghana.',
+          'Your data is encrypted using industry-standard protocols. We do not sell your personal information to third parties. Verified scans, user-submitted drug images, and pricing data are used strictly to enhance public health reporting to the FDA Ghana and assist the community in finding safe, affordable medicines.',
           style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
         ),
         const SizedBox(height: 32),

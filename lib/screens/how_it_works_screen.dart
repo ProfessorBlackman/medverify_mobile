@@ -38,7 +38,7 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Verify safety in 3 simple steps',
+              'Verify safety in 4 simple steps',
               style: GoogleFonts.publicSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -56,28 +56,28 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildStep(
-              icon: Icons.qr_code_scanner,
-              title: '1. Scan the Code',
+              icon: Icons.search,
+              title: '1. Search or Scan',
               subtitle:
-                  'Locate the barcode on the drug packaging and point your camera at it. Ensure there is good lighting.',
-            ),
-            _buildStep(
-              icon: Icons.cloud_sync,
-              title: '2. Instant Check',
-              subtitle:
-                  'Our app instantly validates the code against the our database.',
-            ),
-            _buildStep(
-              icon: Icons.loop,
-              title: '3. Fallback To Manual Entry',
-              subtitle:
-              'If the scan fails, you can enter the durg name or it\'s registration number to check',
+                  'Search directly on the dashboard, use the manual entry screen, or scan the drug\'s barcode.',
             ),
             _buildStep(
               icon: Icons.verified_user,
-              title: '3. Verify Safety',
+              title: '2. Instant Verification',
               subtitle:
                   'Receive a green \'Verified\' check or a red \'Warning\' alert if the product is unregistered or expired.',
+            ),
+            _buildStep(
+              icon: Icons.local_pharmacy,
+              title: '3. Provide Details',
+              subtitle:
+                  'On the search results page, you will be prompted to enter the pharmacy where you bought the drug.',
+            ),
+            _buildStep(
+              icon: Icons.volunteer_activism,
+              title: '4. Help the Community',
+              subtitle:
+                  'Help others by providing an image of the drug, scanning its barcode, and adding the price you bought it at.',
               isLast: true,
             ),
             const SizedBox(height: 24),
