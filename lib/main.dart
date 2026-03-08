@@ -39,8 +39,11 @@ Future<void> main() async {
       // Heavy init here, after Flutter is ready to render
       await LocalDatabase.instance.init();
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-      await FirebaseApi().initNotifications(); // only once
-      await AnalyticsService.instance.init(); // move out of build()
+      
+      // Fire off heavy network and platform-channel requests asynchronously
+      // without blocking the rendering pipeline.
+      FirebaseApi().initNotifications();
+      AnalyticsService.instance.init();
 
       final prefs = await SharedPreferences.getInstance();
       final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;

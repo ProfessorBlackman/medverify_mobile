@@ -76,7 +76,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return AppTheme.primaryGreen;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return AppTheme.warningOrange;
       default:
         return AppTheme.warningRed;
@@ -88,7 +88,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return Icons.verified_user;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return Icons.warning_amber_rounded;
       default:
         return Icons.report_problem;
@@ -100,7 +100,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return 'Verified Safe';
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
       case VerificationStatus.expired:
         return 'License Expired';
@@ -124,7 +124,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   bool _showReportButton(VerificationStatus? status) {
     return status != VerificationStatus.verified &&
         status != VerificationStatus.valid &&
-        status != VerificationStatus.near_expiry;
+        status != VerificationStatus.nearExpiry;
   }
 
   Future<void> _takeAndUploadPhoto(VerificationResult result) async {
@@ -1005,7 +1005,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _buildBottomActions(BuildContext context, VerificationResult result) {
+  Widget _buildBottomActions(BuildContext buildContext, VerificationResult result) {
     final showReport = _showReportButton(result.status);
 
     return Container(

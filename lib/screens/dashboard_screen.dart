@@ -16,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return 'Verified';
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
       default:
         return 'Unverified';
@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return AppTheme.primaryGreen;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return AppTheme.warningOrange;
       default:
         return AppTheme.warningRed;

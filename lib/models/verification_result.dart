@@ -5,7 +5,7 @@ enum VerificationStatus {
   unregistered,
   expired,
   recalled,
-  near_expiry,
+  nearExpiry,
   pending,
 }
 
@@ -103,9 +103,14 @@ class VerificationResult {
   }
 
   factory VerificationResult.fromJson(Map<String, dynamic> json) {
+    String statusStr = json['status']?.toString() ?? '';
+    if (statusStr == 'near_expiry') {
+      statusStr = 'nearExpiry';
+    }
+
     return VerificationResult(
       status: VerificationStatus.values.firstWhere(
-            (e) => e.toString() == 'VerificationStatus.${json['status']}',
+            (e) => e.toString() == 'VerificationStatus.$statusStr',
         orElse: () => VerificationStatus.unregistered, // Default value
       ),
       productName: json['product_name'] ?? 'Unknown Product',

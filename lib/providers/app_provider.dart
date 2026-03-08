@@ -52,8 +52,12 @@ class AppProvider with ChangeNotifier {
   }
 
   List<VerificationResult> get todayScans {
+    final now = DateTime.now();
     return _scanHistory.where((scan) {
-      return true;
+      if (scan.scannedAt == null) return false;
+      return scan.scannedAt!.year == now.year &&
+             scan.scannedAt!.month == now.month &&
+             scan.scannedAt!.day == now.day;
     }).toList();
   }
 
