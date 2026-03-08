@@ -26,38 +26,36 @@ import 'screens/app_settings_screen.dart';
 import 'screens/about_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // This must be called before any Hive operation.
-  await LocalDatabase.instance.init();
-
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseApi().initNotifications();
-
-  // Check shared preferences before running the app
-  final prefs = await SharedPreferences.getInstance();
-  final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+  SentryWidgetsFlutterBinding.ensureInitialized();
 
   await SentryFlutter.init(
     (options) {
       options.dsn =
           'https://b9d4cac4039c29c995a2cacfe4f0588a@o4506223513239552.ingest.us.sentry.io/4510612957954048';
-      options.tracesSampleRate = 1.0;
-      options.profilesSampleRate = 1.0;
+      options.tracesSampleRate = 0.2;
+      options.profilesSampleRate = 0.2;
     },
-    appRunner: () => runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => AppProvider()),
-          Provider(create: (_) => VerificationService()),
-        ],
-        child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
-      ),
-    ),
-  );
+    appRunner: () async {
+      // Heavy init here, after Flutter is ready to render
+      await LocalDatabase.instance.init();
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await FirebaseApi().initNotifications(); // only once
+      await AnalyticsService.instance.init(); // move out of build()
 
-  // Initialize your FCM helper
-  await FirebaseApi().initNotifications();
+      final prefs = await SharedPreferences.getInstance();
+      final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+      runApp(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => AppProvider()),
+            Provider(create: (_) => VerificationService()),
+          ],
+          child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
+        ),
+      );
+    }
+  );
 }
 
 class DrugCheckerApp extends StatelessWidget {
@@ -66,7 +64,6 @@ class DrugCheckerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AnalyticsService.instance.init();
     return MaterialApp(
       title: 'DrugChecker',
       navigatorKey: navigatorKey,

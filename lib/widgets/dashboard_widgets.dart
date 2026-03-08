@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../models/verification_result.dart';
+import '../providers/app_provider.dart';
 import '../screens/feedback_screen.dart';
 import '../screens/scanner_screen.dart';
+import '../services/verification_service.dart';
 import '../theme.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -59,63 +63,150 @@ class DashboardHeader extends StatelessWidget {
   }
 }
 
-class CustomSearchBar extends StatelessWidget {
+class CustomSearchBar extends StatefulWidget {
   const CustomSearchBar({super.key});
+
+  @override
+  State<CustomSearchBar> createState() => _CustomSearchBarState();
+}
+
+class _CustomSearchBarState extends State<CustomSearchBar> {
+  final _textController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _performSearch() async {
+    final query = _textController.text.trim();
+    if (query.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final service = context.read<VerificationService>();
+      final results = await service.verifyFuzzySearch(query);
+
+      if (!mounted) return;
+
+      if (results.isNotEmpty) {
+        final bestMatch = results.first;
+        final resultWithTimestamp = VerificationResult(
+          status: bestMatch.status,
+          productName: bestMatch.productName,
+          manufacturer: bestMatch.manufacturer,
+          countryOrigin: bestMatch.countryOrigin,
+          region: bestMatch.region,
+          regNumber: bestMatch.regNumber,
+          expiryDate: bestMatch.expiryDate,
+          activeIngredient: bestMatch.activeIngredient,
+          email: bestMatch.email,
+          approvalDate: bestMatch.approvalDate,
+          postalAddress: bestMatch.postalAddress,
+          registrationType: bestMatch.registrationType,
+          imageUrl: bestMatch.imageUrl,
+          barcode: bestMatch.barcode,
+          category: bestMatch.category,
+          message: bestMatch.message,
+          scannedAt: DateTime.now(),
+        );
+        context.read<AppProvider>().addScan(resultWithTimestamp);
+        setState(() => _isLoading = false);
+        Navigator.pushNamed(context, '/results', arguments: results.toList());
+      } else {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No matching drug found. Please check your spelling or try a different search term.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'An error occurred. Please check your connection and try again.',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 8),
-                child: Icon(Icons.search, color: Colors.grey[400]),
-              ),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search brand or generic name...',
-                    hintStyle: GoogleFonts.publicSans(
-                      color: Colors.grey[400],
-                      fontSize: 16,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 8),
+              child: Icon(Icons.search, color: Colors.grey[400]),
+            ),
+            Expanded(
+              child: TextField(
+                controller: _textController,
+                onSubmitted: (_) => _performSearch(),
+                decoration: InputDecoration(
+                  hintText: 'Search brand or generic name...',
+                  hintStyle: GoogleFonts.publicSans(
+                    color: Colors.grey[400],
+                    fontSize: 16,
                   ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
-              Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                  border: Border(left: BorderSide(color: Colors.grey[100]!)),
+            ),
+            Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 ),
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Search',
-                    style: GoogleFonts.publicSans(
-                      color: const Color(0xFF065F46), // emerald-800
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ));
+                border: Border(left: BorderSide(color: Colors.grey[100]!)),
+              ),
+              child: TextButton(
+                onPressed: _isLoading ? null : _performSearch,
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF065F46),
+                        ),
+                      )
+                    : Text(
+                        'Search',
+                        style: GoogleFonts.publicSans(
+                          color: const Color(0xFF065F46),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
