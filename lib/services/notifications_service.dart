@@ -93,10 +93,10 @@ class FirebaseApi {
 
       // Manually show a local notification
       _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        // notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _androidChannel.id,
             _androidChannel.name,
@@ -104,7 +104,7 @@ class FirebaseApi {
             icon: '@mipmap/ic_launcher',
           ),
         ),
-        payload: jsonEncode(message.data),
+        payload: jsonEncode(message.data), id: 0,
       );
     });
   }
@@ -114,7 +114,7 @@ class FirebaseApi {
     const ios = DarwinInitializationSettings();
 
     await _localNotifications.initialize(
-      const InitializationSettings(android: android, iOS: ios),
+      settings: const InitializationSettings(android: android, iOS: ios),
       onDidReceiveNotificationResponse: (payload) {
         final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
         handleMessage(message);
