@@ -128,6 +128,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 0),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -136,6 +137,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 1),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -144,6 +146,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 2),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -152,6 +155,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 3),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                   ],
                 ),
@@ -169,6 +173,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 0),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -177,6 +182,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 1),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -185,6 +191,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 2),
                       selectedColor: AppTheme.primaryGreen,
+                      side: BorderSide(color: Colors.transparent),
                     ),
                   ],
                 ),
