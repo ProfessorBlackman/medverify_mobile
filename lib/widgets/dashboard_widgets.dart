@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/verification_result.dart';
 import '../providers/app_provider.dart';
 import '../screens/feedback_screen.dart';
+import '../screens/how_it_works_screen.dart';
 import '../screens/scanner_screen.dart';
 import '../services/verification_service.dart';
 import '../theme.dart';
@@ -35,27 +36,58 @@ class DashboardHeader extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey[200]!),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 2,
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.settings, color: AppTheme.textLight),
-              onPressed: () {
-                Navigator.pushNamed(context, '/settings');
-              },
-              padding: EdgeInsets.zero,
-            ),
+                child: IconButton(
+                  icon: const Icon(Icons.help_outline, color: AppTheme.textLight),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const HowItWorksScreen()),
+                    );
+                  },
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: AppTheme.textLight),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
