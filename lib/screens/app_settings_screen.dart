@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:medverify_mobile/providers/app_provider.dart';
 import 'package:medverify_mobile/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppSettingsScreen extends StatelessWidget {
   const AppSettingsScreen({super.key});
@@ -59,10 +61,17 @@ class AppSettingsScreen extends StatelessWidget {
                     subtitle: 'Love using the app? Let us know!',
                     iconColor: Colors.orange,
                     iconBgColor: Colors.orange[50]!,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Rating feature coming soon!')),
-                      );
+                    onTap: () async {
+                      final url = Uri.parse('https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile');
+                      try {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                         if (context.mounted) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(content: Text('Could not open the app store.')),
+                           );
+                         }
+                      }
                     },
                     isFirst: true,
                   ),
@@ -73,9 +82,8 @@ class AppSettingsScreen extends StatelessWidget {
                     iconColor: Colors.grey[600]!,
                     iconBgColor: Colors.grey[50]!,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sharing feature coming soon!')),
-                      );
+                      // ignore: deprecated_member_use
+                      Share.share('Check out MedVerify! A life-saving app that lets you verify your medication safely in Ghana. Get it on the Play Store: https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile');
                     },
                   ),
                    _buildDivider(),
