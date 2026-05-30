@@ -40,15 +40,15 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  Future<VerificationResult?> checkLocalLookup(String query) async {
-    try {
-      return _scanHistory.firstWhere(
-              (element) => element.regNumber == query ||
-              (element.productName?.toLowerCase().contains(query.toLowerCase()) ?? false)
-      );
-    } catch (_) {
-      return null;
+  VerificationResult? checkLocalLookup(String query) {
+    final lowerQuery = query.toLowerCase();
+    for (final result in _scanHistory) {
+      if (result.regNumber == query) return result;
+      if (result.productName?.toLowerCase().contains(lowerQuery) ?? false) {
+        return result;
+      }
     }
+    return null;
   }
 
   List<VerificationResult> get todayScans {

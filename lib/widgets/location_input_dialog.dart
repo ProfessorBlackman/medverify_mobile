@@ -14,6 +14,12 @@ class _LocationInputDialogState extends State<LocationInputDialog> {
   final TextEditingController _locationController = TextEditingController();
 
   @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),

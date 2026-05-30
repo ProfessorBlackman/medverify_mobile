@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../models/verification_result.dart';
@@ -102,6 +103,37 @@ class _ScannerScreenState extends State<ScannerScreen> {
           });
         }
       }
+    }
+  }
+
+  Future<void> _pickImageAndScan() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
+    try {
+      final capture = await _controller.analyzeImage(pickedFile.path);
+      if (!mounted) return;
+
+      if (capture == null || capture.barcodes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No barcode found in the selected image.')),
+        );
+        setState(() => _isProcessing = false);
+        return;
+      }
+
+      await _handleBarcode(capture);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not read the image. Please try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -251,7 +283,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _buildActionButton(
           icon: Icons.image,
           label: 'Upload Image',
-          onPressed: () {},
+          onPressed: _pickImageAndScan,
         ),
         _buildActionButton(
           icon: Icons.edit,

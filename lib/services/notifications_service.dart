@@ -132,22 +132,26 @@ class FirebaseApi {
   void handleMessage(RemoteMessage? message) async {
     if (message == null) return;
 
-    // 1. Extract the data
     final data = message.data;
 
-    // 2. Check if a URL exists in the payload
     if (data.containsKey('url')) {
-      final urlString = data['url'];
-      final uri = Uri.parse(urlString);
+      final urlString = data['url'] as String?;
+      if (urlString == null || urlString.isEmpty) return;
+
+      final uri = Uri.tryParse(urlString);
+      if (uri == null || !uri.hasScheme || !uri.hasAuthority) return;
+
+      // Only allow safe HTTPS links to prevent phishing via FCM payloads.
+      if (uri.scheme != 'https') return;
 
       if (await canLaunchUrl(uri)) {
-        // mode: LaunchMode.externalApplication ensures it opens in Chrome/Safari, not inside the app
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
-    }
-    // 3. (Optional) Keep your existing navigation logic
-    else if (data.containsKey('route')) {
-      navigatorKey.currentState?.pushNamed(data['route']);
+    } else if (data.containsKey('route')) {
+      final route = data['route'] as String?;
+      if (route != null && route.startsWith('/')) {
+        navigatorKey.currentState?.pushNamed(route);
+      }
     }
   }
 }

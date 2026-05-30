@@ -21,6 +21,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   String? _errorMessage;
   bool _noResults = false;
 
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
   Future<void> _performSearch() async {
     final query = _textController.text.trim();
     if (query.isEmpty) return;
@@ -241,6 +247,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Widget _buildSearchField() {
     return TextField(
       controller: _textController,
+      maxLength: 100,
       decoration: InputDecoration(
         hintStyle: const TextStyle(color: AppTheme.secondGreen),
         hintText: 'e.g., Paracetamol or FDA/SD.123-12',
@@ -294,7 +301,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   Widget _buildHelpLink() {
     return TextButton.icon(
-      onPressed: () {},
+      onPressed: _showFdaNumberHelp,
       icon: const Icon(Icons.help_outline, color: AppTheme.secondGreen),
       label: const Text(
         'Where can I find the FDA Registration number?',
@@ -302,6 +309,64 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           color: AppTheme.secondGreen,
           decoration: TextDecoration.underline,
         ),
+      ),
+    );
+  }
+
+  void _showFdaNumberHelp() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Finding the FDA Number',
+          style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'The FDA Registration number is printed on the drug packaging. Look for:',
+              style: GoogleFonts.publicSans(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            _buildHelpRow('1.', 'The label on the box or bottle'),
+            _buildHelpRow('2.', 'Text starting with "FDA/" or "REG NO."'),
+            _buildHelpRow('3.', 'Format example: FDA/SD.20-1234'),
+            const SizedBox(height: 12),
+            Text(
+              'If the number is missing or unclear, try searching by the drug\'s brand or generic name instead.',
+              style: GoogleFonts.publicSans(fontSize: 13, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Got it',
+              style: GoogleFonts.publicSans(
+                color: AppTheme.primaryGreen,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHelpRow(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(number, style: GoogleFonts.publicSans(fontWeight: FontWeight.bold, fontSize: 14)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: GoogleFonts.publicSans(fontSize: 14))),
+        ],
       ),
     );
   }

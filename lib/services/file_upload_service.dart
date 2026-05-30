@@ -13,30 +13,28 @@ enum FilePurpose {
 }
 
 class FileUploadService {
-  static final String baseUrl = backendUrl; // Using the feedback service base URL
+  static const _timeout = Duration(seconds: 60);
 
   Future<String?> uploadFile(File file, FilePurpose purpose) async {
     try {
-      // Step 1: Get presigned URL from backend
       final presignedUrlResponse = await _getPresignedUrl(file, purpose);
       if (presignedUrlResponse == null) return null;
 
-      // Step 2: Upload file directly to S3
       final uploadSuccess = await _uploadToS3(
         file,
         presignedUrlResponse['upload_url']!,
         presignedUrlResponse['content_type']!,
       );
 
-      if (uploadSuccess) {
-        // Step 3: Optionally confirm upload with backend
-        await _confirmUpload(presignedUrlResponse['file_key']!);
+      if (!uploadSuccess) return null;
 
-        // Return the file URL for your backend to store
-        return presignedUrlResponse['file_url'];
+      final confirmed = await _confirmUpload(presignedUrlResponse['file_key']!);
+      if (!confirmed) {
+        await Sentry.captureMessage('Upload confirmation failed for key: ${presignedUrlResponse['file_key']}');
+        return null;
       }
 
-      return null;
+      return presignedUrlResponse['file_url'];
     } catch (e) {
       await Sentry.captureException(e);
       return null;
@@ -49,18 +47,14 @@ class FileUploadService {
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
     final response = await http.post(
-      Uri.parse('$baseUrl/generate-upload-url'),
-      headers: {
-        'Content-Type': 'application/json',
-        // Add your authentication headers here if needed
-        // 'Authorization': 'Bearer $token',
-      },
+      Uri.parse('$backendUrl/generate-upload-url'),
+      headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'file_name': fileName,
         'content_type': mimeType,
         'file_purpose': purpose.name,
       }),
-    );
+    ).timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -71,7 +65,7 @@ class FileUploadService {
         'content_type': mimeType,
       };
     }
-    await Sentry.captureMessage('Server error: ${response.statusCode}');
+    await Sentry.captureMessage('Presigned URL error: ${response.statusCode}');
     return null;
   }
 
@@ -87,7 +81,7 @@ class FileUploadService {
         Uri.parse(uploadUrl),
         headers: {'Content-Type': contentType},
         body: bytes,
-      );
+      ).timeout(_timeout);
 
       return response.statusCode == 200;
     } catch (e) {
@@ -96,11 +90,17 @@ class FileUploadService {
     }
   }
 
-  Future<void> _confirmUpload(String fileKey) async {
-    await http.post(
-      Uri.parse('$baseUrl/confirm-upload'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'file_key': fileKey}),
-    );
+  Future<bool> _confirmUpload(String fileKey) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$backendUrl/confirm-upload'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'file_key': fileKey}),
+      ).timeout(_timeout);
+      return response.statusCode == 200;
+    } catch (e) {
+      await Sentry.captureException(e);
+      return false;
+    }
   }
 }

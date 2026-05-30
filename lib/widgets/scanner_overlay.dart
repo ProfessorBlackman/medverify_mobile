@@ -147,5 +147,7 @@ class OverlayPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant OverlayPainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue;
+  }
 }

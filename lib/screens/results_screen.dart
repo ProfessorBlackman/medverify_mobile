@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/verification_result.dart';
 import '../services/file_upload_service.dart';
 import '../theme.dart';
+import '../utils/variables.dart';
 import '../widgets/barcode_scanner_modal.dart';
 
 import 'package:provider/provider.dart';
@@ -37,7 +38,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final arguments = ModalRoute.of(context)!.settings.arguments;
+      if (!mounted) return;
+      final arguments = ModalRoute.of(context)?.settings.arguments;
       if (arguments is VerificationResult) {
          if (arguments.source == null) {
            _showLocationDialog(arguments);
@@ -192,7 +194,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     if (barcode == null && imageUrl == null && price == null) {
       return null;
     }
-    final url = Uri.parse('${FileUploadService.baseUrl}/update_product');
+    final url = Uri.parse('$backendUrl/update_product');
     Map<String, String> body = {'registration_number': regNumber};
     if (barcode != null && barcode.isNotEmpty) {
       body['barcode'] = barcode;
@@ -209,7 +211,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(body),
-      );
+      ).timeout(const Duration(seconds: 30));
       return response;
     } catch (e) {
       await Sentry.captureException(e, stackTrace: StackTrace.current);
@@ -322,8 +324,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a price';
                     }
-                    if (double.tryParse(value) == null) {
+                    final parsed = double.tryParse(value);
+                    if (parsed == null) {
                       return 'Please enter a valid number';
+                    }
+                    if (parsed <= 0) {
+                      return 'Price must be greater than zero';
                     }
                     return null;
                   },
@@ -912,9 +918,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   if (_isAddingPrice)
-                    Padding(
-                      padding: const EdgeInsetsGeometry.all(10),
-                      child: const SizedBox(
+                    const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: SizedBox(
                         height: 28,
                         width: 28,
                         child: CircularProgressIndicator(strokeWidth: 2),
@@ -926,13 +932,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           color: AppTheme.secondaryBackground,
                           borderRadius: BorderRadius.circular(50),
                         ),
-                        child: Padding(padding: const EdgeInsetsGeometry.all(13),
-                        child: Icon(
-                          Icons.price_change,
-                          color: AppTheme.textLight,
-                          size: 28,
+                        child: Padding(
+                          padding: const EdgeInsets.all(13),
+                          child: Icon(
+                            Icons.price_change,
+                            color: AppTheme.textLight,
+                            size: 28,
+                          ),
                         ),
-                        )
                       ),
                   const SizedBox(height: 8),
                   Column(
@@ -951,7 +958,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ],
                   ),
                   Padding(
-                      padding: const EdgeInsetsGeometry.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Icon(
                       Icons.arrow_forward_ios_outlined,
                       color: Colors.grey[500],

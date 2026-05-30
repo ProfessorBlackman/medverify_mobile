@@ -141,6 +141,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       }
 
       if (validFiles.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _attachments.addAll(validFiles);
         });
@@ -191,6 +192,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           );
         }
       } else {
+        if (!mounted) return;
         setState(() {
           _attachments.add(file);
         });
@@ -253,9 +255,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 label: 'Email Address',
                 hint: 'name@example.com',
                 validator: (value) {
-                  if (value == null ||
-                      value.isEmpty ||
-                      !value.contains('@')) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                  if (!emailRegex.hasMatch(value.trim())) {
                     return 'Please enter a valid email address';
                   }
                   return null;

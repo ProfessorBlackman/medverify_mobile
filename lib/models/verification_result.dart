@@ -108,11 +108,12 @@ class VerificationResult {
       statusStr = 'nearExpiry';
     }
 
+    final statusMap = {
+      for (final e in VerificationStatus.values) e.name: e,
+    };
+
     return VerificationResult(
-      status: VerificationStatus.values.firstWhere(
-            (e) => e.toString() == 'VerificationStatus.$statusStr',
-        orElse: () => VerificationStatus.unregistered, // Default value
-      ),
+      status: statusMap[statusStr] ?? VerificationStatus.pending,
       productName: json['product_name'] ?? 'Unknown Product',
       manufacturer: json['manufacturer'] ?? 'Unknown Manufacturer',
       regNumber: json['registration_number'] ?? 'N/A',
