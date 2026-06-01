@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:medverify_mobile/utils/user_identification.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-
+import 'package:uuid/uuid.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'device_auth_service.dart';
 
 
 
@@ -62,9 +65,8 @@ class AnalyticsService {
     required String drugName,
     required String regNumber,
     required String status,
-    String? source, // where the user bought the drug (e.g., Chaneck Pharmacy)
+    String? source,
   }) async {
-    // Get location at the moment of scan
     Position? pos = await _getCurrentLocation();
     String region = await _getRegion(pos);
     String userId = await getUserId();
@@ -76,13 +78,51 @@ class AnalyticsService {
         'drug_name': drugName,
         'reg_number': regNumber,
         'status': status,
-        'source': "$source",
+        'source': '$source',
         'lat': pos?.latitude ?? 0.0,
         'lng': pos?.longitude ?? 0.0,
         'region': region,
         'scanned_by': userId,
       },
     );
+
+    // Mirror the scan to the backend for server-side attribution.
+    // Non-fatal: a backend failure must not break the scan flow.
+    _postScanToBackend(
+      drugName: drugName,
+      regNumber: regNumber,
+      status: status,
+      source: source,
+      pos: pos,
+      region: region,
+    ).catchError((e) => Sentry.captureException(e));
+  }
+
+  Future<void> _postScanToBackend({
+    required String drugName,
+    required String regNumber,
+    required String status,
+    String? source,
+    Position? pos,
+    required String region,
+  }) async {
+    final uniqueCode = const Uuid().v4();
+    final timestamp = DateTime.now().toIso8601String();
+
+    final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode({
+      'drug_name': drugName,
+      'status': status,
+      'unique_code': uniqueCode,
+      'timestamp': timestamp,
+      'reg_number': regNumber,
+      'latitude': pos?.latitude.toString(),
+      'longitude': pos?.longitude.toString(),
+      'region': region,
+      'source': source,
+    })));
+
+    await DeviceAuthService.instance
+        .authenticatedPost('/analytics/scan', bodyBytes);
   }
 
   Future<String> _getRegion(Position? pos) async {

@@ -8,6 +8,7 @@ import 'package:medverify_mobile/services/analytics_service.dart';
 import 'package:medverify_mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/device_auth_service.dart';
 import 'services/notifications_service.dart';
 import 'firebase_options.dart';
 import 'services/local_database.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
       // Heavy init here, after Flutter is ready to render
       await LocalDatabase.instance.init();
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await DeviceAuthService.instance.ensureRegistered();
       
       // Fire off heavy network and platform-channel requests asynchronously
       // without blocking the rendering pipeline.

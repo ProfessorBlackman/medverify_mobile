@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 
 import '../utils/globals.dart';
-import '../utils/user_identification.dart';
+import 'device_auth_service.dart';
 
 // ⚠️ TOP-LEVEL FUNCTION: Must be outside the class and annotated
 // This handles messages when the app is completely closed (Terminated)
@@ -66,17 +66,20 @@ class FirebaseApi {
   Future<void> uploadTokenToServer(String? token) async {
     if (token == null) return;
 
-    // get user's unique identifier
-    String userId = await getUserId();
-
-    await http.post(
-      Uri.parse('$backendUrl/register-user'),
-      headers: {
-        'Content-Type': 'application/json',
-        'User-ID': userId, // Attach the UUID here
-      },
-      body: jsonEncode({'token': token}),
-    );
+    try {
+      final accessToken =
+          await DeviceAuthService.instance.getValidAccessToken();
+      await http.patch(
+        Uri.parse('$backendUrl/device/fcm-token'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'fcm_token': token}),
+      );
+    } catch (_) {
+      // Non-fatal: FCM token upload failing must not block the app
+    }
   }
 
   Future<void> initPushNotifications() async {

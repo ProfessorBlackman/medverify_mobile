@@ -1,13 +1,12 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import '../utils/variables.dart';
-import 'file_upload_service.dart'; // Corrected import
+import 'device_auth_service.dart';
+import 'file_upload_service.dart';
 
 class FeedbackService {
-  final String _endpoint = '$backendUrl/feedback';
   final FileUploadService _uploadService;
 
   FeedbackService({FileUploadService? uploadService})
@@ -24,26 +23,25 @@ class FeedbackService {
       List<String> attachmentUrls = [];
       if (attachments != null && attachments.isNotEmpty) {
         for (final file in attachments) {
-          final url = await _uploadService.uploadFile(file, FilePurpose.feedback);
-          if (url != null) {
-            attachmentUrls.add(url);
-          }
+          final url =
+              await _uploadService.uploadFile(file, FilePurpose.feedback);
+          if (url != null) attachmentUrls.add(url);
         }
       }
 
-      final response = await http.post(
-        Uri.parse(_endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': name,
-          'email': email,
-          'feedback_type': feedbackType,
-          'message': message,
-          'attachment_urls': attachmentUrls,
-        }),
-      );
+      // Serialize once — same bytes used for HMAC signing and the HTTP body
+      final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode({
+        'name': name,
+        'email': email,
+        'feedback_type': feedbackType,
+        'message': message,
+        'attachments': attachmentUrls,
+      })));
 
-      return response.statusCode == 200;
+      final response = await DeviceAuthService.instance
+          .authenticatedPost('/feedback', bodyBytes);
+
+      return response.statusCode == 201;
     } catch (e) {
       await Sentry.captureException(e);
       return false;

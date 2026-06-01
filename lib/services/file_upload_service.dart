@@ -1,11 +1,12 @@
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mime/mime.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import '../utils/variables.dart';
+import 'device_auth_service.dart';
 
 enum FilePurpose {
   feedback,
@@ -46,15 +47,16 @@ class FileUploadService {
     final fileName = file.path.split('/').last;
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
-    final response = await http.post(
-      Uri.parse('$backendUrl/generate-upload-url'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'file_name': fileName,
-        'content_type': mimeType,
-        'file_purpose': purpose.name,
-      }),
-    ).timeout(_timeout);
+    // Serialize once — same bytes used for HMAC signing and the HTTP body
+    final bodyBytes = Uint8List.fromList(utf8.encode(json.encode({
+      'file_name': fileName,
+      'content_type': mimeType,
+      'file_purpose': purpose.name,
+    })));
+
+    final response = await DeviceAuthService.instance
+        .authenticatedPost('/generate-upload-url', bodyBytes)
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -92,11 +94,15 @@ class FileUploadService {
 
   Future<bool> _confirmUpload(String fileKey) async {
     try {
-      final response = await http.post(
-        Uri.parse('$backendUrl/confirm-upload'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'file_key': fileKey}),
-      ).timeout(_timeout);
+      // Spec: POST /confirm-upload?file_key=<key> with empty body.
+      // Path used for signing is /confirm-upload (no query string).
+      final response = await DeviceAuthService.instance
+          .authenticatedPost(
+            '/confirm-upload',
+            Uint8List(0),
+            queryString: 'file_key=${Uri.encodeComponent(fileKey)}',
+          )
+          .timeout(_timeout);
       return response.statusCode == 200;
     } catch (e) {
       await Sentry.captureException(e);
