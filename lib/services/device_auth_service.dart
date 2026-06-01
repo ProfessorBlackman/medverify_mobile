@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -20,6 +21,11 @@ class DeviceAuthService {
   static final DeviceAuthService instance = DeviceAuthService._();
 
   final _storage = const FlutterSecureStorage();
+
+  // Mutex: when non-null, a refresh is already in flight.
+  // Concurrent callers await this future instead of starting a second refresh,
+  // preventing the second caller from invalidating the rotated refresh token.
+  Completer<void>? _refreshCompleter;
 
   Future<bool> isRegistered() async {
     final secret = await _storage.read(key: _kDeviceSecret);
@@ -100,29 +106,47 @@ class DeviceAuthService {
   }
 
   Future<void> _refreshTokens() async {
-    final refreshToken = await _storage.read(key: _kRefreshToken);
-    if (refreshToken == null) throw Exception('No refresh token');
-
-    final response = await http.post(
-      Uri.parse('$backendUrl/token/refresh'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'refresh_token': refreshToken}),
-    );
-
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      await _storage.deleteAll();
-      throw Exception('Session expired, re-registration required');
+    // If a refresh is already in flight, piggyback on it rather than starting
+    // a second one. A concurrent second refresh would use the already-rotated
+    // refresh token and receive a 401, triggering deleteAll() and wiping the
+    // device identity.
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
     }
 
-    if (response.statusCode != 200) {
-      throw Exception('Token refresh failed: ${response.body}');
-    }
+    _refreshCompleter = Completer<void>();
+    try {
+      final refreshToken = await _storage.read(key: _kRefreshToken);
+      if (refreshToken == null) throw Exception('No refresh token');
 
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    await _storage.write(
-        key: _kAccessToken, value: data['access_token'] as String);
-    await _storage.write(
-        key: _kRefreshToken, value: data['refresh_token'] as String);
+      final response = await http.post(
+        Uri.parse('$backendUrl/token/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refresh_token': refreshToken}),
+      );
+
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        await _storage.deleteAll();
+        throw Exception('Session expired, re-registration required');
+      }
+
+      if (response.statusCode != 200) {
+        throw Exception('Token refresh failed: ${response.body}');
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      await _storage.write(
+          key: _kAccessToken, value: data['access_token'] as String);
+      await _storage.write(
+          key: _kRefreshToken, value: data['refresh_token'] as String);
+
+      _refreshCompleter!.complete();
+    } catch (e) {
+      _refreshCompleter!.completeError(e);
+      rethrow;
+    } finally {
+      _refreshCompleter = null;
+    }
   }
 
   /// Makes a signed POST request with automatic 401 → refresh → retry.

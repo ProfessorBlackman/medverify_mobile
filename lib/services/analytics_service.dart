@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:medverify_mobile/utils/user_identification.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -69,7 +68,7 @@ class AnalyticsService {
   }) async {
     Position? pos = await _getCurrentLocation();
     String region = await _getRegion(pos);
-    String userId = await getUserId();
+    String userId = await DeviceAuthService.instance.getUserId() ?? '';
 
     setUserId(userId);
     await _analytics.logEvent(
