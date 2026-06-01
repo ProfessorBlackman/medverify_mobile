@@ -7,7 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
+import '../utils/network_guard.dart';
 import '../utils/variables.dart';
+import 'auth_exceptions.dart';
 import 'request_signer.dart';
 
 const _kDevicePublicId = 'device_public_id';
@@ -50,6 +52,8 @@ class DeviceAuthService {
   }
 
   Future<void> registerDevice() async {
+    await requireConnectivity();
+
     final deviceId = const Uuid().v4();
 
     final response = await http.post(
@@ -116,6 +120,8 @@ class DeviceAuthService {
 
     _refreshCompleter = Completer<void>();
     try {
+      await requireConnectivity();
+
       final refreshToken = await _storage.read(key: _kRefreshToken);
       if (refreshToken == null) throw Exception('No refresh token');
 
@@ -161,6 +167,8 @@ class DeviceAuthService {
     Uint8List body, {
     String? queryString,
   }) async {
+    await requireConnectivity();
+
     // Ensure the stored access token is fresh before we sign
     await getValidAccessToken();
 
@@ -195,6 +203,20 @@ class DeviceAuthService {
       } catch (e) {
         await Sentry.captureException(e);
       }
+    }
+
+    if (response.statusCode == 403) {
+      // Device blocked by the backend — credentials are permanently invalid.
+      // The app must not retry; surface a permanent message to the user.
+      await _storage.deleteAll();
+      throw const DeviceBlockedException();
+    }
+
+    if (response.statusCode == 400) {
+      // Malformed or missing signature headers. Throw so callers can
+      // distinguish this from a transient server error.
+      throw SignatureException(
+          'Signature rejected by server for path: $path');
     }
 
     return response;
