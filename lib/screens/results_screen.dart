@@ -155,13 +155,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
       _isUploadingPhoto = true;
     });
 
-    final uploadedUrl = await _fileUploadService.uploadFile(
+    final uploadResult = await _fileUploadService.uploadFile(
       File(croppedFile.path),
       FilePurpose.improve,
     );
     final response = await _uploadProductImprovements(
       null,
-      uploadedUrl,
+      uploadResult.url,
       null,
       result.regNumber!,
     );
@@ -170,13 +170,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            uploadedUrl != null && response?.statusCode == 200
+            uploadResult.isSuccess && response?.statusCode == 200
                 ? 'Thank you for helping improve our data!'
-                : 'Photo upload failed.',
+                : uploadResult.error ?? 'Photo upload failed.',
           ),
-          backgroundColor: response?.statusCode == 200 && uploadedUrl != null
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
+          backgroundColor:
+              uploadResult.isSuccess && response?.statusCode == 200
+                  ? AppTheme.primaryGreen
+                  : AppTheme.warningRed,
         ),
       );
       setState(() {

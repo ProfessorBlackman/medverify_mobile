@@ -21,6 +21,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   String _selectedFeedbackType = 'Report a Bug';
   final List<File> _attachments = [];
   bool _isLoading = false;
+  final ValueNotifier<double> _uploadProgress = ValueNotifier(0.0);
 
   final FeedbackService _feedbackService = FeedbackService();
 
@@ -29,6 +30,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _messageController.dispose();
+    _uploadProgress.dispose();
     super.dispose();
   }
 
@@ -39,6 +41,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     setState(() {
       _isLoading = true;
+      _uploadProgress.value = 0.0;
     });
 
     final success = await _feedbackService.sendFeedback(
@@ -47,6 +50,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       feedbackType: _selectedFeedbackType,
       message: _messageController.text,
       attachments: _attachments,
+      onUploadProgress: (p) => _uploadProgress.value = p,
     );
 
     setState(() {
@@ -286,6 +290,31 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               _buildAttachmentsList(),
               const SizedBox(height: 24),
+              if (_isLoading && _attachments.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _uploadProgress,
+                    builder: (_, progress, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LinearProgressIndicator(
+                          value: progress > 0 ? progress : null,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppTheme.primaryGreen),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Uploading attachments (${(progress * 100).toInt()}%)...',
+                          style: GoogleFonts.publicSans(
+                              fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               _buildSubmitButton(),
             ],
           ),

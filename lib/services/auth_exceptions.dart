@@ -23,3 +23,11 @@ class NoConnectivityException implements Exception {
   @override
   String toString() => 'NoConnectivityException: No internet connection.';
 }
+
+class FileValidationException implements Exception {
+  final String message;
+  const FileValidationException(this.message);
+
+  @override
+  String toString() => 'FileValidationException: $message';
+}

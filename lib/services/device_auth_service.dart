@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -54,35 +55,49 @@ class DeviceAuthService {
   Future<void> registerDevice() async {
     await requireConnectivity();
 
+    final platform = Platform.isAndroid ? 'android' : 'ios';
     final deviceId = const Uuid().v4();
 
-    final response = await http.post(
-      Uri.parse('$backendUrl/register-device'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'device_public_id': deviceId,
-        'platform': Platform.isAndroid ? 'android' : 'ios',
-        'app_version': '1.0.0',
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$backendUrl/register-device'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'device_public_id': deviceId,
+          'platform': platform,
+          'app_version': '1.0.0',
+        }),
+      );
 
-    if (response.statusCode != 201) {
-      throw Exception('Device registration failed: ${response.body}');
+      if (response.statusCode != 201) {
+        throw Exception('Device registration failed: ${response.body}');
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Use device_public_id from response — server may assign a different one
+      // on UUID collision (Case C in the migration spec).
+      await _storage.write(
+          key: _kDevicePublicId, value: data['device_public_id'] as String);
+      await _storage.write(
+          key: _kDeviceSecret, value: data['device_secret'] as String);
+      await _storage.write(key: _kUserId, value: data['user_id'] as String);
+      await _storage.write(
+          key: _kAccessToken, value: data['access_token'] as String);
+      await _storage.write(
+          key: _kRefreshToken, value: data['refresh_token'] as String);
+
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'device_registration_success',
+        parameters: {'platform': platform},
+      );
+    } catch (e) {
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'device_registration_failure',
+        parameters: {'error_type': e.runtimeType.toString()},
+      );
+      rethrow;
     }
-
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-
-    // Use device_public_id from response — server may assign a different one
-    // on UUID collision (Case C in the migration spec).
-    await _storage.write(
-        key: _kDevicePublicId, value: data['device_public_id'] as String);
-    await _storage.write(
-        key: _kDeviceSecret, value: data['device_secret'] as String);
-    await _storage.write(key: _kUserId, value: data['user_id'] as String);
-    await _storage.write(
-        key: _kAccessToken, value: data['access_token'] as String);
-    await _storage.write(
-        key: _kRefreshToken, value: data['refresh_token'] as String);
   }
 
   /// Returns a valid access token, refreshing it proactively if it expires
@@ -133,6 +148,10 @@ class DeviceAuthService {
 
       if (response.statusCode == 401 || response.statusCode == 403) {
         await _storage.deleteAll();
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'token_refresh_failure',
+          parameters: {'status_code': response.statusCode},
+        );
         throw Exception('Session expired, re-registration required');
       }
 
@@ -146,6 +165,7 @@ class DeviceAuthService {
       await _storage.write(
           key: _kRefreshToken, value: data['refresh_token'] as String);
 
+      await FirebaseAnalytics.instance.logEvent(name: 'token_refresh_success');
       _refreshCompleter!.complete();
     } catch (e) {
       _refreshCompleter!.completeError(e);
@@ -215,8 +235,11 @@ class DeviceAuthService {
     if (response.statusCode == 400) {
       // Malformed or missing signature headers. Throw so callers can
       // distinguish this from a transient server error.
-      throw SignatureException(
-          'Signature rejected by server for path: $path');
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'signature_failure',
+        parameters: {'path': path},
+      );
+      throw SignatureException('Signature rejected by server for path: $path');
     }
 
     return response;

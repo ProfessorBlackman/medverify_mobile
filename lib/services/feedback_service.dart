@@ -18,15 +18,26 @@ class FeedbackService {
     required String feedbackType,
     required String message,
     List<File>? attachments,
+    void Function(double progress)? onUploadProgress,
   }) async {
     try {
       List<String> attachmentUrls = [];
       if (attachments != null && attachments.isNotEmpty) {
-        for (final file in attachments) {
-          final url =
-              await _uploadService.uploadFile(file, FilePurpose.feedback);
-          if (url != null) attachmentUrls.add(url);
+        final count = attachments.length;
+        for (var i = 0; i < count; i++) {
+          // Each file owns an equal slice of the 0→1 progress range.
+          void Function(double)? fileProgress;
+          if (onUploadProgress != null) {
+            fileProgress = (p) => onUploadProgress((i + p) / count);
+          }
+          final result = await _uploadService.uploadFile(
+            attachments[i],
+            FilePurpose.feedback,
+            onProgress: fileProgress,
+          );
+          if (result.isSuccess) attachmentUrls.add(result.url!);
         }
+        onUploadProgress?.call(1.0);
       }
 
       // Serialize once — same bytes used for HMAC signing and the HTTP body
