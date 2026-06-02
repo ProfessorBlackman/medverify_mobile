@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:medverify_mobile/utils/variables.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
 
 import '../utils/globals.dart';
 import 'device_auth_service.dart';
@@ -23,6 +25,8 @@ class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
   static const _trustedDomains = {'medverify.app', 'fdaghana.gov.gh'};
+  static const _kNotificationsEnabled = 'notifications_topics_enabled';
+  static const _topics = ['news', 'info'];
 
   // Setup for local notifications (to show banners when app is open)
   final _androidChannel = const AndroidNotificationChannel(
@@ -41,8 +45,10 @@ class FirebaseApi {
     // 2. Fetch the FCM Token
     final fCMToken = await _firebaseMessaging.getToken();
 
-    await _firebaseMessaging.subscribeToTopic('news');
-    await _firebaseMessaging.subscribeToTopic('info');
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kNotificationsEnabled) ?? true) {
+      await subscribeToTopics();
+    }
 
     // 1. Upload this token to your server immediately
     await uploadTokenToServer(fCMToken);
@@ -63,6 +69,26 @@ class FirebaseApi {
     // 4. Initialize local notifications
     initPushNotifications();
     initLocalNotifications();
+  }
+
+  /// Subscribes to all topics and persists the preference. Call this when the
+  /// user enables topic notifications in settings.
+  Future<void> subscribeToTopics() async {
+    for (final topic in _topics) {
+      await _firebaseMessaging.subscribeToTopic(topic);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, true);
+  }
+
+  /// Unsubscribes from all topics and persists the preference. Call this when
+  /// the user disables topic notifications in settings.
+  Future<void> unsubscribeFromTopics() async {
+    for (final topic in _topics) {
+      await _firebaseMessaging.unsubscribeFromTopic(topic);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, false);
   }
 
   Future<void> uploadTokenToServer(String? token) async {

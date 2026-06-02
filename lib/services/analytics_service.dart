@@ -66,6 +66,10 @@ class AnalyticsService {
     required String status,
     String? source,
   }) async {
+    // Generate once here so a 401-refresh retry in authenticatedPost reuses
+    // the same code and avoids creating a duplicate backend scan record.
+    final uniqueCode = const Uuid().v4();
+
     Position? pos = await _getCurrentLocation();
     String region = await _getRegion(pos);
     String userId = await DeviceAuthService.instance.getUserId() ?? '';
@@ -94,6 +98,7 @@ class AnalyticsService {
       source: source,
       pos: pos,
       region: region,
+      uniqueCode: uniqueCode,
     ).catchError((Object e) async {
       await Sentry.captureException(e);
     });
@@ -106,8 +111,8 @@ class AnalyticsService {
     String? source,
     Position? pos,
     required String region,
+    required String uniqueCode,
   }) async {
-    final uniqueCode = const Uuid().v4();
     final timestamp = DateTime.now().toIso8601String();
 
     final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode({
