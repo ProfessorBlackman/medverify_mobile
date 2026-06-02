@@ -1,9 +1,9 @@
 
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'dart:convert';
 import 'package:mime/mime.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -129,11 +129,10 @@ class FileUploadService {
     })));
 
     final response = await DeviceAuthService.instance
-        .authenticatedPost('/generate-upload-url', bodyBytes)
-        .timeout(_timeout);
+        .authenticatedPost('/v1/generate-upload-url', bodyBytes);
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = response.data as Map<String, dynamic>;
       return {
         'upload_url': data['upload_url'],
         'file_key': data['file_key'],
@@ -213,11 +212,10 @@ class FileUploadService {
       // Path used for signing is /confirm-upload (no query string).
       final response = await DeviceAuthService.instance
           .authenticatedPost(
-            '/confirm-upload',
+            '/v1/confirm-upload',
             Uint8List(0),
             queryString: 'file_key=${Uri.encodeComponent(fileKey)}',
-          )
-          .timeout(_timeout);
+          );
       return response.statusCode == 200;
     } catch (e) {
       await Sentry.captureException(e);

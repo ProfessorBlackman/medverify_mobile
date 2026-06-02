@@ -50,7 +50,7 @@ class FeedbackService {
       })));
 
       final response = await DeviceAuthService.instance
-          .authenticatedPost('/feedback', bodyBytes);
+          .authenticatedPost('/v1/feedback', bodyBytes);
 
       return response.statusCode == 201;
     } catch (e) {

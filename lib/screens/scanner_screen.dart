@@ -47,9 +47,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
             context,
             MaterialPageRoute(
               builder: (context) =>
-              const ManualEntryScreen(fromScanningError: true),
+                  const ManualEntryScreen(fromScanningError: true),
             ),
           );
+          return; // CRIT-01: guard results.first on the empty-set path
         }
 
         final bestResult = results.first;

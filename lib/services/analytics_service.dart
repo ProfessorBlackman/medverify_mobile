@@ -128,7 +128,7 @@ class AnalyticsService {
     })));
 
     await DeviceAuthService.instance
-        .authenticatedPost('/analytics/scan', bodyBytes);
+        .authenticatedPost('/v1/analytics/scan', bodyBytes);
   }
 
   Future<String> _getRegion(Position? pos) async {

@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/network_guard.dart';
-import '../utils/variables.dart';
+import 'api_client.dart';
 import 'auth_exceptions.dart';
 import 'request_signer.dart';
 
@@ -61,23 +61,20 @@ class DeviceAuthService {
     final appVersion = (await PackageInfo.fromPlatform()).version;
 
     try {
-      final response = await http
-          .post(
-            Uri.parse('$backendUrl/register-device'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'device_public_id': deviceId,
-              'platform': platform,
-              'app_version': appVersion,
-            }),
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await ApiClient.instance.dio.post(
+        '/v1/register-device',
+        data: {
+          'device_public_id': deviceId,
+          'platform': platform,
+          'app_version': appVersion,
+        },
+      );
 
       if (response.statusCode != 201) {
-        throw Exception('Device registration failed: ${response.body}');
+        throw Exception('Device registration failed: ${response.data}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = response.data as Map<String, dynamic>;
 
       // Use device_public_id from response — server may assign a different one
       // on UUID collision (Case C in the migration spec).
@@ -144,28 +141,25 @@ class DeviceAuthService {
       final refreshToken = await _storage.read(key: _kRefreshToken);
       if (refreshToken == null) throw Exception('No refresh token');
 
-      final response = await http
-          .post(
-            Uri.parse('$backendUrl/token/refresh'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'refresh_token': refreshToken}),
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await ApiClient.instance.dio.post(
+        '/v1/token/refresh',
+        data: {'refresh_token': refreshToken},
+      );
 
       if (response.statusCode == 401 || response.statusCode == 403) {
         await _storage.deleteAll();
         await FirebaseAnalytics.instance.logEvent(
           name: 'token_refresh_failure',
-          parameters: {'status_code': response.statusCode},
+          parameters: {'status_code': response.statusCode ?? 0},
         );
         throw Exception('Session expired, re-registration required');
       }
 
       if (response.statusCode != 200) {
-        throw Exception('Token refresh failed: ${response.body}');
+        throw Exception('Token refresh failed: ${response.data}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = response.data as Map<String, dynamic>;
       await _storage.write(
           key: _kAccessToken, value: data['access_token'] as String);
       await _storage.write(
@@ -183,22 +177,21 @@ class DeviceAuthService {
 
   /// Makes a signed POST request with automatic 401 → refresh → retry.
   ///
-  /// [path] is the URL path only (e.g. '/feedback') — no domain, no query
-  /// string. Pass [queryString] separately if needed (e.g. 'file_key=abc');
-  /// it is appended to the URL but NOT included in the signature path.
-  /// [body] must be the exact bytes to send; use [Uint8List(0)] for empty
-  /// bodies.
-  Future<http.Response> authenticatedPost(
+  /// [path] is the full URL path including the /v1 prefix (e.g. '/v1/feedback').
+  /// Pass [queryString] separately if needed (e.g. 'file_key=abc'); it is
+  /// appended to the URL but NOT included in the signature path.
+  /// [body] must be the exact bytes to send; use [Uint8List(0)] for empty bodies.
+  Future<Response<dynamic>> authenticatedPost(
     String path,
     Uint8List body, {
     String? queryString,
   }) async {
     await requireConnectivity();
 
-    // Ensure the stored access token is fresh before we sign
+    // Ensure the stored access token is fresh before we sign.
     await getValidAccessToken();
 
-    Future<http.Response> doRequest() async {
+    Future<Response<dynamic>> doRequest() async {
       final accessToken = (await _storage.read(key: _kAccessToken)) ?? '';
       final devicePublicId =
           (await _storage.read(key: _kDevicePublicId)) ?? '';
@@ -213,11 +206,19 @@ class DeviceAuthService {
         body: body,
       );
 
-      final uri = queryString != null
-          ? Uri.parse('$backendUrl$path?$queryString')
-          : Uri.parse('$backendUrl$path');
+      final requestPath =
+          queryString != null ? '$path?$queryString' : path;
 
-      return http.post(uri, headers: headers, body: body);
+      // Decode bytes to string so Dio sends the exact same UTF-8 bytes that
+      // were used to compute the HMAC. Passing Uint8List directly risks
+      // content-type or encoding mutations.
+      final bodyData = body.isEmpty ? null : utf8.decode(body);
+
+      return ApiClient.instance.dio.post(
+        requestPath,
+        data: bodyData,
+        options: Options(headers: headers),
+      );
     }
 
     var response = await doRequest();
@@ -228,19 +229,17 @@ class DeviceAuthService {
         response = await doRequest();
       } catch (e) {
         await Sentry.captureException(e);
+        rethrow; // CRIT-03: propagate — never silently return a stale 401
       }
     }
 
     if (response.statusCode == 403) {
       // Device blocked by the backend — credentials are permanently invalid.
-      // The app must not retry; surface a permanent message to the user.
       await _storage.deleteAll();
       throw const DeviceBlockedException();
     }
 
     if (response.statusCode == 400) {
-      // Malformed or missing signature headers. Throw so callers can
-      // distinguish this from a transient server error.
       await FirebaseAnalytics.instance.logEvent(
         name: 'signature_failure',
         parameters: {'path': path},

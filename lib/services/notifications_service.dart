@@ -1,14 +1,14 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
-import 'package:medverify_mobile/utils/variables.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/globals.dart';
+import 'api_client.dart';
 import 'device_auth_service.dart';
 
 // ⚠️ TOP-LEVEL FUNCTION: Must be outside the class and annotated
@@ -97,13 +97,12 @@ class FirebaseApi {
     try {
       final accessToken =
           await DeviceAuthService.instance.getValidAccessToken();
-      await http.patch(
-        Uri.parse('$backendUrl/device/fcm-token'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'fcm_token': token}),
+      await ApiClient.instance.dio.patch(
+        '/v1/device/fcm-token',
+        data: {'fcm_token': token},
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
       );
     } catch (_) {
       // Non-fatal: FCM token upload failing must not block the app

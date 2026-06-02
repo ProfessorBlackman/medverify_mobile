@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:medverify_mobile/services/analytics_service.dart';
+import 'package:medverify_mobile/services/device_auth_service.dart';
 import 'package:medverify_mobile/widgets/location_input_dialog.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +16,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/verification_result.dart';
 import '../services/file_upload_service.dart';
 import '../theme.dart';
-import '../utils/variables.dart';
 import '../widgets/barcode_scanner_modal.dart';
 
 import 'package:provider/provider.dart';
@@ -170,12 +170,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            uploadResult.isSuccess && response?.statusCode == 200
+            uploadResult.isSuccess && response == 200
                 ? 'Thank you for helping improve our data!'
                 : uploadResult.error ?? 'Photo upload failed.',
           ),
           backgroundColor:
-              uploadResult.isSuccess && response?.statusCode == 200
+              uploadResult.isSuccess && response == 200
                   ? AppTheme.primaryGreen
                   : AppTheme.warningRed,
         ),
@@ -186,36 +186,28 @@ class _ResultsScreenState extends State<ResultsScreen> {
     }
   }
 
-  Future<http.Response?> _uploadProductImprovements(
+  // Returns the HTTP status code, or null on network/auth error.
+  Future<int?> _uploadProductImprovements(
     String? barcode,
     String? imageUrl,
     String? price,
     String regNumber,
   ) async {
-    if (barcode == null && imageUrl == null && price == null) {
-      return null;
-    }
-    final url = Uri.parse('$backendUrl/update_product');
-    Map<String, String> body = {'registration_number': regNumber};
-    if (barcode != null && barcode.isNotEmpty) {
-      body['barcode'] = barcode;
-    }
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      body['image_url'] = imageUrl;
-    }
-    if (price != null && price.isNotEmpty) {
-      body['price'] = price;
-    }
+    if (barcode == null && imageUrl == null && price == null) return null;
+
+    final Map<String, dynamic> body = {'registration_number': regNumber};
+    if (barcode != null && barcode.isNotEmpty) body['barcode'] = barcode;
+    if (imageUrl != null && imageUrl.isNotEmpty) body['image_url'] = imageUrl;
+    if (price != null && price.isNotEmpty) body['price'] = price;
 
     try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
-      ).timeout(const Duration(seconds: 30));
-      return response;
+      final bodyBytes =
+          Uint8List.fromList(utf8.encode(jsonEncode(body)));
+      final response = await DeviceAuthService.instance
+          .authenticatedPost('/v1/update_product', bodyBytes);
+      return response.statusCode;
     } catch (e) {
-      await Sentry.captureException(e, stackTrace: StackTrace.current);
+      await Sentry.captureException(e);
       return null;
     }
   }
@@ -259,11 +251,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response?.statusCode == 200
+            response == 200
                 ? 'Barcode added successfully! Thank you.'
                 : 'Failed to add barcode. Please try again.',
           ),
-          backgroundColor: response?.statusCode == 200
+          backgroundColor: response == 200
               ? AppTheme.primaryGreen
               : AppTheme.warningRed,
         ),
@@ -398,11 +390,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response?.statusCode == 200
+            response == 200
                 ? 'Price added successfully! Thank you.'
                 : 'Failed to add price. Please try again.',
           ),
-          backgroundColor: response?.statusCode == 200
+          backgroundColor: response == 200
               ? AppTheme.primaryGreen
               : AppTheme.warningRed,
         ),
