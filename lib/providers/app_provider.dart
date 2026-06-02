@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/verification_result.dart';
 import '../services/local_database.dart';
@@ -17,11 +18,15 @@ class AppProvider with ChangeNotifier {
   Future<void> _loadHistoryFromDb() async {
     _isLoading = true;
     notifyListeners();
-
-    _scanHistory = await LocalDatabase.instance.fetchHistory();
-
-    _isLoading = false;
-    notifyListeners();
+    try {
+      _scanHistory = await LocalDatabase.instance.fetchHistory();
+    } catch (e) {
+      await Sentry.captureException(e);
+      _scanHistory = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> addScan(VerificationResult result) async {

@@ -22,6 +22,8 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
 class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
+  static const _trustedDomains = {'medverify.app', 'fdaghana.gov.gh'};
+
   // Setup for local notifications (to show banners when app is open)
   final _androidChannel = const AndroidNotificationChannel(
     'high_importance_channel', // id
@@ -119,8 +121,12 @@ class FirebaseApi {
     await _localNotifications.initialize(
       settings: const InitializationSettings(android: android, iOS: ios),
       onDidReceiveNotificationResponse: (payload) {
-        final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
-        handleMessage(message);
+        if (payload.payload == null) return;
+        try {
+          final message =
+              RemoteMessage.fromMap(jsonDecode(payload.payload!));
+          handleMessage(message);
+        } catch (_) {}
       },
     );
 
@@ -144,8 +150,9 @@ class FirebaseApi {
       final uri = Uri.tryParse(urlString);
       if (uri == null || !uri.hasScheme || !uri.hasAuthority) return;
 
-      // Only allow safe HTTPS links to prevent phishing via FCM payloads.
+      // Only allow HTTPS links to known trusted domains.
       if (uri.scheme != 'https') return;
+      if (!_trustedDomains.contains(uri.host)) return;
 
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);

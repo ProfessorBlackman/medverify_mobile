@@ -1,3 +1,5 @@
+import 'package:sentry_flutter/sentry_flutter.dart';
+
 enum VerificationStatus {
   verified,
   valid,
@@ -65,17 +67,17 @@ class VerificationResult {
       'countryOrigin': countryOrigin,
       'region': region,
       'regNumber': regNumber,
-      'expiryDate': expiryDate?.toIso8601String(),
+      'expiryDate': expiryDate?.toUtc().toIso8601String(),
       'activeIngredient': activeIngredient,
       'email': email,
-      'approvalDate': approvalDate?.toIso8601String(),
+      'approvalDate': approvalDate?.toUtc().toIso8601String(),
       'postalAddress': postalAddress,
       'registrationType': registrationType,
       'imageUrl': imageUrl,
       'barcode': barcode,
       'category': category,
       'message': message,
-      'scannedAt': scannedAt?.toIso8601String(),
+      'scannedAt': scannedAt?.toUtc().toIso8601String(),
       'price': price,
       'source': source,
     };
@@ -116,8 +118,13 @@ class VerificationResult {
       for (final e in VerificationStatus.values) e.name: e,
     };
 
+    final resolvedStatus = statusMap[statusStr];
+    if (resolvedStatus == null) {
+      Sentry.captureMessage('Unknown drug status received: "$statusStr"');
+    }
+
     return VerificationResult(
-      status: statusMap[statusStr] ?? VerificationStatus.pending,
+      status: resolvedStatus ?? VerificationStatus.unregistered,
       productName: json['product_name'] ?? 'Unknown Product',
       manufacturer: json['manufacturer'] ?? 'Unknown Manufacturer',
       regNumber: json['registration_number'] ?? 'N/A',

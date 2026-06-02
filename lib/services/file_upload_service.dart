@@ -76,9 +76,15 @@ class FileUploadService {
         return UploadResult.failure('Failed to get upload URL.');
       }
 
+      final uploadUrl = presignedUrlResponse['upload_url']!;
+      final uploadHost = Uri.parse(uploadUrl).host;
+      if (!uploadHost.endsWith('.amazonaws.com')) {
+        throw Exception('Unexpected upload host: $uploadHost');
+      }
+
       final uploadSuccess = await _uploadToS3(
         file,
-        presignedUrlResponse['upload_url']!,
+        uploadUrl,
         presignedUrlResponse['content_type']!,
         onProgress: onProgress,
       );
