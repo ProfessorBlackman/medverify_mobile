@@ -49,10 +49,17 @@ Future<void> main() async {
       final prefs = await SharedPreferences.getInstance();
       final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
 
+      // AppProvider.init() is awaited here so history is loaded before
+      // runApp — the first frame paints with real data, not a loading state.
+      final appProvider = AppProvider();
+      await appProvider.init();
+
       runApp(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (_) => AppProvider()),
+            // .value because the instance is created and initialised above,
+            // outside the widget tree.
+            ChangeNotifierProvider.value(value: appProvider),
             Provider(create: (_) => VerificationService()),
           ],
           child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),

@@ -6,18 +6,15 @@ import '../services/local_database.dart';
 
 class AppProvider with ChangeNotifier {
   List<VerificationResult> _scanHistory = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   List<VerificationResult> get scanHistory => List.unmodifiable(_scanHistory);
   bool get isLoading => _isLoading;
 
-  AppProvider() {
-    _loadHistoryFromDb();
-  }
-
-  Future<void> _loadHistoryFromDb() async {
+  // init() is awaited in main() before runApp, so history is fully loaded
+  // before the first frame paints — no spinner needed on first render.
+  Future<void> init() async {
     _isLoading = true;
-    notifyListeners();
     try {
       _scanHistory = await LocalDatabase.instance.fetchHistory();
     } catch (e) {
