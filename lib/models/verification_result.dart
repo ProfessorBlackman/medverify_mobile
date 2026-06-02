@@ -83,10 +83,21 @@ class VerificationResult {
     };
   }
 
+  static VerificationStatus? _statusFromIndex(dynamic raw) {
+    if (raw == null) return null;
+    // Hive's MessagePack can deserialise integers as double — normalise first.
+    final index = (raw as num).toInt();
+    if (index < 0 || index >= VerificationStatus.values.length) {
+      Sentry.captureMessage('Out-of-range VerificationStatus index: $index');
+      return null;
+    }
+    return VerificationStatus.values[index];
+  }
+
   static VerificationResult fromMap(Map<String, dynamic> map) {
     return VerificationResult(
       id: map['id'] as String?,
-      status: map['status'] != null ? VerificationStatus.values[map['status'] as int] : null,
+      status: _statusFromIndex(map['status']),
       productName: map['productName'],
       manufacturer: map['manufacturer'],
       countryOrigin: map['countryOrigin'],

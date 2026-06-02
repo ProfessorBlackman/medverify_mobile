@@ -151,38 +151,35 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
     if (croppedFile == null) return;
 
-    setState(() {
-      _isUploadingPhoto = true;
-    });
-
-    final uploadResult = await _fileUploadService.uploadFile(
-      File(croppedFile.path),
-      FilePurpose.improve,
-    );
-    final response = await _uploadProductImprovements(
-      null,
-      uploadResult.url,
-      null,
-      result.regNumber!,
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            uploadResult.isSuccess && response == 200
-                ? 'Thank you for helping improve our data!'
-                : uploadResult.error ?? 'Photo upload failed.',
-          ),
-          backgroundColor:
-              uploadResult.isSuccess && response == 200
-                  ? AppTheme.primaryGreen
-                  : AppTheme.warningRed,
-        ),
+    setState(() => _isUploadingPhoto = true);
+    try {
+      final uploadResult = await _fileUploadService.uploadFile(
+        File(croppedFile.path),
+        FilePurpose.improve,
       );
-      setState(() {
-        _isUploadingPhoto = false;
-      });
+      final response = await _uploadProductImprovements(
+        null,
+        uploadResult.url,
+        null,
+        result.regNumber!,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              uploadResult.isSuccess && response == 200
+                  ? 'Thank you for helping improve our data!'
+                  : uploadResult.error ?? 'Photo upload failed.',
+            ),
+            backgroundColor: uploadResult.isSuccess && response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingPhoto = false);
     }
   }
 
@@ -236,35 +233,31 @@ class _ResultsScreenState extends State<ResultsScreen> {
       return; // User cancelled or failed to scan.
     }
 
-    setState(() {
-      _isSendingBarcode = true;
-    });
-
-    final response = await _uploadProductImprovements(
-      barcode,
-      null,
-      null,
-      result.regNumber!,
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response == 200
-                ? 'Barcode added successfully! Thank you.'
-                : 'Failed to add barcode. Please try again.',
-          ),
-          backgroundColor: response == 200
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
-        ),
+    setState(() => _isSendingBarcode = true);
+    try {
+      final response = await _uploadProductImprovements(
+        barcode,
+        null,
+        null,
+        result.regNumber!,
       );
-    }
 
-    setState(() {
-      _isSendingBarcode = false;
-    });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response == 200
+                  ? 'Barcode added successfully! Thank you.'
+                  : 'Failed to add barcode. Please try again.',
+            ),
+            backgroundColor:
+                response == 200 ? AppTheme.primaryGreen : AppTheme.warningRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingBarcode = false);
+    }
   }
 
   Future<void> _showPriceInputDialog(VerificationResult result) async {
@@ -375,35 +368,31 @@ class _ResultsScreenState extends State<ResultsScreen> {
       return;
     }
 
-    setState(() {
-      _isAddingPrice = true;
-    });
-
-    final response = await _uploadProductImprovements(
-      null,
-      null,
-      price,
-      result.regNumber!,
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response == 200
-                ? 'Price added successfully! Thank you.'
-                : 'Failed to add price. Please try again.',
-          ),
-          backgroundColor: response == 200
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
-        ),
+    setState(() => _isAddingPrice = true);
+    try {
+      final response = await _uploadProductImprovements(
+        null,
+        null,
+        price,
+        result.regNumber!,
       );
-    }
 
-    setState(() {
-      _isAddingPrice = false;
-    });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response == 200
+                  ? 'Price added successfully! Thank you.'
+                  : 'Failed to add price. Please try again.',
+            ),
+            backgroundColor:
+                response == 200 ? AppTheme.primaryGreen : AppTheme.warningRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAddingPrice = false);
+    }
   }
 
   @override

@@ -87,18 +87,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   _pickImages();
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.video_library),
-                title: const Text('Pick Video from Gallery'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _pickVideo();
-                },
-              ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Text(
-                  'Note: You can attach up to 5 images (max 5MB each) and 1 video (max 20MB).',
+                  'Note: You can attach up to 5 images (JPEG, PNG, WebP or PDF, max 10 MB each).',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
@@ -170,39 +162,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     }
   }
 
-  Future<void> _pickVideo() async {
-    final hasVideo = _attachments
-        .any((f) => (lookupMimeType(f.path) ?? '').startsWith('video/'));
-    if (hasVideo) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can only attach one video.')),
-        );
-      }
-      return;
-    }
-
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
-      if (await file.length() > 20 * 1024 * 1024) {
-        // 20MB limit
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text(
-                    'The selected video exceeds the 20MB size limit and was not added.')),
-          );
-        }
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _attachments.add(file);
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

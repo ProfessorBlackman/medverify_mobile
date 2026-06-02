@@ -357,7 +357,7 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/firebase_analytics/firebase_analytics"
-      ref: analytics_18297
+      ref: ea4aa777c37dfa1890245095ea600589b05a1f0e
       resolved-ref: ea4aa777c37dfa1890245095ea600589b05a1f0e
       url: "https://github.com/firebase/flutterfire.git"
     source: git

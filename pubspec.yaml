@@ -86,7 +86,7 @@ dependency_overrides:
   firebase_analytics:
     git:
       url: https://github.com/firebase/flutterfire.git
-      ref: analytics_18297
+      ref: ea4aa777c37dfa1890245095ea600589b05a1f0e
       path: packages/firebase_analytics/firebase_analytics
 
 # For information on the generic Dart part of this file, see the

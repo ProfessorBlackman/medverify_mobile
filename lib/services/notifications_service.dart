@@ -25,6 +25,19 @@ class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
   static const _trustedDomains = {'medverify.app', 'fdaghana.gov.gh'};
+
+  // Routes that FCM payloads are allowed to navigate to.
+  // Excluded: /results (requires arguments → crash), /scanner (unexpected UX),
+  // /welcome (resets onboarding), / (root), /manual (argument-sensitive).
+  static const _allowedRoutes = {
+    '/dashboard',
+    '/history',
+    '/info',
+    '/feedback',
+    '/how_it_works',
+    '/privacy',
+    '/about',
+  };
   static const _kNotificationsEnabled = 'notifications_topics_enabled';
   static const _topics = ['news', 'info'];
 
@@ -184,7 +197,7 @@ class FirebaseApi {
       }
     } else if (data.containsKey('route')) {
       final route = data['route'] as String?;
-      if (route != null && route.startsWith('/')) {
+      if (route != null && _allowedRoutes.contains(route)) {
         navigatorKey.currentState?.pushNamed(route);
       }
     }
