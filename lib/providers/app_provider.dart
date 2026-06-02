@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../models/verification_result.dart';
 import '../services/local_database.dart';
 
@@ -24,8 +25,9 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<void> addScan(VerificationResult result) async {
-    await LocalDatabase.instance.insertResult(result);
-    _scanHistory.insert(0, result);
+    final resultWithId = result.copyWith(id: const Uuid().v4());
+    await LocalDatabase.instance.insertResult(resultWithId);
+    _scanHistory.insert(0, resultWithId);
     notifyListeners();
   }
 

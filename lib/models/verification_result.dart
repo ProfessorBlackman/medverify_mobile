@@ -10,6 +10,7 @@ enum VerificationStatus {
 }
 
 class VerificationResult {
+  final String? id;
   final VerificationStatus? status;
   final String? productName;
   final String? manufacturer;
@@ -33,6 +34,7 @@ class VerificationResult {
 
 
   VerificationResult({
+    this.id,
     this.status,
     this.productName,
     this.manufacturer,
@@ -56,6 +58,7 @@ class VerificationResult {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'status': status?.index,
       'productName': productName,
       'manufacturer': manufacturer,
@@ -80,6 +83,7 @@ class VerificationResult {
 
   static VerificationResult fromMap(Map<String, dynamic> map) {
     return VerificationResult(
+      id: map['id'] as String?,
       status: map['status'] != null ? VerificationStatus.values[map['status'] as int] : null,
       productName: map['productName'],
       manufacturer: map['manufacturer'],
@@ -136,6 +140,7 @@ class VerificationResult {
   }
 
   VerificationResult copyWith({
+    String? id,
     VerificationStatus? status,
     String? productName,
     String? manufacturer,
@@ -157,6 +162,7 @@ class VerificationResult {
     String? source,
   }) {
     return VerificationResult(
+      id: id ?? this.id,
       status: status ?? this.status,
       productName: productName ?? this.productName,
       manufacturer: manufacturer ?? this.manufacturer,

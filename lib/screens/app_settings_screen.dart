@@ -287,12 +287,16 @@ class AppSettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-               Provider.of<AppProvider>(context, listen: false).clearHistory();
-              Navigator.pop(context);
-               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All data cleared successfully')),
-              );
+            onPressed: () async {
+              await Provider.of<AppProvider>(context, listen: false)
+                  .clearHistory();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('All data cleared successfully')),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Clear Data'),

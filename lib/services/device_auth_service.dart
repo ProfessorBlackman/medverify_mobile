@@ -59,15 +59,17 @@ class DeviceAuthService {
     final deviceId = const Uuid().v4();
 
     try {
-      final response = await http.post(
-        Uri.parse('$backendUrl/register-device'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'device_public_id': deviceId,
-          'platform': platform,
-          'app_version': '1.0.0',
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$backendUrl/register-device'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'device_public_id': deviceId,
+              'platform': platform,
+              'app_version': '1.0.0',
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 201) {
         throw Exception('Device registration failed: ${response.body}');
@@ -140,11 +142,13 @@ class DeviceAuthService {
       final refreshToken = await _storage.read(key: _kRefreshToken);
       if (refreshToken == null) throw Exception('No refresh token');
 
-      final response = await http.post(
-        Uri.parse('$backendUrl/token/refresh'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refresh_token': refreshToken}),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$backendUrl/token/refresh'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'refresh_token': refreshToken}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 401 || response.statusCode == 403) {
         await _storage.deleteAll();

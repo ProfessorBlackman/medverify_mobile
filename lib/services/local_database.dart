@@ -17,20 +17,19 @@ class LocalDatabase {
 
   Future<void> insertResult(VerificationResult result) async {
     final box = Hive.box<Map>(_historyBoxName);
-    await box.add(result.toMap());
+    // Use UUID as key for stable lookup; fall back to auto-increment for
+    // records that pre-date the id field.
+    if (result.id != null) {
+      await box.put(result.id, result.toMap());
+    } else {
+      await box.add(result.toMap());
+    }
   }
 
   Future<void> updateResult(VerificationResult result) async {
     final box = Hive.box<Map>(_historyBoxName);
-    final key = box.keys.firstWhere((k) {
-      final val = box.get(k);
-      final scannedAtStr = val?['scannedAt'];
-      if (scannedAtStr == null) return false;
-      return scannedAtStr == result.scannedAt?.toIso8601String();
-    }, orElse: () => null);
-
-    if (key != null) {
-      await box.put(key, result.toMap());
+    if (result.id != null && box.containsKey(result.id)) {
+      await box.put(result.id, result.toMap());
     }
   }
 

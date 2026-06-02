@@ -94,7 +94,9 @@ class AnalyticsService {
       source: source,
       pos: pos,
       region: region,
-    ).catchError((e) => Sentry.captureException(e));
+    ).catchError((Object e) async {
+      await Sentry.captureException(e);
+    });
   }
 
   Future<void> _postScanToBackend({

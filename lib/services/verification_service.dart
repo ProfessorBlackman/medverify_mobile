@@ -10,7 +10,10 @@ class VerificationService {
   static const _timeout = Duration(seconds: 30);
 
   Future<Set<VerificationResult>> verifyBarcode(String barcode) async {
-    final url = Uri.parse('$backendUrl/barcode?bc=$barcode');
+    final url = Uri.parse(backendUrl).replace(
+      path: '/barcode',
+      queryParameters: {'bc': barcode},
+    );
 
     try {
       final response = await http.get(url).timeout(_timeout);
@@ -34,7 +37,10 @@ class VerificationService {
   }
 
   Future<Set<VerificationResult>> verifyFuzzySearch(String drugName) async {
-    final url = Uri.parse('$backendUrl/search?search_term=$drugName');
+    final url = Uri.parse(backendUrl).replace(
+      path: '/search',
+      queryParameters: {'search_term': drugName},
+    );
 
     try {
       final response = await http.get(url).timeout(_timeout);
