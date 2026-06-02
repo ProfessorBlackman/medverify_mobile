@@ -6,6 +6,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/network_guard.dart';
@@ -57,6 +58,7 @@ class DeviceAuthService {
 
     final platform = Platform.isAndroid ? 'android' : 'ios';
     final deviceId = const Uuid().v4();
+    final appVersion = (await PackageInfo.fromPlatform()).version;
 
     try {
       final response = await http
@@ -66,7 +68,7 @@ class DeviceAuthService {
             body: jsonEncode({
               'device_public_id': deviceId,
               'platform': platform,
-              'app_version': '1.0.0',
+              'app_version': appVersion,
             }),
           )
           .timeout(const Duration(seconds: 30));

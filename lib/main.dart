@@ -36,29 +36,35 @@ Future<void> main() async {
       options.profilesSampleRate = 0.2;
     },
     appRunner: () async {
-      // Heavy init here, after Flutter is ready to render
+      // Infrastructure — fast, no network, must complete before runApp.
       await LocalDatabase.instance.init();
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-      await DeviceAuthService.instance.ensureRegistered();
-      
-      // Fire off heavy network and platform-channel requests asynchronously
-      // without blocking the rendering pipeline.
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
+
+      // Non-blocking platform work.
       FirebaseApi().initNotifications();
       AnalyticsService.instance.init();
 
       final prefs = await SharedPreferences.getInstance();
       final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
 
-      // AppProvider.init() is awaited here so history is loaded before
-      // runApp — the first frame paints with real data, not a loading state.
       final appProvider = AppProvider();
-      await appProvider.init();
+
+      if (isFirstTime) {
+        // No splash screen for first-timers. Start device auth in the
+        // background while they read the welcome flow; by the time they
+        // reach the dashboard, registration will have completed.
+        DeviceAuthService.instance
+            .ensureRegistered()
+            .then((_) => appProvider.init())
+            .catchError((_) {});
+      }
+      // For returning users, SplashScreen drives device auth and history
+      // loading with a real progress bar — no blank-screen wait.
 
       runApp(
         MultiProvider(
           providers: [
-            // .value because the instance is created and initialised above,
-            // outside the widget tree.
             ChangeNotifierProvider.value(value: appProvider),
             Provider(create: (_) => VerificationService()),
           ],
