@@ -63,12 +63,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
         await context.read<AppProvider>().updateResult(result, location);
       }
       
-      AnalyticsService.instance.logDrugScan(
-        drugName: result.productName ?? 'N/A',
-        regNumber: result.regNumber ?? 'N/A',
-        status: result.status.toString(),
-        source: location,
-      );
+      AnalyticsService.instance
+          .logDrugScan(
+            drugName: result.productName ?? 'N/A',
+            regNumber: result.regNumber ?? 'N/A',
+            status: result.status.toString(),
+            source: location,
+          )
+          .catchError((Object e) async => Sentry.captureException(e));
     }
   }
 

@@ -66,20 +66,15 @@ class FirebaseApi {
     // 1. Upload this token to your server immediately
     await uploadTokenToServer(fCMToken);
 
-    // 2. Listen for refreshes (Crucial!)
+    // Listen for token refreshes.
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
-      uploadTokenToServer(newToken);
+      uploadTokenToServer(newToken).catchError((_) {});
     });
-    // 1. APP TERMINATED: User taps notification while app is completely closed
-    _firebaseMessaging.getInitialMessage().then(handleMessage);
 
-    // 2. APP IN BACKGROUND: User taps notification while app is minimized
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
-
-    // 3. Initialize background settings
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
-    // 4. Initialize local notifications
+    // Message tap handlers and foreground banner are set up in these two
+    // methods — registering them here too would create duplicate listeners.
     initPushNotifications();
     initLocalNotifications();
   }
@@ -134,9 +129,10 @@ class FirebaseApi {
       final notification = message.notification;
       if (notification == null) return;
 
-      // Manually show a local notification
+      // Use hashCode as a per-notification ID so concurrent notifications
+      // don't silently overwrite each other in the system tray.
       _localNotifications.show(
-        // notification.hashCode,
+        id: notification.hashCode,
         title: notification.title,
         body: notification.body,
         notificationDetails: NotificationDetails(
@@ -147,7 +143,7 @@ class FirebaseApi {
             icon: '@mipmap/ic_launcher',
           ),
         ),
-        payload: jsonEncode(message.data), id: 0,
+        payload: jsonEncode(message.data),
       );
     });
   }
