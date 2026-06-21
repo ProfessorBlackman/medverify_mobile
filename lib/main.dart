@@ -10,11 +10,14 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/api_client.dart';
 import 'services/device_auth_service.dart';
+import 'services/file_upload_service.dart';
+import 'services/multi_evidence_verification_service.dart';
 import 'services/notifications_service.dart';
 import 'firebase_options.dart';
 import 'services/local_database.dart';
 import 'theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/verification_session_provider.dart';
 import 'services/verification_service.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -23,6 +26,7 @@ import 'screens/results_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/info_hub_screen.dart';
 import 'screens/manual_entry_screen.dart';
+import 'screens/verification_session_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/about_screen.dart';
@@ -69,6 +73,10 @@ Future<void> main() async {
           providers: [
             ChangeNotifierProvider.value(value: appProvider),
             Provider(create: (_) => VerificationService()),
+            Provider(create: (_) => FileUploadService()),
+            Provider(create: (_) => MultiEvidenceVerificationService()),
+            ChangeNotifierProvider(
+                create: (_) => VerificationSessionProvider()),
           ],
           child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
         ),
@@ -105,6 +113,7 @@ class DrugCheckerApp extends StatelessWidget {
         '/privacy': (context) => const PrivacyPolicyScreen(),
         '/settings': (context) => const AppSettingsScreen(),
         '/about': (context) => const AboutScreen(),
+        '/verify': (context) => const VerificationSessionScreen(),
       },
     );
   }

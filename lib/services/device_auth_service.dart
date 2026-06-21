@@ -34,6 +34,7 @@ class DeviceAuthService {
   Future<bool> isRegistered() async {
     final secret = await _storage.read(key: _kDeviceSecret);
     final id = await _storage.read(key: _kDevicePublicId);
+    print("these are the keys: $secret abd $id");
     return secret != null && id != null;
   }
 
@@ -43,7 +44,9 @@ class DeviceAuthService {
     if (await isRegistered()) {
       try {
         await getValidAccessToken();
-      } catch (_) {
+      } catch (e, stackTrace) {
+        print("this is the error: $e");
+        print("this is the stack trace: $stackTrace");
         // Token refresh failed (expired or device blocked) — start fresh
         await _storage.deleteAll();
         await registerDevice();
@@ -104,7 +107,9 @@ class DeviceAuthService {
   /// Returns a valid access token, refreshing it proactively if it expires
   /// within 60 seconds.
   Future<String> getValidAccessToken() async {
+    print("about to get valid access token");
     final token = await _storage.read(key: _kAccessToken);
+    print("this is the token to be used for the jwt: $token");
     if (token == null) throw Exception('Not registered');
 
     final decoded = JwtDecoder.decode(token);

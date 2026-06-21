@@ -51,6 +51,8 @@ class DashboardScreen extends StatelessWidget {
                   const DashboardHeader(),
                   const CustomSearchBar(),
                   const ScanCard(),
+                  const SizedBox(height: 8),
+                  const VerifyProductCard(),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

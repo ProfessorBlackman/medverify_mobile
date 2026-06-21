@@ -13,6 +13,7 @@ import 'device_auth_service.dart';
 enum FilePurpose {
   feedback,
   improve,
+  temporary
 }
 
 class UploadResult {
