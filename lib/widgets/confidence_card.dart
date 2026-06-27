@@ -59,8 +59,8 @@ class ConfidenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = _stateStyle(result.verificationState);
-    final confidencePct = result.confidence.round();
+    final style = _stateStyle(result.overallState);
+    final confidencePct = result.overallConfidence.round();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -123,7 +123,7 @@ class ConfidenceCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: result.confidence / 100,
+              value: result.overallConfidence / 100,
               backgroundColor: style.color.withValues(alpha: 0.15),
               valueColor: AlwaysStoppedAnimation<Color>(style.color),
               minHeight: 6,

@@ -23,6 +23,22 @@ enum VerificationUploadStatus {
   failure,
 }
 
+// Module-level parser used by both VerificationMatch and MultiVerificationResult.
+MultiVerificationState _parseVerificationState(String raw) {
+  switch (raw) {
+    case 'VERIFIED_MATCH':
+      return MultiVerificationState.verifiedMatch;
+    case 'PROBABLE_MATCH':
+      return MultiVerificationState.probableMatch;
+    case 'INSUFFICIENT_INFORMATION':
+      return MultiVerificationState.insufficientInformation;
+    case 'NO_RELIABLE_MATCH':
+      return MultiVerificationState.noReliableMatch;
+    default:
+      return MultiVerificationState.noResult;
+  }
+}
+
 class VerificationEvidence {
   final String type;
   final EvidenceStatus status;
@@ -127,13 +143,44 @@ class MatchedProduct {
   }
 }
 
-class MultiVerificationResult {
-  final String sessionId;
-  final int? matchedProductId;
-  final MatchedProduct? matchedProduct;
+/// A single ranked candidate returned by the verification engine.
+class VerificationMatch {
+  final MatchedProduct product;
   final double confidence;
   final MultiVerificationState verificationState;
   final List<VerificationEvidence> evidence;
+
+  const VerificationMatch({
+    required this.product,
+    required this.confidence,
+    required this.verificationState,
+    required this.evidence,
+  });
+
+  factory VerificationMatch.fromJson(Map<String, dynamic> json) {
+    return VerificationMatch(
+      product:
+          MatchedProduct.fromJson(json['product'] as Map<String, dynamic>),
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      verificationState: _parseVerificationState(
+          json['verification_state'] as String? ?? ''),
+      evidence: (json['evidence'] as List<dynamic>?)
+              ?.map((e) =>
+                  VerificationEvidence.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+/// Top-level verification response.
+///
+/// [matches] is a ranked list (best first). An empty list means the engine
+/// found no candidates at all — check [manualSearch] and surface the
+/// no-result UI in that case.
+class MultiVerificationResult {
+  final String sessionId;
+  final List<VerificationMatch> matches;
   final List<String> warnings;
   final int candidateCount;
   final bool manualSearch;
@@ -141,46 +188,36 @@ class MultiVerificationResult {
 
   const MultiVerificationResult({
     required this.sessionId,
-    this.matchedProductId,
-    this.matchedProduct,
-    required this.confidence,
-    required this.verificationState,
-    required this.evidence,
+    required this.matches,
     required this.warnings,
     required this.candidateCount,
     required this.manualSearch,
     required this.processingTime,
   });
 
-  static MultiVerificationState _parseState(String raw) {
-    switch (raw) {
-      case 'VERIFIED_MATCH':
-        return MultiVerificationState.verifiedMatch;
-      case 'PROBABLE_MATCH':
-        return MultiVerificationState.probableMatch;
-      case 'INSUFFICIENT_INFORMATION':
-        return MultiVerificationState.insufficientInformation;
-      case 'NO_RELIABLE_MATCH':
-        return MultiVerificationState.noReliableMatch;
-      default:
-        return MultiVerificationState.noResult;
-    }
-  }
+  // ── Convenience accessors ──────────────────────────────────────────────────
+
+  bool get hasMatches => matches.isNotEmpty;
+
+  VerificationMatch? get bestMatch =>
+      matches.isNotEmpty ? matches.first : null;
+
+  /// Overall state: [MultiVerificationState.noResult] when [matches] is empty,
+  /// otherwise the state of the best (first) match.
+  MultiVerificationState get overallState => matches.isEmpty
+      ? MultiVerificationState.noResult
+      : matches.first.verificationState;
+
+  /// Confidence of the best match, or 0.0 when there are no matches.
+  double get overallConfidence =>
+      matches.isEmpty ? 0.0 : matches.first.confidence;
 
   factory MultiVerificationResult.fromJson(Map<String, dynamic> json) {
     return MultiVerificationResult(
       sessionId: json['session_id'] as String? ?? '',
-      matchedProductId: json['matched_product_id'] as int?,
-      matchedProduct: json['matched_product'] != null
-          ? MatchedProduct.fromJson(
-              json['matched_product'] as Map<String, dynamic>)
-          : null,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      verificationState:
-          _parseState(json['verification_state'] as String? ?? ''),
-      evidence: (json['evidence'] as List<dynamic>?)
-              ?.map((e) =>
-                  VerificationEvidence.fromJson(e as Map<String, dynamic>))
+      matches: (json['matches'] as List<dynamic>?)
+              ?.map(
+                  (m) => VerificationMatch.fromJson(m as Map<String, dynamic>))
               .toList() ??
           [],
       warnings: (json['warnings'] as List<dynamic>?)
@@ -199,6 +236,9 @@ class VerificationSession {
   final List<File> images;
   final String? barcode;
   final String? registrationNumber;
+  final String? productName;
+  final List<String> manufacturers;
+  final List<String> ingredients;
   final VerificationUploadStatus status;
 
   const VerificationSession({
@@ -206,6 +246,9 @@ class VerificationSession {
     required this.images,
     this.barcode,
     this.registrationNumber,
+    this.productName,
+    this.manufacturers = const [],
+    this.ingredients = const [],
     required this.status,
   });
 
@@ -216,6 +259,10 @@ class VerificationSession {
     bool clearBarcode = false,
     String? registrationNumber,
     bool clearRegistrationNumber = false,
+    String? productName,
+    bool clearProductName = false,
+    List<String>? manufacturers,
+    List<String>? ingredients,
     VerificationUploadStatus? status,
   }) {
     return VerificationSession(
@@ -225,6 +272,10 @@ class VerificationSession {
       registrationNumber: clearRegistrationNumber
           ? null
           : (registrationNumber ?? this.registrationNumber),
+      productName:
+          clearProductName ? null : (productName ?? this.productName),
+      manufacturers: manufacturers ?? this.manufacturers,
+      ingredients: ingredients ?? this.ingredients,
       status: status ?? this.status,
     );
   }

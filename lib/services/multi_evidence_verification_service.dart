@@ -8,10 +8,18 @@ class MultiEvidenceVerificationService {
     List<String>? imageUrls,
     String? barcode,
     String? registrationNumber,
+    String? productName,
+    List<String>? manufacturers,
+    List<String>? ingredients,
   }) async {
-    if ((imageUrls == null || imageUrls.isEmpty) &&
-        barcode == null &&
-        registrationNumber == null) {
+    final hasEvidence = (imageUrls != null && imageUrls.isNotEmpty) ||
+        barcode != null ||
+        registrationNumber != null ||
+        productName != null ||
+        (manufacturers != null && manufacturers.isNotEmpty) ||
+        (ingredients != null && ingredients.isNotEmpty);
+
+    if (!hasEvidence) {
       throw ArgumentError('At least one piece of evidence must be provided.');
     }
 
@@ -19,11 +27,16 @@ class MultiEvidenceVerificationService {
     if (imageUrls != null && imageUrls.isNotEmpty) {
       body['image_urls'] = imageUrls;
     }
-    if (barcode != null) {
-      body['barcode'] = barcode;
-    }
+    if (barcode != null) body['barcode'] = barcode;
     if (registrationNumber != null) {
       body['registration_number'] = registrationNumber;
+    }
+    if (productName != null) body['product_name'] = productName;
+    if (manufacturers != null && manufacturers.isNotEmpty) {
+      body['manufacturers'] = manufacturers;
+    }
+    if (ingredients != null && ingredients.isNotEmpty) {
+      body['ingredients'] = ingredients;
     }
 
     final Response<dynamic> response;

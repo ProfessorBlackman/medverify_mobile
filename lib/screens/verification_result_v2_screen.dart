@@ -45,18 +45,21 @@ class VerificationResultV2Screen extends StatelessWidget {
           children: [
             ConfidenceCard(result: result),
             const SizedBox(height: 16),
-            if (result.matchedProduct != null) ...[
-              _ProductCard(product: result.matchedProduct!),
+            if (result.bestMatch != null) ...[
+              _ProductCard(product: result.bestMatch!.product),
               const SizedBox(height: 16),
             ],
             if (result.warnings.isNotEmpty) ...[
               VerificationWarningsWidget(warnings: result.warnings),
               const SizedBox(height: 16),
             ],
-            EvidenceSummaryCard(evidence: result.evidence),
-            const SizedBox(height: 16),
-            if (result.verificationState == MultiVerificationState.noResult ||
-                result.verificationState ==
+            if (result.bestMatch != null)
+              EvidenceSummaryCard(
+                  evidence: result.bestMatch!.evidence),
+            if (result.bestMatch != null) const SizedBox(height: 16),
+            if (!result.hasMatches ||
+                result.manualSearch ||
+                result.overallState ==
                     MultiVerificationState.noReliableMatch) ...[
               _ManualSearchCard(),
               const SizedBox(height: 16),

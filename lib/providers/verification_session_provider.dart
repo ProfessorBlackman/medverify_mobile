@@ -14,9 +14,6 @@ class VerificationSessionProvider extends ChangeNotifier {
 
   MultiVerificationResult? _result;
   String? _errorMessage;
-
-  // 0.0–1.0 progress across all images during the S3 upload phase.
-  // Stays at 0.0 (and is ignored by the UI) during the processing phase.
   double _imageUploadProgress = 0.0;
 
   VerificationSession get session => _session;
@@ -27,7 +24,12 @@ class VerificationSessionProvider extends ChangeNotifier {
   bool get hasEvidence =>
       _session.images.isNotEmpty ||
       _session.barcode != null ||
-      _session.registrationNumber != null;
+      _session.registrationNumber != null ||
+      _session.productName != null ||
+      _session.manufacturers.isNotEmpty ||
+      _session.ingredients.isNotEmpty;
+
+  // ── Evidence setters ───────────────────────────────────────────────────────
 
   void addImage(File image) {
     _session = _session.copyWith(images: [..._session.images, image]);
@@ -58,6 +60,47 @@ class VerificationSessionProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void setProductName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      _session = _session.copyWith(clearProductName: true);
+    } else {
+      _session = _session.copyWith(productName: value.trim());
+    }
+    notifyListeners();
+  }
+
+  void addManufacturer(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return;
+    _session = _session.copyWith(
+      manufacturers: [..._session.manufacturers, trimmed],
+    );
+    notifyListeners();
+  }
+
+  void removeManufacturer(int index) {
+    final updated = List<String>.from(_session.manufacturers)..removeAt(index);
+    _session = _session.copyWith(manufacturers: updated);
+    notifyListeners();
+  }
+
+  void addIngredient(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return;
+    _session = _session.copyWith(
+      ingredients: [..._session.ingredients, trimmed],
+    );
+    notifyListeners();
+  }
+
+  void removeIngredient(int index) {
+    final updated = List<String>.from(_session.ingredients)..removeAt(index);
+    _session = _session.copyWith(ingredients: updated);
+    notifyListeners();
+  }
+
+  // ── Session lifecycle ──────────────────────────────────────────────────────
 
   void reset() {
     _session = VerificationSession(
@@ -92,7 +135,6 @@ class VerificationSessionProvider extends ChangeNotifier {
         _session.images[i],
         FilePurpose.temporary,
         onProgress: (progress) {
-          // Spread progress evenly across all images.
           _imageUploadProgress = (i + progress) / totalImages;
           notifyListeners();
         },
@@ -111,7 +153,7 @@ class VerificationSessionProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    // ── Phase 2: Call the verification API with the S3 URLs ───────────────────
+    // ── Phase 2: Call the verification API ────────────────────────────────────
     _session = _session.copyWith(status: VerificationUploadStatus.processing);
     notifyListeners();
 
@@ -120,6 +162,12 @@ class VerificationSessionProvider extends ChangeNotifier {
         imageUrls: imageUrls.isNotEmpty ? imageUrls : null,
         barcode: _session.barcode,
         registrationNumber: _session.registrationNumber,
+        productName: _session.productName,
+        manufacturers: _session.manufacturers.isNotEmpty
+            ? _session.manufacturers
+            : null,
+        ingredients:
+            _session.ingredients.isNotEmpty ? _session.ingredients : null,
       );
 
       _result = result;

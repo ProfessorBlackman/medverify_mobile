@@ -15,10 +15,6 @@ import 'device_auth_service.dart';
 // This handles messages when the app is completely closed (Terminated)
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  if (kDebugMode) {
-    print('Background Message: ${message.notification?.title}');
-    print('Payload: ${message.data}');
-  }
 }
 
 class FirebaseApi {
