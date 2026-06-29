@@ -1,15 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../models/multi_evidence_verification.dart';
+import '../models/verification_result.dart';
+import '../providers/app_provider.dart';
 import '../providers/verification_session_provider.dart';
+import '../services/analytics_service.dart';
 import '../theme.dart';
 import '../widgets/confidence_card.dart';
 import '../widgets/evidence_summary_card.dart';
+import '../widgets/location_input_dialog.dart';
 import '../widgets/verification_warnings_widget.dart';
 
-class VerificationResultV2Screen extends StatelessWidget {
+class VerificationResultV2Screen extends StatefulWidget {
   const VerificationResultV2Screen({super.key});
+
+  @override
+  State<VerificationResultV2Screen> createState() =>
+      _VerificationResultV2ScreenState();
+}
+
+class _VerificationResultV2ScreenState
+    extends State<VerificationResultV2Screen> {
+  @override
+  void initState() {
+    super.initState();
+    // Wait one frame so the widget tree is fully mounted before calling
+    // context.read and showing dialogs.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _saveAndPromptLocation(),
+    );
+  }
+
+  // ── Conversion helpers ──────────────────────────────────────────────────────
+
+  // Mirrors the status parsing in VerificationResult.fromJson.
+  static VerificationStatus _parseProductStatus(String statusStr) {
+        final statusMap = {
+      for (final e in VerificationStatus.values) e.name: e,
+    };
+
+    final resolvedStatus = statusMap[statusStr];
+    if (resolvedStatus == null) {
+      Sentry.captureMessage('Unknown drug status received: "$statusStr"');
+    }
+    return resolvedStatus ?? VerificationStatus.unregistered;
+  }
+
+  static VerificationResult _toVerificationResult(
+    MultiVerificationResult result,
+  ) {
+    // Use the product with the highest confidence score — matches are already
+    // ranked best-first, so bestMatch is correct. Fall back to unregistered
+    // when the engine found no candidates at all.
+    final product = result.bestMatch?.product;
+    print('Converting MultiVerificationResult to VerificationResult:');
+    print('  sessionId: ${result.sessionId}');
+    print('  bestMatch: ${result.bestMatch?.product.productName ?? 'None'}');
+    print('  bestMatch: ${result.bestMatch?.product.status ?? 'None'}');
+    print('  confidence: ${result.bestMatch?.confidence ?? 'N/A'}');
+    final status = product != null
+        ? _parseProductStatus(product.status)
+        : VerificationStatus.unregistered;
+    return VerificationResult(
+      status: status,
+      productName: product?.productName ?? 'Unknown Product',
+      manufacturer: product?.manufacturer ?? 'Unknown Manufacturer',
+      regNumber: product?.registrationNumber ?? 'N/A',
+      category: product?.category,
+      barcode: product?.barcode,
+      activeIngredient: product?.activeIngredient,
+      countryOrigin: product?.countryOrigin,
+      region: product?.region,
+      expiryDate: product?.expiryDate,
+      approvalDate: product?.registrationDate,
+      scannedAt: DateTime.now(),
+    );
+  }
+
+  // ── Save to history + location prompt ──────────────────────────────────────
+
+  Future<void> _saveAndPromptLocation() async {
+    if (!mounted) return;
+    final result = context.read<VerificationSessionProvider>().result;
+    if (result == null) return;
+
+    final entry = _toVerificationResult(result);
+
+    // Persist to scan history; capture the ID-stamped copy for updateResult.
+    final savedEntry = await context.read<AppProvider>().addScan(entry);
+    if (!mounted) return;
+
+    final location = await showDialog<String>(
+      context: context,
+      builder: (_) => const LocationInputDialog(),
+    );
+
+    if (!mounted) return;
+    if (location != null && location.isNotEmpty) {
+      await context.read<AppProvider>().updateResult(savedEntry, location);
+    }
+    AnalyticsService.instance
+        .logDrugScan(
+          drugName: entry.productName ?? 'N/A',
+          regNumber: entry.regNumber ?? 'N/A',
+          status: entry.status.toString(),
+          source: location,
+        )
+        .catchError((Object e) async => Sentry.captureException(e));
+  }
+
+  // ── Build ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +156,7 @@ class VerificationResultV2Screen extends StatelessWidget {
               const SizedBox(height: 16),
             ],
             if (result.bestMatch != null)
-              EvidenceSummaryCard(
-                  evidence: result.bestMatch!.evidence),
+              EvidenceSummaryCard(evidence: result.bestMatch!.evidence),
             if (result.bestMatch != null) const SizedBox(height: 16),
             if (!result.hasMatches ||
                 result.manualSearch ||
@@ -111,7 +212,9 @@ class _ProductCard extends StatelessWidget {
             Text(
               product.genericName!,
               style: GoogleFonts.publicSans(
-                  fontSize: 14, color: Colors.grey[600]),
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
             ),
           ],
           const SizedBox(height: 12),
@@ -119,8 +222,7 @@ class _ProductCard extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoRow(label: 'Manufacturer', value: product.manufacturer),
           if (product.registrationNumber.isNotEmpty)
-            _InfoRow(
-                label: 'Reg. Number', value: product.registrationNumber),
+            _InfoRow(label: 'Reg. Number', value: product.registrationNumber),
           if (product.strength != null)
             _InfoRow(label: 'Strength', value: product.strength!),
           if (product.dosageForm != null)
@@ -131,8 +233,9 @@ class _ProductCard extends StatelessWidget {
             _InfoRow(label: 'Origin', value: product.countryOrigin!),
           if (product.activeIngredient != null)
             _InfoRow(
-                label: 'Active Ingredient',
-                value: product.activeIngredient!),
+              label: 'Active Ingredient',
+              value: product.activeIngredient!,
+            ),
         ],
       ),
     );
@@ -157,7 +260,9 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: GoogleFonts.publicSans(
-                  fontSize: 13, color: Colors.grey[500]),
+                fontSize: 13,
+                color: Colors.grey[500],
+              ),
             ),
           ),
           Expanded(
@@ -208,7 +313,9 @@ class _ManualSearchCard extends StatelessWidget {
           Text(
             'Try searching by product name or scan the registration number printed on the packaging.',
             style: GoogleFonts.publicSans(
-                fontSize: 13, color: Colors.orange[700]),
+              fontSize: 13,
+              color: Colors.orange[700],
+            ),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -253,7 +360,8 @@ class _ActionButtons extends StatelessWidget {
               side: const BorderSide(color: AppTheme.primaryGreen),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -262,7 +370,10 @@ class _ActionButtons extends StatelessWidget {
           width: double.infinity,
           child: TextButton(
             onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context, '/dashboard', (r) => false),
+              context,
+              '/dashboard',
+              (r) => false,
+            ),
             child: Text(
               'Return to Dashboard',
               style: GoogleFonts.publicSans(

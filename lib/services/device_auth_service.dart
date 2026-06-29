@@ -43,7 +43,7 @@ class DeviceAuthService {
     if (await isRegistered()) {
       try {
         await getValidAccessToken();
-      } catch (e, stackTrace) {
+      } catch (e) {
         // Token refresh failed (expired or device blocked) — start fresh
         await _storage.deleteAll();
         await registerDevice();

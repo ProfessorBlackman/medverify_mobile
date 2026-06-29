@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../models/multi_evidence_verification.dart';
-import 'api_client.dart';
+import 'auth_exceptions.dart';
+import 'device_auth_service.dart';
 
 class MultiEvidenceVerificationService {
   Future<MultiVerificationResult> verifyProduct({
@@ -39,12 +42,16 @@ class MultiEvidenceVerificationService {
       body['ingredients'] = ingredients;
     }
 
+    final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode(body)));
+
     final Response<dynamic> response;
     try {
-      response = await ApiClient.instance.dio.post(
+      response = await DeviceAuthService.instance.authenticatedPost(
         '/v1/verifications',
-        data: body,
+        bodyBytes,
       );
+    } on NoConnectivityException {
+      throw Exception('No internet connection.');
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.sendTimeout ||

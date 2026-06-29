@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,6 +14,7 @@ import 'device_auth_service.dart';
 // This handles messages when the app is completely closed (Terminated)
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
+// TODO: Implement background message handling if needed. Currently, this is a no-op because we don't need to handle background messages in this app.
 }
 
 class FirebaseApi {

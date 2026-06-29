@@ -25,15 +25,13 @@ class VerificationResult {
   final DateTime? approvalDate; // registration_date
   final String? postalAddress;
   final String? registrationType;
-  final String? imageUrl;
+  final List<String>? imageUrls;
   final String? barcode;
   final String? category;
   final String? message;
   final DateTime? scannedAt;
   final String? price;
   final String? source;
-
-
 
   VerificationResult({
     this.id,
@@ -49,7 +47,7 @@ class VerificationResult {
     this.approvalDate,
     this.postalAddress,
     this.registrationType,
-    this.imageUrl,
+    this.imageUrls,
     this.barcode,
     this.category,
     this.message,
@@ -73,7 +71,7 @@ class VerificationResult {
       'approvalDate': approvalDate?.toUtc().toIso8601String(),
       'postalAddress': postalAddress,
       'registrationType': registrationType,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'barcode': barcode,
       'category': category,
       'message': message,
@@ -95,6 +93,15 @@ class VerificationResult {
   }
 
   static VerificationResult fromMap(Map<String, dynamic> map) {
+    // Backward compatibility: old Hive records stored a single 'imageUrl' string.
+    // New records store 'imageUrls' as a list.
+    List<String>? imageUrls;
+    if (map['imageUrls'] != null) {
+      imageUrls = (map['imageUrls'] as List).map((e) => e.toString()).toList();
+    } else if (map['imageUrl'] != null) {
+      imageUrls = [map['imageUrl'] as String];
+    }
+
     return VerificationResult(
       id: map['id'] as String?,
       status: _statusFromIndex(map['status']),
@@ -107,7 +114,7 @@ class VerificationResult {
       email: map['email'],
       postalAddress: map['postalAddress'],
       registrationType: map['registrationType'],
-      imageUrl: map['imageUrl'],
+      imageUrls: imageUrls,
       barcode: map['barcode'],
       category: map['category'],
       message: map['message'],
@@ -134,6 +141,14 @@ class VerificationResult {
       Sentry.captureMessage('Unknown drug status received: "$statusStr"');
     }
 
+    // Handle both new list format ('image_urls') and legacy string format ('image_url').
+    List<String>? imageUrls;
+    if (json['image_urls'] is List) {
+      imageUrls = (json['image_urls'] as List).map((e) => e.toString()).toList();
+    } else if (json['image_url'] is String) {
+      imageUrls = [json['image_url'] as String];
+    }
+
     return VerificationResult(
       status: resolvedStatus ?? VerificationStatus.unregistered,
       productName: json['product_name'] ?? 'Unknown Product',
@@ -147,13 +162,12 @@ class VerificationResult {
       email: json['email'],
       postalAddress: json['postal_address'],
       registrationType: json['registration_type'],
-      imageUrl: json['image_url'],
+      imageUrls: imageUrls,
       barcode: json['barcode'],
       approvalDate: json['registration_date'] != null ? DateTime.tryParse(json['registration_date'] as String) : null,
       expiryDate: json['expiry_date'] != null ? DateTime.tryParse(json['expiry_date'] as String) : null,
       price: json['price'],
       source: json['source'],
-
     );
   }
 
@@ -171,7 +185,7 @@ class VerificationResult {
     DateTime? approvalDate,
     String? postalAddress,
     String? registrationType,
-    String? imageUrl,
+    List<String>? imageUrls,
     String? barcode,
     String? category,
     String? message,
@@ -193,7 +207,7 @@ class VerificationResult {
       approvalDate: approvalDate ?? this.approvalDate,
       postalAddress: postalAddress ?? this.postalAddress,
       registrationType: registrationType ?? this.registrationType,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
       barcode: barcode ?? this.barcode,
       category: category ?? this.category,
       message: message ?? this.message,

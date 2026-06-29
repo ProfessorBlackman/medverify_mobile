@@ -161,7 +161,7 @@ class DashboardScreen extends StatelessWidget {
                                       .format(scan.scannedAt!)
                                   : 'N/A',
                               isSafe: statusText == 'Verified',
-                              imageUrl: scan.imageUrl,
+                              imageUrl: scan.imageUrls?.first,
                               statusColor: statusColor,
                               onTap: () {
                                 Navigator.pushNamed(context, '/results',

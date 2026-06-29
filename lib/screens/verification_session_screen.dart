@@ -160,7 +160,7 @@ class _VerificationSessionScreenState
                     _SectionHeader(
                       title: 'Product Images',
                       subtitle:
-                          'Add photos of the front, back, and sides of the packaging.',
+                          'Add up to 4 photos — front, back, and both sides of the packaging.',
                     ),
                     const SizedBox(height: 12),
                     _ImageGalleryGrid(
@@ -310,7 +310,7 @@ class _ImageGalleryGrid extends StatelessWidget {
                     onRemove != null ? () => onRemove!(entry.key) : null,
               ),
             ),
-        _AddImageButton(onTap: onAdd),
+        if (images.length < 4) _AddImageButton(onTap: onAdd),
       ],
     );
   }

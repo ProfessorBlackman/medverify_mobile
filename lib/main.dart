@@ -92,7 +92,7 @@ class DrugCheckerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DrugChecker',
+      title: 'MedVerify',
       navigatorKey: navigatorKey,
       navigatorObservers: [AnalyticsService.instance.observer],
       theme: AppTheme.lightTheme,

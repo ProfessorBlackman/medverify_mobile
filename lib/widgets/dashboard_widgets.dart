@@ -140,7 +140,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           approvalDate: bestMatch.approvalDate,
           postalAddress: bestMatch.postalAddress,
           registrationType: bestMatch.registrationType,
-          imageUrl: bestMatch.imageUrl,
+          imageUrls: bestMatch.imageUrls,
           barcode: bestMatch.barcode,
           category: bestMatch.category,
           message: bestMatch.message,

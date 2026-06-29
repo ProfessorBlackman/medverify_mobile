@@ -68,7 +68,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           approvalDate: bestResult.approvalDate,
           postalAddress: bestResult.postalAddress,
           registrationType: bestResult.registrationType,
-          imageUrl: bestResult.imageUrl,
+          imageUrls: bestResult.imageUrls,
           barcode: bestResult.barcode,
           category: bestResult.category,
           message: bestResult.message,

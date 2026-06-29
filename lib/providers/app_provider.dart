@@ -26,11 +26,15 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addScan(VerificationResult result) async {
+  // Returns the persisted copy, which has a UUID assigned. Callers that need
+  // to pass the entry to updateResult() must use this return value — the
+  // original object passed in has no ID and won't be found by indexOf().
+  Future<VerificationResult> addScan(VerificationResult result) async {
     final resultWithId = result.copyWith(id: const Uuid().v4());
     await LocalDatabase.instance.insertResult(resultWithId);
     _scanHistory.insert(0, resultWithId);
     notifyListeners();
+    return resultWithId;
   }
 
   Future<void> updateResult(VerificationResult oldResult, String newSource) async {

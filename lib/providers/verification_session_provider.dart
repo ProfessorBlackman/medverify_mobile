@@ -31,7 +31,10 @@ class VerificationSessionProvider extends ChangeNotifier {
 
   // ── Evidence setters ───────────────────────────────────────────────────────
 
+  static const int maxImages = 4;
+
   void addImage(File image) {
+    if (_session.images.length >= maxImages) return;
     _session = _session.copyWith(images: [..._session.images, image]);
     notifyListeners();
   }

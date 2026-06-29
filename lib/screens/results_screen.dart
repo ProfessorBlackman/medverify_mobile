@@ -30,7 +30,7 @@ class ResultsScreen extends StatefulWidget {
 
 class _ResultsScreenState extends State<ResultsScreen> {
   final FileUploadService _fileUploadService = FileUploadService();
-  bool _isUploadingPhoto = false;
+  bool _isUploadingPhotos = false;
   bool _isSendingBarcode = false;
   bool _isAddingPrice = false;
 
@@ -41,12 +41,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
       if (!mounted) return;
       final arguments = ModalRoute.of(context)?.settings.arguments;
       if (arguments is VerificationResult) {
-         if (arguments.source == null) {
-           _showLocationDialog(arguments);
-         }
-      } else if (arguments is List<VerificationResult> && arguments.isNotEmpty) {
+        if (arguments.source == null) {
+          _showLocationDialog(arguments);
+        }
+      } else if (arguments is List<VerificationResult> &&
+          arguments.isNotEmpty) {
         if (arguments.first.source == null) {
-           _showLocationDialog(arguments.first);
+          _showLocationDialog(arguments.first);
         }
       }
     });
@@ -62,18 +63,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
       if (mounted) {
         await context.read<AppProvider>().updateResult(result, location);
       }
-      
-      AnalyticsService.instance
-          .logDrugScan(
-            drugName: result.productName ?? 'N/A',
-            regNumber: result.regNumber ?? 'N/A',
-            status: result.status.toString(),
-            source: location,
-          )
-          .catchError((Object e) async => Sentry.captureException(e));
     }
+    AnalyticsService.instance
+        .logDrugScan(
+          drugName: result.productName ?? 'N/A',
+          regNumber: result.regNumber ?? 'N/A',
+          status: result.status.toString(),
+          source: location,
+        )
+        .catchError((Object e) async => Sentry.captureException(e));
   }
-
 
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
@@ -131,37 +130,202 @@ class _ResultsScreenState extends State<ResultsScreen> {
         status != VerificationStatus.nearExpiry;
   }
 
-  Future<void> _takeAndUploadPhoto(VerificationResult result) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile == null) return;
-
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: AppTheme.primaryGreen,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false,
+  Future<void> _showPhotoPickerSheet(VerificationResult result) async {
+    if (result.regNumber == null ||
+        result.regNumber!.isEmpty ||
+        result.regNumber == 'N/A') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot add photos without a registration number.'),
+          backgroundColor: AppTheme.warningRed,
         ),
-        IOSUiSettings(title: 'Crop Image'),
-      ],
-    );
-
-    if (croppedFile == null) return;
-
-    setState(() => _isUploadingPhoto = true);
-    try {
-      final uploadResult = await _fileUploadService.uploadFile(
-        File(croppedFile.path),
-        FilePurpose.improve,
       );
+      return;
+    }
+
+    final List<File> images = [];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            Future<void> pickImage() async {
+              if (images.length >= 4) return;
+              final picker = ImagePicker();
+              final picked = await picker.pickImage(source: ImageSource.camera);
+              if (picked == null) return;
+              final cropped = await ImageCropper().cropImage(
+                sourcePath: picked.path,
+                uiSettings: [
+                  AndroidUiSettings(
+                    toolbarTitle: 'Crop Image',
+                    toolbarColor: AppTheme.primaryGreen,
+                    toolbarWidgetColor: Colors.white,
+                    initAspectRatio: CropAspectRatioPreset.original,
+                    lockAspectRatio: false,
+                  ),
+                  IOSUiSettings(title: 'Crop Image'),
+                ],
+              );
+              if (cropped == null) return;
+              setSheetState(() => images.add(File(cropped.path)));
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Add Drug Photos',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Photograph all sides of the packaging (up to 4 photos).',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ...images.asMap().entries.map((entry) {
+                        return Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                entry.value,
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () => setSheetState(
+                                  () => images.removeAt(entry.key),
+                                ),
+                                child: const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.black54,
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      if (images.length < 4)
+                        GestureDetector(
+                          onTap: pickImage,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: const Icon(
+                              Icons.add_a_photo,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: images.isEmpty
+                          ? null
+                          : () {
+                              Navigator.of(sheetContext).pop();
+                              _uploadPhotos(result, List<File>.from(images));
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        disabledBackgroundColor: Colors.grey[300],
+                      ),
+                      child: Text(
+                        images.isEmpty
+                            ? 'Add at least one photo'
+                            : 'Upload ${images.length} Photo${images.length == 1 ? '' : 's'}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: AppTheme.textLight),
+                    ),
+                  ),
+                  const SizedBox(height: 29),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _uploadPhotos(
+    VerificationResult result,
+    List<File> images,
+  ) async {
+    setState(() => _isUploadingPhotos = true);
+    try {
+      final List<String> uploadedUrls = [];
+      for (final image in images) {
+        final uploadResult = await _fileUploadService.uploadFile(
+          image,
+          FilePurpose.improve,
+        );
+        if (uploadResult.isSuccess && uploadResult.url != null) {
+          uploadedUrls.add(uploadResult.url!);
+        }
+      }
+
+      if (uploadedUrls.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('All photo uploads failed. Please try again.'),
+              backgroundColor: AppTheme.warningRed,
+            ),
+          );
+        }
+        return;
+      }
+
       final response = await _uploadProductImprovements(
         null,
-        uploadResult.url,
+        uploadedUrls,
         null,
         result.regNumber!,
       );
@@ -170,40 +334,46 @@ class _ResultsScreenState extends State<ResultsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              uploadResult.isSuccess && response == 200
+              response == 200
                   ? 'Thank you for helping improve our data!'
-                  : uploadResult.error ?? 'Photo upload failed.',
+                  : 'Photos uploaded but data update failed.',
             ),
-            backgroundColor: uploadResult.isSuccess && response == 200
+            backgroundColor: response == 200
                 ? AppTheme.primaryGreen
                 : AppTheme.warningRed,
           ),
         );
       }
     } finally {
-      if (mounted) setState(() => _isUploadingPhoto = false);
+      if (mounted) setState(() => _isUploadingPhotos = false);
     }
   }
 
   // Returns the HTTP status code, or null on network/auth error.
   Future<int?> _uploadProductImprovements(
     String? barcode,
-    String? imageUrl,
+    List<String>? imageUrls,
     String? price,
     String regNumber,
   ) async {
-    if (barcode == null && imageUrl == null && price == null) return null;
+    if (barcode == null &&
+        (imageUrls == null || imageUrls.isEmpty) &&
+        price == null) {
+      return null;
+    }
 
     final Map<String, dynamic> body = {'registration_number': regNumber};
     if (barcode != null && barcode.isNotEmpty) body['barcode'] = barcode;
-    if (imageUrl != null && imageUrl.isNotEmpty) body['image_url'] = imageUrl;
+    if (imageUrls != null && imageUrls.isNotEmpty)
+      body['image_urls'] = imageUrls;
     if (price != null && price.isNotEmpty) body['price'] = price;
 
     try {
-      final bodyBytes =
-          Uint8List.fromList(utf8.encode(jsonEncode(body)));
-      final response = await DeviceAuthService.instance
-          .authenticatedPost('/v1/update_product', bodyBytes);
+      final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode(body)));
+      final response = await DeviceAuthService.instance.authenticatedPost(
+        '/v1/update_product',
+        bodyBytes,
+      );
       return response.statusCode;
     } catch (e) {
       await Sentry.captureException(e);
@@ -242,7 +412,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
         null,
         null,
         result.regNumber!,
-      );
+      ); // imageUrls: null — barcode-only submission
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -252,8 +422,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ? 'Barcode added successfully! Thank you.'
                   : 'Failed to add barcode. Please try again.',
             ),
-            backgroundColor:
-                response == 200 ? AppTheme.primaryGreen : AppTheme.warningRed,
+            backgroundColor: response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
           ),
         );
       }
@@ -301,8 +472,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: priceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Drug Price (Retail)',
                     prefixText: 'GHS ',
@@ -335,18 +507,22 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       backgroundColor: AppTheme.primaryGreen,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Submit Price',
-                        style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Submit Price',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppTheme.textLight)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppTheme.textLight),
+                  ),
                 ),
                 const SizedBox(height: 29),
               ],
-            ), 
+            ),
           ),
         );
       },
@@ -387,8 +563,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ? 'Price added successfully! Thank you.'
                   : 'Failed to add price. Please try again.',
             ),
-            backgroundColor:
-                response == 200 ? AppTheme.primaryGreen : AppTheme.warningRed,
+            backgroundColor: response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
           ),
         );
       }
@@ -530,7 +707,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
             children: [
               GestureDetector(
                 onLongPress: () {
-                  if (result.imageUrl != null) {
+                  final urls = result.imageUrls;
+                  if (urls != null && urls.isNotEmpty) {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -540,33 +718,36 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: <Widget>[
-                              InteractiveViewer(
-                                child: Image.network(
-                                  result.imageUrl!,
-                                  fit: BoxFit.contain,
-                                  loadingBuilder:
-                                      (
-                                        BuildContext context,
-                                        Widget child,
-                                        ImageChunkEvent? loadingProgress,
-                                      ) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        }
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        );
-                                      },
+                              PageView.builder(
+                                itemCount: urls.length,
+                                itemBuilder: (context, i) => InteractiveViewer(
+                                  child: Image.network(
+                                    urls[i],
+                                    fit: BoxFit.contain,
+                                    loadingBuilder:
+                                        (
+                                          BuildContext context,
+                                          Widget child,
+                                          ImageChunkEvent? loadingProgress,
+                                        ) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -596,14 +777,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(12),
-                    image: result.imageUrl != null
+                    image:
+                        result.imageUrls != null && result.imageUrls!.isNotEmpty
                         ? DecorationImage(
-                            image: NetworkImage(result.imageUrl!),
+                            image: NetworkImage(result.imageUrls!.first),
                             fit: BoxFit.cover,
                           )
                         : null,
                   ),
-                  child: result.imageUrl == null
+                  child: result.imageUrls == null || result.imageUrls!.isEmpty
                       ? const Icon(
                           Icons.medication,
                           size: 40,
@@ -880,9 +1062,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 child: _buildImproveButton(
                   context,
                   icon: Icons.photo_camera,
-                  label: 'Take Photo of Front',
-                  isLoading: _isUploadingPhoto,
-                  onTap: () => _takeAndUploadPhoto(result),
+                  label: 'Add Photos',
+                  isLoading: _isUploadingPhotos,
+                  onTap: () => _showPhotoPickerSheet(result),
                 ),
               ),
             ],
@@ -912,31 +1094,36 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     )
                   else
                     Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondaryBackground,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(13),
-                          child: Icon(
-                            Icons.price_change,
-                            color: AppTheme.textLight,
-                            size: 28,
-                          ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondaryBackground,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(13),
+                        child: Icon(
+                          Icons.price_change,
+                          color: AppTheme.textLight,
+                          size: 28,
                         ),
                       ),
+                    ),
                   const SizedBox(height: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Add Price',
-                        style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+                        style: GoogleFonts.publicSans(
+                          fontWeight: FontWeight.w500,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       Text(
                         'Report current market price',
-                        style: GoogleFonts.publicSans(fontWeight: FontWeight.normal, color: AppTheme.secondaryText),
+                        style: GoogleFonts.publicSans(
+                          fontWeight: FontWeight.normal,
+                          color: AppTheme.secondaryText,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -948,7 +1135,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       color: Colors.grey[500],
                       size: 20,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -996,7 +1183,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _buildBottomActions(BuildContext buildContext, VerificationResult result) {
+  Widget _buildBottomActions(
+    BuildContext buildContext,
+    VerificationResult result,
+  ) {
     final showReport = _showReportButton(result.status);
 
     return Container(

@@ -17,6 +17,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _messageController = TextEditingController();
   String _selectedFeedbackType = 'Report a Bug';
   final List<File> _attachments = [];
@@ -29,6 +30,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _messageController.dispose();
     _uploadProgress.dispose();
     super.dispose();
@@ -45,8 +47,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     });
 
     final success = await _feedbackService.sendFeedback(
-      name: _nameController.text,
-      email: _emailController.text,
+      name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+      email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
+      phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
       feedbackType: _selectedFeedbackType,
       message: _messageController.text,
       attachments: _attachments,
@@ -215,15 +218,28 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               _buildTextField(
                 controller: _emailController,
-                label: 'Email Address',
+                label: 'Email Address (Optional)',
                 hint: 'name@example.com',
+                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email address';
-                  }
+                  if (value == null || value.trim().isEmpty) return null;
                   final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                   if (!emailRegex.hasMatch(value.trim())) {
                     return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              _buildTextField(
+                controller: _phoneController,
+                label: 'Phone Number (Optional)',
+                hint: '+233 XX XXX XXXX',
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final digits = value.replaceAll(RegExp(r'\D'), '');
+                  if (digits.length < 7) {
+                    return 'Please enter a valid phone number';
                   }
                   return null;
                 },
@@ -338,6 +354,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     required String label,
     required String hint,
     int maxLines = 1,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     return Padding(
@@ -357,6 +374,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           TextFormField(
             controller: controller,
             maxLines: maxLines,
+            keyboardType: keyboardType,
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.publicSans(color: Colors.grey[400]),

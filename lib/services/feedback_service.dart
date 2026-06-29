@@ -14,7 +14,8 @@ class FeedbackService {
 
   Future<bool> sendFeedback({
     String? name,
-    required String email,
+    String? email,
+    String? phone,
     required String feedbackType,
     required String message,
     List<File>? attachments,
@@ -40,14 +41,18 @@ class FeedbackService {
         onUploadProgress?.call(1.0);
       }
 
-      // Serialize once — same bytes used for HMAC signing and the HTTP body
-      final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode({
-        'name': name,
-        'email': email,
+      // Serialize once — same bytes used for HMAC signing and the HTTP body.
+      // Omit null/empty contact fields so anonymous submissions are truly sparse.
+      final Map<String, dynamic> payload = {
         'feedback_type': feedbackType,
         'message': message,
         'attachments': attachmentUrls,
-      })));
+      };
+      if (name != null && name.isNotEmpty) payload['name'] = name;
+      if (email != null && email.isNotEmpty) payload['email'] = email;
+      if (phone != null && phone.isNotEmpty) payload['phone'] = phone;
+      final bodyBytes =
+          Uint8List.fromList(utf8.encode(jsonEncode(payload)));
 
       final response = await DeviceAuthService.instance
           .authenticatedPost('/v1/feedback', bodyBytes);
