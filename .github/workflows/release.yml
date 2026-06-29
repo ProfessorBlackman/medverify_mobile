@@ -10,42 +10,81 @@ permissions:
 
 jobs:
   build:
+    name: Build & Publish Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
+          flutter-version: '3.38.5'
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
 
-      - name: Get Commit Message
-        id: get_commit_message
+      - name: Run tests
+        run: flutter test
+
+      # ── Keystore signing ──────────────────────────────────────────────────────
+      # TODO: Uncomment and configure once the production keystore is ready.
+      # Required GitHub secrets: KEYSTORE_BASE64, KEY_ALIAS, KEY_PASSWORD,
+      #                          STORE_PASSWORD
+      #
+      # - name: Decode keystore
+      #   run: |
+      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
+      #       > android/app/medverify-release.jks
+      #
+      # - name: Write key.properties
+      #   run: |
+      #     cat > android/key.properties <<EOF
+      #     storePassword=${{ secrets.STORE_PASSWORD }}
+      #     keyPassword=${{ secrets.KEY_PASSWORD }}
+      #     keyAlias=${{ secrets.KEY_ALIAS }}
+      #     storeFile=medverify-release.jks
+      #     EOF
+
+      - name: Build release APK
         run: |
-          echo "commit_msg=$(git log -1 --pretty=%B | head -n 1)" >> $GITHUB_OUTPUT
+          flutter build apk --release \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Get version from pubspec
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get commit message
+        id: commit
+        run: |
+          echo "msg=$(git log -1 --pretty=%B | head -n 1)" >> $GITHUB_OUTPUT
 
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/${{ steps.get_commit_message.outputs.commit_msg }}.apk
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             build/app/outputs/flutter-apk/medverify-v${{ steps.version.outputs.version }}.apk
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.get_commit_message.outputs.commit_msg }}
-          name: ${{ steps.get_commit_message.outputs.commit_msg }}
-          files: build/app/outputs/flutter-apk/${{ steps.get_commit_message.outputs.commit_msg }}.apk
+          tag_name: v${{ steps.version.outputs.version }}
+          name: MedVerify v${{ steps.version.outputs.version }}
+          body: ${{ steps.commit.outputs.msg }}
+          files: build/app/outputs/flutter-apk/medverify-v${{ steps.version.outputs.version }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

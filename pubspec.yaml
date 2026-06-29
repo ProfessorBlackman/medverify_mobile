@@ -1,5 +1,5 @@
 name: medverify_mobile
-description: "An app to scan drugs"
+description: "MedVerify — scan and verify pharmaceutical products against official FDA Ghana data."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

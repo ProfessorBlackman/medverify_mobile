@@ -50,3 +50,8 @@ app.*.map.json
 /android/app/release
 /android/app/google-services.json
 /firebase.json
+
+# Keystore credentials — never commit
+android/key.properties
+*.jks
+*.keystore
