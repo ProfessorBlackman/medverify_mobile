@@ -39,24 +39,19 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      # ── Keystore signing ──────────────────────────────────────────────────────
-      # TODO: Uncomment and configure once the production keystore is ready.
-      # Required GitHub secrets: KEYSTORE_BASE64, KEY_ALIAS, KEY_PASSWORD,
-      #                          STORE_PASSWORD
+      - name: Decode keystore
+        run: |
+           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
+             > android/app/medverify-release.jks
       #
-      # - name: Decode keystore
-      #   run: |
-      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
-      #       > android/app/medverify-release.jks
-      #
-      # - name: Write key.properties
-      #   run: |
-      #     cat > android/key.properties <<EOF
-      #     storePassword=${{ secrets.STORE_PASSWORD }}
-      #     keyPassword=${{ secrets.KEY_PASSWORD }}
-      #     keyAlias=${{ secrets.KEY_ALIAS }}
-      #     storeFile=medverify-release.jks
-      #     EOF
+      - name: Write key.properties
+        run: |
+           cat > android/key.properties <<EOF
+           storePassword=${{ secrets.STORE_PASSWORD }}
+           keyPassword=${{ secrets.KEY_PASSWORD }}
+           keyAlias=${{ secrets.KEY_ALIAS }}
+           storeFile=medverify-release.jks
+           EOF
 
       - name: Build release APK
         run: |
