@@ -226,6 +226,10 @@ class _VerificationResultV2ScreenState
               _ProductCard(product: result.bestMatch!.product),
               const SizedBox(height: 16),
             ],
+            if (result.matches.length > 1) ...[
+              _OtherMatchesSection(matches: result.matches.skip(1).toList()),
+              const SizedBox(height: 16),
+            ],
             if (result.warnings.isNotEmpty) ...[
               VerificationWarningsWidget(warnings: result.warnings),
               const SizedBox(height: 16),
@@ -364,6 +368,163 @@ class _ProductCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _OtherMatchesSection extends StatelessWidget {
+  final List<VerificationMatch> matches;
+
+  const _OtherMatchesSection({required this.matches});
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = [...matches]
+      ..sort((a, b) => b.confidence.compareTo(a.confidence));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        title: Text(
+          'Other Possible Matches (${sorted.length})',
+          style: GoogleFonts.publicSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textLight,
+          ),
+        ),
+        children: [
+          for (final match in sorted) ...[
+            _OtherMatchTile(match: match),
+            if (match != sorted.last) const SizedBox(height: 8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _OtherMatchTile extends StatelessWidget {
+  final VerificationMatch match;
+
+  const _OtherMatchTile({required this.match});
+
+  @override
+  Widget build(BuildContext context) {
+    final product = match.product;
+    final style = _productStatusStyle(_parseProductStatus(product.status));
+    final dateFormat = DateFormat('dd MMM yyyy');
+    final regDate = product.registrationDate != null
+        ? dateFormat.format(product.registrationDate!)
+        : 'N/A';
+    final expiryDate = product.expiryDate != null
+        ? dateFormat.format(product.expiryDate!)
+        : 'N/A';
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => _showProductDetailModal(context, product),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: style.bgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: style.borderColor),
+        ),
+        child: Row(
+          children: [
+            Icon(style.icon, color: style.color, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.productName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    product.manufacturer,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Reg: $regDate  •  Exp: $expiryDate',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right, color: style.color, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void _showProductDetailModal(BuildContext context, MatchedProduct product) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.backgroundLight,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              _ProductCard(product: product),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {
