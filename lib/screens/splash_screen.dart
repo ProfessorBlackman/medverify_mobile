@@ -61,7 +61,15 @@ class _SplashScreenState extends State<SplashScreen>
           _loadingText = 'Verifying device identity...';
         });
       }
-      await DeviceAuthService.instance.ensureRegistered();
+      // A degraded connection (DNS broken but link still "connected") can
+      // make each network attempt inside ensureRegistered() run to its full
+      // Dio timeout instead of failing fast — cap the total wait so the app
+      // always opens promptly. authenticatedPost() retries auth later when
+      // the user performs an action that actually needs the network.
+      await DeviceAuthService.instance.ensureRegistered().timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {},
+          );
 
       // Step 2 — load scan history from local storage
       if (!mounted) return;

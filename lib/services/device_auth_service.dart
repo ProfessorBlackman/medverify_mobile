@@ -188,8 +188,10 @@ class DeviceAuthService {
   }) async {
     await requireConnectivity();
 
-    // Ensure the stored access token is fresh before we sign.
-    await getValidAccessToken();
+    // Retry registration here in case it failed or was skipped at startup
+    // (e.g. the app opened offline). Also proactively refreshes a stale
+    // access token when already registered.
+    await ensureRegistered();
 
     Future<Response<dynamic>> doRequest() async {
       final accessToken = (await _storage.read(key: _kAccessToken)) ?? '';
