@@ -56,3 +56,4 @@ android/key.properties
 *.jks
 *.keystore
 /android/key.properties
+/android/build/reports/problems/problems-report.html
