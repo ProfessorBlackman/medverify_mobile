@@ -8,8 +8,8 @@ import '../services/about_service.dart';
 import 'privacy_policy_screen.dart';
 
 const _fdaWebsite = 'https://fdaghana.gov.gh/';
-const _companyWebsite = 'https://methuselah.site/';
-const _supportEmail = 'support@medverify.app';
+const _companyWebsite = 'https://versatechq,com/';
+const _supportEmail = 'medverify@versatechq.com';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -172,7 +172,7 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget _buildDescription() {
     return Text(
       'MedVerify helps you verify whether medicines are registered with the '
-      'Ghana Food and Drugs Authority (FDA). Scan a barcode or medicine '
+      'Ghana Food and Drugs Authority (FDA). You can search teh name, scan a barcode or medicine '
       'package to compare it against official FDA registration records and '
       'make more informed decisions about your medication.',
       textAlign: TextAlign.center,
@@ -318,7 +318,9 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'MedVerify checks whether a medicine appears in official FDA registration records. A successful match does NOT guarantee that the physical product is genuine — counterfeit medicines may imitate legitimate packaging. Always purchase medicines from licensed pharmacies and consult a healthcare professional when in doubt.',
+            'MedVerify checks whether a medicine appears in official FDA registration records. '
+                'A successful match does NOT guarantee that the physical product is genuine, counterfeit medicines may imitate legitimate packaging. '
+                'Always purchase medicines from licensed pharmacies and consult a healthcare professional when in doubt.',
             style: GoogleFonts.publicSans(
               fontSize: 13,
               color: const Color(0xFF92400E),
