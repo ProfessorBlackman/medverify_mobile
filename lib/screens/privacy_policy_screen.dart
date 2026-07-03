@@ -152,13 +152,13 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             'By downloading, accessing, or using MedVerify ("the App"), you agree to be bound by these Terms of Service. If you do not agree to these Terms, please do not use the App.',
           ),
         ),
-        _buildCollapsibleSection(
-          icon: Icons.badge_outlined,
-          title: 'Eligibility',
-          child: _bodyText(
-            'You must be at least 18 years old, or have the consent of a parent or legal guardian, to create an account or submit community contributions. Verifying a product does not require an account.',
-          ),
-        ),
+        // _buildCollapsibleSection(
+        //   icon: Icons.badge_outlined,
+        //   title: 'Eligibility',
+        //   child: _bodyText(
+        //     'You must be at least 18 years old, or have the consent of a parent or legal guardian, to create an account or submit community contributions. Verifying a product does not require an account.',
+        //   ),
+        // ),
         _buildCollapsibleSection(
           icon: Icons.rule_outlined,
           title: 'Intended Use',
@@ -186,7 +186,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           icon: Icons.campaign_outlined,
           title: 'Reporting Suspicious Medicines',
           child: _bodyText(
-            'Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
+            'Unapproved and Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
           ),
         ),
         _buildCollapsibleSection(
