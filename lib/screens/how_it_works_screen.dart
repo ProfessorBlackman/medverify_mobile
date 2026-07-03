@@ -38,7 +38,7 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Verify safety in 4 simple steps',
+              'Three ways to verify, instantly',
               style: GoogleFonts.publicSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -47,7 +47,7 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Follow this guide to ensure your medication is\ngenuine and approved by FDA Ghana.',
+              'Choose the method that suits you to ensure your\nmedication is genuine and approved by FDA Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 14,
@@ -55,27 +55,73 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildStep(
-              icon: Icons.search,
-              title: '1. Search or Scan',
-              subtitle:
-                  'Search directly on the dashboard, use the manual entry screen, or scan the drug\'s barcode.',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Choose a verification method',
+                  style: GoogleFonts.publicSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textLight,
+                  ),
+                ),
+              ),
             ),
+            const SizedBox(height: 12),
+            _buildMethodCard(
+              icon: Icons.search,
+              iconColor: AppTheme.primaryGreen,
+              title: 'Search',
+              subtitle:
+                  'Type the drug\'s name into the search bar on the dashboard to look it up in the FDA Ghana database.',
+            ),
+            _buildMethodCard(
+              icon: Icons.qr_code_scanner,
+              iconColor: const Color(0xFF047857),
+              title: 'Scan Barcode',
+              subtitle:
+                  'Point your camera at the drug\'s barcode for a quick, automatic lookup.',
+            ),
+            _buildMethodCard(
+              icon: Icons.verified_outlined,
+              iconColor: const Color(0xFF1D4ED8),
+              title: 'Multi-Evidence Verify',
+              subtitle:
+                  'Upload photos of the packaging, scan the barcode, and enter the registration number together for a confidence-scored result backed by multiple signals.',
+            ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'What happens next',
+                  style: GoogleFonts.publicSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textLight,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             _buildStep(
               icon: Icons.verified_user,
-              title: '2. Instant Verification',
+              title: '1. Instant Verification',
               subtitle:
                   'Receive a green \'Verified\' check or a red \'Warning\' alert if the product is unregistered or expired.',
             ),
             _buildStep(
               icon: Icons.local_pharmacy,
-              title: '3. Provide Details',
+              title: '2. Provide Details',
               subtitle:
-                  'On the search results page, you will be prompted to enter the pharmacy where you bought the drug.',
+                  'On the results page, you will be prompted to enter the pharmacy where you bought the drug.',
             ),
             _buildStep(
               icon: Icons.volunteer_activism,
-              title: '4. Help the Community',
+              title: '3. Help the Community',
               subtitle:
                   'Help others by providing an image of the drug, scanning its barcode, and adding the price you bought it at.',
               isLast: true,
@@ -105,6 +151,62 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 100),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMethodCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 12.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 13,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
