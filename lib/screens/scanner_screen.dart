@@ -43,7 +43,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
         if (!mounted) return;
         if (results.isEmpty) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
@@ -76,7 +76,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         );
 
         if (resultWithTimestamp.status == VerificationStatus.unregistered) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
@@ -90,7 +90,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         }
       } catch (e) {
         if (!mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
