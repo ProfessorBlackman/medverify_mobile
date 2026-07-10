@@ -55,7 +55,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           // Apply status filter
           if (_selectedStatusFilter != 0) {
             history = history.where((result) {
-              final isVerified = result.status == VerificationStatus.verified;
+              final isVerified = result.status == VerificationStatus.verified ||
+                  result.status == VerificationStatus.valid;
               final isWarning =
                   result.status == VerificationStatus.unregistered ||
                   result.status == VerificationStatus.recalled ||
@@ -285,19 +286,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, VerificationResult result) {
-    final isVerified = result.status == VerificationStatus.verified;
+    final isVerified = result.status == VerificationStatus.verified ||
+        result.status == VerificationStatus.valid;
     final isWarning =
         result.status == VerificationStatus.unregistered ||
         result.status == VerificationStatus.recalled ||
         result.status == VerificationStatus.nearExpiry;
+    final isExpired = result.status == VerificationStatus.expired;
 
     final icon = isVerified
         ? Icons.check_circle
-        : (isWarning ? Icons.error : Icons.history);
+        : ((isWarning || isExpired) ? Icons.error : Icons.history);
 
     final color = isVerified
         ? AppTheme.primaryGreen
-        : (isWarning ? AppTheme.warningRed : AppTheme.warningOrange);
+        : ((isWarning || isExpired)
+            ? AppTheme.warningRed
+            : AppTheme.warningOrange);
 
     final isScan = result.source == 'scan';
     final leadingIcon = isScan ? Icons.qr_code_scanner : Icons.search;
@@ -342,7 +347,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Text(
                   isVerified
                       ? 'FDA Approved'
-                      : (isWarning ? 'Not Approved' : 'License Expired'),
+                      : (isWarning
+                          ? 'Not Approved'
+                          : (isExpired ? 'License Expired' : 'Not Approved')),
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.bold,

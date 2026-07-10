@@ -14,6 +14,9 @@ class PrivacyPolicyScreen extends StatefulWidget {
 class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   late int _selectedTab;
 
+  static const _bodyColor = Color(0xFF4A5F50);
+  static const _borderColor = Color(0xFFE5E7EB);
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +59,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
               ),
             ),
 
-            const Divider(height: 1, color: Color(0xFFE5E7EB)),
+            const Divider(height: 1, color: _borderColor),
 
             // Tabs
             Padding(
@@ -132,50 +135,122 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     );
   }
 
+  // ── Terms of Service ─────────────────────────────────────────────────────
+
   Widget _buildTermsContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 6),
         _buildDisclaimer(),
-        const SizedBox(height: 6),
-        _buildSectionTitle('User Conduct'),
-        const SizedBox(height: 8),
-        Text(
-          'By using this application to scan or search pharmaceutical products, you agree to provide accurate information and use the tool only for its intended purpose of verifying drug authenticity with the FDA of Ghana. You may also voluntarily contribute pricing and location data to help the community.',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
-        ),
         const SizedBox(height: 16),
-        Text(
-          'Users are prohibited from attempting to bypass security protocols, spoofing geolocation data, or submitting false information regarding drug prices, images, or pharmacy locations.',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
+        _buildCollapsibleSection(
+          icon: Icons.task_alt,
+          title: 'Acceptance of Terms',
+          initiallyExpanded: true,
+          child: _bodyText(
+            'By downloading, accessing, or using MedVerify ("the App"), you agree to be bound by these Terms of Service. If you do not agree to these Terms, please do not use the App.',
+          ),
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Data Collection'),
-        const SizedBox(height: 8),
-        Text(
-          'To ensure the safety of the pharmaceutical supply chain in Ghana, we collect the following information from your interactions: ',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
+        // _buildCollapsibleSection(
+        //   icon: Icons.badge_outlined,
+        //   title: 'Eligibility',
+        //   child: _bodyText(
+        //     'You must be at least 18 years old, or have the consent of a parent or legal guardian, to create an account or submit community contributions. Verifying a product does not require an account.',
+        //   ),
+        // ),
+        _buildCollapsibleSection(
+          icon: Icons.rule_outlined,
+          title: 'Intended Use',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _bodyText(
+                'The App is intended to help you verify the registration status of pharmaceutical products against Food and Drugs Authority (FDA) Ghana records. By using the App, you agree to provide accurate information and use it only for that purpose. You may also voluntarily contribute pricing and location data to help the community.',
+              ),
+              const SizedBox(height: 12),
+              _bodyText(
+                'You must not attempt to bypass security protocols, spoof geolocation data, or submit false information regarding drug prices, images, or pharmacy locations.',
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        Column(
-          children: [
-            _buildBulletPoint('Drug barcodes, search queries, and manual entries for verification.'),
-            _buildBulletPoint('Optional user contributions: Drug images, purchase prices, and pharmacy names/locations.'),
-            _buildBulletPoint('Device geolocation to track potential areas of counterfeit distribution.'),
-            _buildBulletPoint('Device metadata for security and performance auditing.'),
-          ],
+        _buildCollapsibleSection(
+          icon: Icons.info_outline,
+          title: 'Accuracy Disclaimer',
+          child: _bodyText(
+            'Verification results reflect registration data made available by FDA Ghana and community-submitted information. This data may change or contain errors beyond our control. A result on MedVerify is not a guarantee of a product\'s safety, efficacy, or quality, and is not a substitute for professional medical or pharmaceutical advice.',
+          ),
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Accountability'),
-        const SizedBox(height: 8),
-        Text(
-          'Counterfeit drug detection is a critical public health initiative. If a product is flagged as "Invalid" or "Counterfeit," you are encouraged to report it. Additionally, sharing accurate prices and pharmacy sources helps protect other users and builds a safer community.',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
+        _buildCollapsibleSection(
+          icon: Icons.campaign_outlined,
+          title: 'Reporting Suspicious Medicines',
+          child: _bodyText(
+            'Unapproved and Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.storage_outlined,
+          title: 'Data Collection',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _bodyText(
+                'To provide verification, we collect the information described in our Privacy Policy, including:',
+              ),
+              const SizedBox(height: 12),
+              _buildBulletPoint('Drug barcodes, search queries, and manual entries for verification.'),
+              _buildBulletPoint('Optional user contributions: drug images, purchase prices, and pharmacy names/locations.'),
+              _buildBulletPoint('Approximate location, collected only when you verify a product or submit community data.'),
+              _buildBulletPoint('Device information: app version, operating system, device model, crash logs, and an anonymous device identifier.'),
+            ],
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.copyright_outlined,
+          title: 'Intellectual Property',
+          child: _bodyText(
+            'The App, including its design, branding, and underlying software, is the property of MedVerify and its developers. You may not copy, modify, reverse-engineer, or distribute any part of the App without prior written consent.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.shield_outlined,
+          title: 'Limitation of Liability',
+          child: _bodyText(
+            'To the fullest extent permitted by law, MedVerify and its developers are not liable for any indirect, incidental, or consequential damages arising from your use of, or reliance on, the App, including decisions made based on verification results.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.block_outlined,
+          title: 'Suspension of Accounts',
+          child: _bodyText(
+            'We may suspend or terminate access for anyone who violates these Terms, submits fraudulent data, or attempts to compromise the security or integrity of the App.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.account_balance_outlined,
+          title: 'Governing Law (Ghana)',
+          child: _bodyText(
+            'These Terms are governed by the laws of the Republic of Ghana. Any disputes arising from these Terms are subject to the exclusive jurisdiction of the courts of Ghana.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.mail_outline,
+          title: 'Contact',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _bodyText('Questions about these Terms? Reach out to our support team.'),
+              const SizedBox(height: 12),
+              _buildContactButton(),
+            ],
+          ),
         ),
       ],
     );
   }
+
+  // ── Privacy Policy ───────────────────────────────────────────────────────
 
   Widget _buildPrivacyContent() {
     return Column(
@@ -183,7 +258,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
       children: [
         Center(
           child: Text(
-            'LAST UPDATED: OCTOBER 24, 2023',
+            'LAST UPDATED: JULY 1, 2026',
             style: GoogleFonts.publicSans(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -192,108 +267,226 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Data Collection'),
-        const SizedBox(height: 8),
-        Text(
-          'To ensure the safety of the pharmaceutical supply chain in Ghana and provide accurate verification, we collect the following information:',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
-        ),
         const SizedBox(height: 16),
-        _buildBulletPoint('Information you provide: Barcode scans, search queries, and manually entered registration numbers.'),
-        _buildBulletPoint('Optional community data: Drug images, purchase prices, and pharmacy locations you choose to share.'),
-        _buildBulletPoint('Device geolocation to track potential areas of counterfeit distribution.'),
-        _buildBulletPoint('Device metadata for security and performance auditing.'),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Data Usage & Protection'),
-        const SizedBox(height: 8),
-        Text(
-          'Your data is encrypted using industry-standard protocols. We do not sell your personal information to third parties. Verified scans, user-submitted drug images, and pricing data are used strictly to enhance public health reporting to the FDA Ghana and assist the community in finding safe, affordable medicines.',
-          style: GoogleFonts.publicSans(fontSize: 16, color: const Color(0xFF4A5F50), height: 1.5),
-        ),
-        const SizedBox(height: 32),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0F4F2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
+        _buildPrivacyAtAGlance(),
+        const SizedBox(height: 16),
+        _buildCollapsibleSection(
+          icon: Icons.description_outlined,
+          title: 'Information We Collect',
+          initiallyExpanded: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Questions or Concerns?',
-                style: GoogleFonts.publicSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textLight,
-                ),
+              _bodyText(
+                'To verify products and support public health reporting, we collect:',
               ),
-              const SizedBox(height: 8),
-              Text(
-                'If you have any questions regarding your data privacy or how we handle your information, please reach out to our support team.',
-                style: GoogleFonts.publicSans(fontSize: 14, color: const Color(0xFF4A5F50), height: 1.5),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/feedback');
-                  },
-                  icon: const Icon(Icons.contact_support_outlined),
-                  label: const Text('Contact Support'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primaryGreen,
-                    backgroundColor: Colors.white,
-                    side: BorderSide(color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 12),
+              _buildBulletPoint('Verification data: barcode scans, search queries, and registration numbers you submit for verification.'),
+              _buildBulletPoint('Optional community contributions: drug images, purchase prices, and pharmacy locations you choose to share.'),
+              _buildBulletPoint('Approximate location: collected only when you perform a verification or voluntarily submit community data, to help identify regional counterfeit activity.'),
+              _buildBulletPoint('Device information: app version, operating system, device model, crash logs, and an anonymous device identifier, used for security and performance monitoring.'),
             ],
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.tune,
+          title: 'How We Use Information',
+          child: _bodyText(
+            'We use the information above to verify products against FDA Ghana registration records, identify patterns of counterfeit distribution, maintain and improve app performance and stability, and prepare aggregated reports that may be submitted to the appropriate regulatory authorities.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.gavel_outlined,
+          title: 'Legal Basis',
+          child: _bodyText(
+            'We process your information based on your consent (for optional community contributions and location data), our legitimate interest in protecting public health and preventing counterfeit distribution, and compliance with Ghana\'s Data Protection Act, 2012 (Act 843).',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.share_outlined,
+          title: 'Information Sharing',
+          child: _bodyText(
+            'We do not sell your personal information. We only share information when necessary to provide the service, comply with legal obligations, protect users from fraud, or when required by law.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.lock_outline,
+          title: 'Data Security',
+          child: _bodyText(
+            'Your data is encrypted in transit and at rest using industry-standard protocols. Access to personal data is restricted to authorized personnel, and we regularly review our security practices.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.schedule_outlined,
+          title: 'Data Retention',
+          child: _bodyText(
+            'We retain verification and community-contribution data for as long as necessary to support public health reporting and app functionality, or until you request deletion. Device and crash logs are retained for a limited period for security auditing.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.child_care_outlined,
+          title: "Children's Privacy",
+          child: _bodyText(
+            'MedVerify is not directed at children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided us with personal information, please contact us so we can remove it.',
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.verified_user_outlined,
+          title: 'Your Rights',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _bodyText('You have the right to:'),
+              const SizedBox(height: 12),
+              _buildBulletPoint('Access the personal information we hold about you.'),
+              _buildBulletPoint('Request correction or deletion of your data.'),
+              _buildBulletPoint('Withdraw consent for optional community contributions or location sharing at any time.'),
+              _buildBulletPoint('Contact us with any privacy-related request or concern.'),
+            ],
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.mail_outline,
+          title: 'Contact Information',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _bodyText('For privacy-related questions or requests, reach out to our support team.'),
+              const SizedBox(height: 12),
+              _buildContactButton(),
+            ],
+          ),
+        ),
+        _buildCollapsibleSection(
+          icon: Icons.update,
+          title: 'Changes to This Policy',
+          child: _bodyText(
+            'We may update this Privacy Policy from time to time. We will notify you of material changes within the App. Continued use of MedVerify after changes take effect constitutes acceptance of the revised policy.',
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title, {bool isSmall = false, IconData? icon}) {
-    if (isSmall && icon != null) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppTheme.primaryGreen, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              title.toUpperCase(),
-              style: GoogleFonts.publicSans(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                color: AppTheme.primaryGreen,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+  // ── Shared building blocks ───────────────────────────────────────────────
+
+  Widget _bodyText(String text) {
     return Text(
-      title,
-      style: GoogleFonts.publicSans(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: AppTheme.textLight,
+      text,
+      style: GoogleFonts.publicSans(fontSize: 14, color: _bodyColor, height: 1.5),
+    );
+  }
+
+  Widget _buildContactButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          Navigator.pushNamed(context, '/feedback');
+        },
+        icon: const Icon(Icons.contact_support_outlined),
+        label: const Text('Contact Support'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.primaryGreen,
+          backgroundColor: Colors.white,
+          side: BorderSide(color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrivacyAtAGlance() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.visibility_outlined, color: AppTheme.primaryGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'PRIVACY AT A GLANCE',
+                style: GoogleFonts.publicSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: AppTheme.primaryGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildGlanceBullet('We never sell your personal information.'),
+          _buildGlanceBullet('Community contributions (photos, prices, locations) are optional.'),
+          _buildGlanceBullet('Location is only collected during a verification and used to spot regional counterfeit activity.'),
+          _buildGlanceBullet('You can request access to, correction of, or deletion of your data at any time.'),
+          _buildGlanceBullet('You can reach us anytime through Contact Support.'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlanceBullet(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '•  ',
+            style: GoogleFonts.publicSans(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.publicSans(fontSize: 13, color: AppTheme.textLight, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollapsibleSection({
+    required IconData icon,
+    required String title,
+    required Widget child,
+    bool initiallyExpanded = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        leading: Icon(icon, color: AppTheme.primaryGreen, size: 20),
+        title: Text(
+          title,
+          style: GoogleFonts.publicSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textLight,
+          ),
+        ),
+        children: [Align(alignment: Alignment.centerLeft, child: child)],
       ),
     );
   }
