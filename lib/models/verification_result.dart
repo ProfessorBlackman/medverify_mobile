@@ -118,9 +118,15 @@ class VerificationResult {
       barcode: map['barcode'],
       category: map['category'],
       message: map['message'],
-      expiryDate: map['expiryDate'] != null ? DateTime.tryParse(map['expiryDate']) : null,
-      approvalDate: map['approvalDate'] != null ? DateTime.tryParse(map['approvalDate']) : null,
-      scannedAt: map['scannedAt'] != null ? DateTime.tryParse(map['scannedAt']) : null,
+      expiryDate: map['expiryDate'] != null
+          ? DateTime.tryParse(map['expiryDate'])
+          : null,
+      approvalDate: map['approvalDate'] != null
+          ? DateTime.tryParse(map['approvalDate'])
+          : null,
+      scannedAt: map['scannedAt'] != null
+          ? DateTime.tryParse(map['scannedAt'])
+          : null,
       price: map['price'],
       source: map['source'],
     );
@@ -132,9 +138,7 @@ class VerificationResult {
       statusStr = 'nearExpiry';
     }
 
-    final statusMap = {
-      for (final e in VerificationStatus.values) e.name: e,
-    };
+    final statusMap = {for (final e in VerificationStatus.values) e.name: e};
 
     final resolvedStatus = statusMap[statusStr];
     if (resolvedStatus == null) {
@@ -144,7 +148,9 @@ class VerificationResult {
     // Handle both new list format ('image_urls') and legacy string format ('image_url').
     List<String>? imageUrls;
     if (json['image_urls'] is List) {
-      imageUrls = (json['image_urls'] as List).map((e) => e.toString()).toList();
+      imageUrls = (json['image_urls'] as List)
+          .map((e) => e.toString())
+          .toList();
     } else if (json['image_url'] is String) {
       imageUrls = [json['image_url'] as String];
     }
@@ -164,8 +170,12 @@ class VerificationResult {
       registrationType: json['registration_type'],
       imageUrls: imageUrls,
       barcode: json['barcode'],
-      approvalDate: json['registration_date'] != null ? DateTime.tryParse(json['registration_date'] as String) : null,
-      expiryDate: json['expiry_date'] != null ? DateTime.tryParse(json['expiry_date'] as String) : null,
+      approvalDate: json['registration_date'] != null
+          ? DateTime.tryParse(json['registration_date'] as String)
+          : null,
+      expiryDate: json['expiry_date'] != null
+          ? DateTime.tryParse(json['expiry_date'] as String)
+          : null,
       price: json['price'],
       source: json['source'],
     );

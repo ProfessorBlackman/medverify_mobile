@@ -144,7 +144,8 @@ class VerificationSessionProvider extends ChangeNotifier {
       );
 
       if (!uploadResult.isSuccess) {
-        _errorMessage = uploadResult.error ??
+        _errorMessage =
+            uploadResult.error ??
             'Failed to upload image ${i + 1} of $totalImages.';
         _session = _session.copyWith(status: VerificationUploadStatus.failure);
         notifyListeners();
@@ -169,8 +170,9 @@ class VerificationSessionProvider extends ChangeNotifier {
         manufacturers: _session.manufacturers.isNotEmpty
             ? _session.manufacturers
             : null,
-        ingredients:
-            _session.ingredients.isNotEmpty ? _session.ingredients : null,
+        ingredients: _session.ingredients.isNotEmpty
+            ? _session.ingredients
+            : null,
       );
 
       _result = result;

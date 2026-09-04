@@ -337,7 +337,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             const SizedBox(height: 12),
             Text(
               'If the number is missing or unclear, try searching by the drug\'s brand or generic name instead.',
-              style: GoogleFonts.publicSans(fontSize: 13, color: Colors.grey[600]),
+              style: GoogleFonts.publicSans(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
             ),
           ],
         ),
@@ -363,9 +366,17 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(number, style: GoogleFonts.publicSans(fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(
+            number,
+            style: GoogleFonts.publicSans(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: GoogleFonts.publicSans(fontSize: 14))),
+          Expanded(
+            child: Text(text, style: GoogleFonts.publicSans(fontSize: 14)),
+          ),
         ],
       ),
     );

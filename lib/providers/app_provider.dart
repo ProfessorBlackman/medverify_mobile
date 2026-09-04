@@ -37,7 +37,10 @@ class AppProvider with ChangeNotifier {
     return resultWithId;
   }
 
-  Future<void> updateResult(VerificationResult oldResult, String newSource) async {
+  Future<void> updateResult(
+    VerificationResult oldResult,
+    String newSource,
+  ) async {
     final newResult = oldResult.copyWith(source: newSource);
     await LocalDatabase.instance.updateResult(newResult);
 
@@ -64,8 +67,8 @@ class AppProvider with ChangeNotifier {
     return _scanHistory.where((scan) {
       if (scan.scannedAt == null) return false;
       return scan.scannedAt!.year == now.year &&
-             scan.scannedAt!.month == now.month &&
-             scan.scannedAt!.day == now.day;
+          scan.scannedAt!.month == now.month &&
+          scan.scannedAt!.day == now.day;
     }).toList();
   }
 

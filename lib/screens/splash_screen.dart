@@ -34,10 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
     )..repeat();
 
     _scanAnimation = Tween<double>(begin: -1.5, end: 1.5).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
     _loadVersion();
@@ -47,8 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _loadVersion() async {
     final info = await PackageInfo.fromPlatform();
     if (mounted) {
-      setState(() =>
-          _version = 'v${info.version} (Build ${info.buildNumber})');
+      setState(() => _version = 'v${info.version} (Build ${info.buildNumber})');
     }
   }
 
@@ -67,9 +63,9 @@ class _SplashScreenState extends State<SplashScreen>
       // always opens promptly. authenticatedPost() retries auth later when
       // the user performs an action that actually needs the network.
       await DeviceAuthService.instance.ensureRegistered().timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {},
-          );
+        const Duration(seconds: 10),
+        onTimeout: () {},
+      );
 
       // Step 2 — load scan history from local storage
       if (!mounted) return;
@@ -159,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen>
                       BoxShadow(
                         color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                         blurRadius: 10,
-                      )
+                      ),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -186,8 +182,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    AppTheme.primaryGreen
-                                        .withValues(alpha: 0.2),
+                                    AppTheme.primaryGreen.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     Colors.transparent,
                                   ],
                                 ),

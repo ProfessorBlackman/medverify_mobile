@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:convert';
@@ -10,11 +9,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'auth_exceptions.dart';
 import 'device_auth_service.dart';
 
-enum FilePurpose {
-  feedback,
-  improve,
-  temporary
-}
+enum FilePurpose { feedback, improve, temporary }
 
 class UploadResult {
   final String? url;
@@ -43,11 +38,13 @@ class FileUploadService {
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     if (!_allowedMimeTypes.contains(mimeType)) {
       throw const FileValidationException(
-          'Unsupported file type. Allowed types: JPEG, PNG, WebP, PDF.');
+        'Unsupported file type. Allowed types: JPEG, PNG, WebP, PDF.',
+      );
     }
     if (file.lengthSync() > _maxFileSizeBytes) {
       throw const FileValidationException(
-          'File too large. Maximum size is 10 MB.');
+        'File too large. Maximum size is 10 MB.',
+      );
     }
   }
 
@@ -98,11 +95,11 @@ class FileUploadService {
         return UploadResult.failure('File upload failed.');
       }
 
-      final confirmed =
-          await _confirmUpload(presignedUrlResponse['file_key']!);
+      final confirmed = await _confirmUpload(presignedUrlResponse['file_key']!);
       if (!confirmed) {
         await Sentry.captureMessage(
-            'Upload confirmation failed for key: ${presignedUrlResponse['file_key']}');
+          'Upload confirmation failed for key: ${presignedUrlResponse['file_key']}',
+        );
         await FirebaseAnalytics.instance.logEvent(
           name: 'upload_failure',
           parameters: {'stage': 'confirm'},
@@ -118,19 +115,27 @@ class FileUploadService {
   }
 
   Future<Map<String, dynamic>?> _getPresignedUrl(
-      File file, FilePurpose purpose) async {
+    File file,
+    FilePurpose purpose,
+  ) async {
     final fileName = file.path.split('/').last;
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
     // Serialize once — same bytes used for HMAC signing and the HTTP body
-    final bodyBytes = Uint8List.fromList(utf8.encode(json.encode({
-      'file_name': fileName,
-      'content_type': mimeType,
-      'file_purpose': purpose.name,
-    })));
+    final bodyBytes = Uint8List.fromList(
+      utf8.encode(
+        json.encode({
+          'file_name': fileName,
+          'content_type': mimeType,
+          'file_purpose': purpose.name,
+        }),
+      ),
+    );
 
-    final response = await DeviceAuthService.instance
-        .authenticatedPost('/v1/generate-upload-url', bodyBytes);
+    final response = await DeviceAuthService.instance.authenticatedPost(
+      '/v1/generate-upload-url',
+      bodyBytes,
+    );
 
     if (response.statusCode == 200) {
       final data = response.data as Map<String, dynamic>;
@@ -165,10 +170,7 @@ class FileUploadService {
           uploadUrl,
           data: file.openRead(),
           options: Options(
-            headers: {
-              'Content-Type': contentType,
-              'Content-Length': fileSize,
-            },
+            headers: {'Content-Type': contentType, 'Content-Length': fileSize},
             sendTimeout: _timeout,
             receiveTimeout: _timeout,
           ),
@@ -181,7 +183,8 @@ class FileUploadService {
 
         return (response.statusCode ?? 0) == 200;
       } on DioException catch (e) {
-        final isRetryable = e.type == DioExceptionType.connectionTimeout ||
+        final isRetryable =
+            e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.sendTimeout ||
             e.type == DioExceptionType.receiveTimeout ||
             e.type == DioExceptionType.connectionError ||
@@ -211,12 +214,11 @@ class FileUploadService {
     try {
       // Spec: POST /confirm-upload?file_key=<key> with empty body.
       // Path used for signing is /confirm-upload (no query string).
-      final response = await DeviceAuthService.instance
-          .authenticatedPost(
-            '/v1/confirm-upload',
-            Uint8List(0),
-            queryString: 'file_key=${Uri.encodeComponent(fileKey)}',
-          );
+      final response = await DeviceAuthService.instance.authenticatedPost(
+        '/v1/confirm-upload',
+        Uint8List(0),
+        queryString: 'file_key=${Uri.encodeComponent(fileKey)}',
+      );
       return response.statusCode == 200;
     } catch (e) {
       await Sentry.captureException(e);

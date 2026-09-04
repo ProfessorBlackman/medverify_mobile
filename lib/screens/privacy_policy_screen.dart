@@ -32,7 +32,10 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               child: Row(
                 children: [
                   IconButton(
@@ -87,7 +90,10 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_selectedTab == 0) _buildTermsContent() else _buildPrivacyContent(),
+                    if (_selectedTab == 0)
+                      _buildTermsContent()
+                    else
+                      _buildPrivacyContent(),
                   ],
                 ),
               ),
@@ -152,13 +158,13 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             'By downloading, accessing, or using MedVerify ("the App"), you agree to be bound by these Terms of Service. If you do not agree to these Terms, please do not use the App.',
           ),
         ),
-        _buildCollapsibleSection(
-          icon: Icons.badge_outlined,
-          title: 'Eligibility',
-          child: _bodyText(
-            'You must be at least 18 years old, or have the consent of a parent or legal guardian, to create an account or submit community contributions. Verifying a product does not require an account.',
-          ),
-        ),
+        // _buildCollapsibleSection(
+        //   icon: Icons.badge_outlined,
+        //   title: 'Eligibility',
+        //   child: _bodyText(
+        //     'You must be at least 18 years old, or have the consent of a parent or legal guardian, to create an account or submit community contributions. Verifying a product does not require an account.',
+        //   ),
+        // ),
         _buildCollapsibleSection(
           icon: Icons.rule_outlined,
           title: 'Intended Use',
@@ -186,7 +192,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           icon: Icons.campaign_outlined,
           title: 'Reporting Suspicious Medicines',
           child: _bodyText(
-            'Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
+            'Unapproved and Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
           ),
         ),
         _buildCollapsibleSection(
@@ -199,10 +205,18 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                 'To provide verification, we collect the information described in our Privacy Policy, including:',
               ),
               const SizedBox(height: 12),
-              _buildBulletPoint('Drug barcodes, search queries, and manual entries for verification.'),
-              _buildBulletPoint('Optional user contributions: drug images, purchase prices, and pharmacy names/locations.'),
-              _buildBulletPoint('Approximate location, collected only when you verify a product or submit community data.'),
-              _buildBulletPoint('Device information: app version, operating system, device model, crash logs, and an anonymous device identifier.'),
+              _buildBulletPoint(
+                'Drug barcodes, search queries, and manual entries for verification.',
+              ),
+              _buildBulletPoint(
+                'Optional user contributions: drug images, purchase prices, and pharmacy names/locations.',
+              ),
+              _buildBulletPoint(
+                'Approximate location, collected only when you verify a product or submit community data.',
+              ),
+              _buildBulletPoint(
+                'Device information: app version, operating system, device model, crash logs, and an anonymous device identifier.',
+              ),
             ],
           ),
         ),
@@ -240,7 +254,9 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _bodyText('Questions about these Terms? Reach out to our support team.'),
+              _bodyText(
+                'Questions about these Terms? Reach out to our support team.',
+              ),
               const SizedBox(height: 12),
               _buildContactButton(),
             ],
@@ -281,10 +297,18 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                 'To verify products and support public health reporting, we collect:',
               ),
               const SizedBox(height: 12),
-              _buildBulletPoint('Verification data: barcode scans, search queries, and registration numbers you submit for verification.'),
-              _buildBulletPoint('Optional community contributions: drug images, purchase prices, and pharmacy locations you choose to share.'),
-              _buildBulletPoint('Approximate location: collected only when you perform a verification or voluntarily submit community data, to help identify regional counterfeit activity.'),
-              _buildBulletPoint('Device information: app version, operating system, device model, crash logs, and an anonymous device identifier, used for security and performance monitoring.'),
+              _buildBulletPoint(
+                'Verification data: barcode scans, search queries, and registration numbers you submit for verification.',
+              ),
+              _buildBulletPoint(
+                'Optional community contributions: drug images, purchase prices, and pharmacy locations you choose to share.',
+              ),
+              _buildBulletPoint(
+                'Approximate location: collected only when you perform a verification or voluntarily submit community data, to help identify regional counterfeit activity.',
+              ),
+              _buildBulletPoint(
+                'Device information: app version, operating system, device model, crash logs, and an anonymous device identifier, used for security and performance monitoring.',
+              ),
             ],
           ),
         ),
@@ -338,10 +362,16 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             children: [
               _bodyText('You have the right to:'),
               const SizedBox(height: 12),
-              _buildBulletPoint('Access the personal information we hold about you.'),
+              _buildBulletPoint(
+                'Access the personal information we hold about you.',
+              ),
               _buildBulletPoint('Request correction or deletion of your data.'),
-              _buildBulletPoint('Withdraw consent for optional community contributions or location sharing at any time.'),
-              _buildBulletPoint('Contact us with any privacy-related request or concern.'),
+              _buildBulletPoint(
+                'Withdraw consent for optional community contributions or location sharing at any time.',
+              ),
+              _buildBulletPoint(
+                'Contact us with any privacy-related request or concern.',
+              ),
             ],
           ),
         ),
@@ -351,7 +381,9 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _bodyText('For privacy-related questions or requests, reach out to our support team.'),
+              _bodyText(
+                'For privacy-related questions or requests, reach out to our support team.',
+              ),
               const SizedBox(height: 12),
               _buildContactButton(),
             ],
@@ -373,7 +405,11 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   Widget _bodyText(String text) {
     return Text(
       text,
-      style: GoogleFonts.publicSans(fontSize: 14, color: _bodyColor, height: 1.5),
+      style: GoogleFonts.publicSans(
+        fontSize: 14,
+        color: _bodyColor,
+        height: 1.5,
+      ),
     );
   }
 
@@ -412,7 +448,11 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.visibility_outlined, color: AppTheme.primaryGreen, size: 20),
+              const Icon(
+                Icons.visibility_outlined,
+                color: AppTheme.primaryGreen,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'PRIVACY AT A GLANCE',
@@ -427,10 +467,18 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           ),
           const SizedBox(height: 12),
           _buildGlanceBullet('We never sell your personal information.'),
-          _buildGlanceBullet('Community contributions (photos, prices, locations) are optional.'),
-          _buildGlanceBullet('Location is only collected during a verification and used to spot regional counterfeit activity.'),
-          _buildGlanceBullet('You can request access to, correction of, or deletion of your data at any time.'),
-          _buildGlanceBullet('You can reach us anytime through Contact Support.'),
+          _buildGlanceBullet(
+            'Community contributions (photos, prices, locations) are optional.',
+          ),
+          _buildGlanceBullet(
+            'Location is only collected during a verification and used to spot regional counterfeit activity.',
+          ),
+          _buildGlanceBullet(
+            'You can request access to, correction of, or deletion of your data at any time.',
+          ),
+          _buildGlanceBullet(
+            'You can reach us anytime through Contact Support.',
+          ),
         ],
       ),
     );
@@ -444,12 +492,19 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         children: [
           Text(
             '•  ',
-            style: GoogleFonts.publicSans(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen),
+            style: GoogleFonts.publicSans(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primaryGreen,
+            ),
           ),
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.publicSans(fontSize: 13, color: AppTheme.textLight, height: 1.4),
+              style: GoogleFonts.publicSans(
+                fontSize: 13,
+                color: AppTheme.textLight,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -492,44 +547,44 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   }
 
   Widget _buildDisclaimer() {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(Icons.verified_user, color: AppTheme.primaryGreen, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'DISCLAIMER',
-                  style: GoogleFonts.publicSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    color: AppTheme.primaryGreen,
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user, color: AppTheme.primaryGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'DISCLAIMER',
+                style: GoogleFonts.publicSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: AppTheme.primaryGreen,
                 ),
-              ],
-            ),
-            const SizedBox(height: 5),
-            Text(
-              'This application is an independent verification \n tool. While we use official Ghana FDA data, this \n app is not a substitute for professional medical \n advice or consultation with the Food and Drugs \n Authority',
-              style: GoogleFonts.publicSans(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
-                letterSpacing: 1.2,
-                color: AppTheme.textLight,
               ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'This application is an independent verification \n tool. While we use official Ghana FDA data, this \n app is not a substitute for professional medical \n advice or consultation with the Food and Drugs \n Authority',
+            style: GoogleFonts.publicSans(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
+              letterSpacing: 1.2,
+              color: AppTheme.textLight,
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBulletPoint(String text) {
@@ -540,7 +595,11 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 2.0),
-            child: Icon(Icons.check_circle, color: AppTheme.primaryGreen, size: 20),
+            child: Icon(
+              Icons.check_circle,
+              color: AppTheme.primaryGreen,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

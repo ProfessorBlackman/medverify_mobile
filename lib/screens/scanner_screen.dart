@@ -38,12 +38,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       try {
         final service = context.read<VerificationService>();
-        Set<VerificationResult> results =
-            await service.verifyBarcode(barcodes.first.rawValue!);
+        Set<VerificationResult> results = await service.verifyBarcode(
+          barcodes.first.rawValue!,
+        );
 
         if (!mounted) return;
         if (results.isEmpty) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
@@ -76,7 +77,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         );
 
         if (resultWithTimestamp.status == VerificationStatus.unregistered) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
@@ -85,12 +86,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
           );
         } else {
           context.read<AppProvider>().addScan(resultWithTimestamp);
-          await Navigator.pushNamed(context, '/results',
-              arguments: resultWithTimestamp);
+          await Navigator.pushNamed(
+            context,
+            '/results',
+            arguments: resultWithTimestamp,
+          );
         }
       } catch (e) {
         if (!mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
@@ -121,7 +125,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       if (capture == null || capture.barcodes.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No barcode found in the selected image.')),
+          const SnackBar(
+            content: Text('No barcode found in the selected image.'),
+          ),
         );
         setState(() => _isProcessing = false);
         return;
@@ -131,7 +137,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not read the image. Please try again.')),
+        const SnackBar(
+          content: Text('Could not read the image. Please try again.'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isProcessing = false);
@@ -237,7 +245,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Widget _buildScannerOverlay() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2),
+        border: Border.all(
+          color: Colors.green.withValues(alpha: 0.5),
+          width: 2,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       width: MediaQuery.of(context).size.width * 0.6,

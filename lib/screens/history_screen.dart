@@ -55,7 +55,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           // Apply status filter
           if (_selectedStatusFilter != 0) {
             history = history.where((result) {
-              final isVerified = result.status == VerificationStatus.verified ||
+              final isVerified =
+                  result.status == VerificationStatus.verified ||
                   result.status == VerificationStatus.valid;
               final isWarning =
                   result.status == VerificationStatus.unregistered ||
@@ -124,7 +125,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Row(
                   children: [
                     FilterChip(
-                      label: Text('All', style: TextStyle(fontSize: 12, color: _selectedStatusFilter == 0 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'All',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedStatusFilter == 0
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedStatusFilter == 0,
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 0),
@@ -133,7 +142,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: Text('Approved', style: TextStyle(fontSize: 12, color: _selectedStatusFilter == 1 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'Approved',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedStatusFilter == 1
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedStatusFilter == 1,
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 1),
@@ -142,7 +159,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: Text('Not Approved', style: TextStyle(fontSize: 12, color: _selectedStatusFilter == 2 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'Not Approved',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedStatusFilter == 2
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedStatusFilter == 2,
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 2),
@@ -151,7 +176,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: Text('Warning', style: TextStyle(fontSize: 12, color: _selectedStatusFilter == 3 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'Warning',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedStatusFilter == 3
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedStatusFilter == 3,
                       onSelected: (selected) =>
                           setState(() => _selectedStatusFilter = 3),
@@ -169,7 +202,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Row(
                   children: [
                     FilterChip(
-                      label: Text('All Types', style: TextStyle(fontSize: 12, color: _selectedTypeFilter == 0 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'All Types',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedTypeFilter == 0
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedTypeFilter == 0,
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 0),
@@ -178,7 +219,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: Text('Scanned', style: TextStyle(fontSize: 12, color: _selectedTypeFilter == 1 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'Scanned',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedTypeFilter == 1
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedTypeFilter == 1,
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 1),
@@ -187,7 +236,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
-                      label: Text('Searched/Manual', style: TextStyle(fontSize: 12, color: _selectedTypeFilter == 2 ? Colors.white : Colors.black)),
+                      label: Text(
+                        'Searched/Manual',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedTypeFilter == 2
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
                       selected: _selectedTypeFilter == 2,
                       onSelected: (selected) =>
                           setState(() => _selectedTypeFilter = 2),
@@ -286,7 +343,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, VerificationResult result) {
-    final isVerified = result.status == VerificationStatus.verified ||
+    final isVerified =
+        result.status == VerificationStatus.verified ||
         result.status == VerificationStatus.valid;
     final isWarning =
         result.status == VerificationStatus.unregistered ||
@@ -301,8 +359,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final color = isVerified
         ? AppTheme.primaryGreen
         : ((isWarning || isExpired)
-            ? AppTheme.warningRed
-            : AppTheme.warningOrange);
+              ? AppTheme.warningRed
+              : AppTheme.warningOrange);
 
     final isScan = result.source == 'scan';
     final leadingIcon = isScan ? Icons.qr_code_scanner : Icons.search;
@@ -348,8 +406,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   isVerified
                       ? 'FDA Approved'
                       : (isWarning
-                          ? 'Not Approved'
-                          : (isExpired ? 'License Expired' : 'Not Approved')),
+                            ? 'Not Approved'
+                            : (isExpired ? 'License Expired' : 'Not Approved')),
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.bold,

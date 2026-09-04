@@ -167,9 +167,9 @@ void main() {
               'weight': 3,
               'score': 0.95,
               'message': 'Barcode matched',
-            }
+            },
           ],
-        }
+        },
       ],
       'warnings': ['Low image quality'],
       'candidate_count': 3,
@@ -243,11 +243,42 @@ void main() {
       return match.verificationState;
     }
 
-    test('VERIFIED_MATCH', () => expect(parseState('VERIFIED_MATCH'), MultiVerificationState.verifiedMatch));
-    test('PROBABLE_MATCH', () => expect(parseState('PROBABLE_MATCH'), MultiVerificationState.probableMatch));
-    test('INSUFFICIENT_INFORMATION', () => expect(parseState('INSUFFICIENT_INFORMATION'), MultiVerificationState.insufficientInformation));
-    test('NO_RELIABLE_MATCH', () => expect(parseState('NO_RELIABLE_MATCH'), MultiVerificationState.noReliableMatch));
-    test('unknown value defaults to noResult', () => expect(parseState('UNKNOWN_STATE'), MultiVerificationState.noResult));
-    test('empty string defaults to noResult', () => expect(parseState(''), MultiVerificationState.noResult));
+    test(
+      'VERIFIED_MATCH',
+      () => expect(
+        parseState('VERIFIED_MATCH'),
+        MultiVerificationState.verifiedMatch,
+      ),
+    );
+    test(
+      'PROBABLE_MATCH',
+      () => expect(
+        parseState('PROBABLE_MATCH'),
+        MultiVerificationState.probableMatch,
+      ),
+    );
+    test(
+      'INSUFFICIENT_INFORMATION',
+      () => expect(
+        parseState('INSUFFICIENT_INFORMATION'),
+        MultiVerificationState.insufficientInformation,
+      ),
+    );
+    test(
+      'NO_RELIABLE_MATCH',
+      () => expect(
+        parseState('NO_RELIABLE_MATCH'),
+        MultiVerificationState.noReliableMatch,
+      ),
+    );
+    test(
+      'unknown value defaults to noResult',
+      () =>
+          expect(parseState('UNKNOWN_STATE'), MultiVerificationState.noResult),
+    );
+    test(
+      'empty string defaults to noResult',
+      () => expect(parseState(''), MultiVerificationState.noResult),
+    );
   });
 }

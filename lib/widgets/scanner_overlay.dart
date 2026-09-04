@@ -122,23 +122,23 @@ class OverlayPainter extends CustomPainter {
       ..color = AppTheme.primaryGreen.withValues(alpha: 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-      
+
     // Calculate line position based on animation
     final lineY = scanAreaRect.top + (scanAreaRect.height * animationValue);
-    
+
     canvas.drawLine(
       Offset(scanAreaRect.left + 10, lineY),
       Offset(scanAreaRect.right - 10, lineY),
       linePaint,
     );
-    
+
     // Add glow to line
     final glowPaint = Paint()
       ..color = AppTheme.primaryGreen.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-      
+
     canvas.drawLine(
       Offset(scanAreaRect.left + 10, lineY),
       Offset(scanAreaRect.right - 10, lineY),

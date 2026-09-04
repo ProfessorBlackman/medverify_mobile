@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
@@ -84,9 +83,7 @@ class _LocationInputDialogState extends State<LocationInputDialog> {
               },
               child: Text(
                 'Cancel',
-                style: GoogleFonts.publicSans(
-                  color: AppTheme.textLight,
-                ),
+                style: GoogleFonts.publicSans(color: AppTheme.textLight),
               ),
             ),
           ],
@@ -95,4 +92,3 @@ class _LocationInputDialogState extends State<LocationInputDialog> {
     );
   }
 }
-

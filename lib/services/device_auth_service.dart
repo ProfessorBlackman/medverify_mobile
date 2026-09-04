@@ -79,14 +79,22 @@ class DeviceAuthService {
       // Use device_public_id from response — server may assign a different one
       // on UUID collision (Case C in the migration spec).
       await _storage.write(
-          key: _kDevicePublicId, value: data['device_public_id'] as String);
+        key: _kDevicePublicId,
+        value: data['device_public_id'] as String,
+      );
       await _storage.write(
-          key: _kDeviceSecret, value: data['device_secret'] as String);
+        key: _kDeviceSecret,
+        value: data['device_secret'] as String,
+      );
       await _storage.write(key: _kUserId, value: data['user_id'] as String);
       await _storage.write(
-          key: _kAccessToken, value: data['access_token'] as String);
+        key: _kAccessToken,
+        value: data['access_token'] as String,
+      );
       await _storage.write(
-          key: _kRefreshToken, value: data['refresh_token'] as String);
+        key: _kRefreshToken,
+        value: data['refresh_token'] as String,
+      );
 
       await FirebaseAnalytics.instance.logEvent(
         name: 'device_registration_success',
@@ -161,9 +169,13 @@ class DeviceAuthService {
 
       final data = response.data as Map<String, dynamic>;
       await _storage.write(
-          key: _kAccessToken, value: data['access_token'] as String);
+        key: _kAccessToken,
+        value: data['access_token'] as String,
+      );
       await _storage.write(
-          key: _kRefreshToken, value: data['refresh_token'] as String);
+        key: _kRefreshToken,
+        value: data['refresh_token'] as String,
+      );
 
       await FirebaseAnalytics.instance.logEvent(name: 'token_refresh_success');
       _refreshCompleter!.complete();
@@ -195,8 +207,7 @@ class DeviceAuthService {
 
     Future<Response<dynamic>> doRequest() async {
       final accessToken = (await _storage.read(key: _kAccessToken)) ?? '';
-      final devicePublicId =
-          (await _storage.read(key: _kDevicePublicId)) ?? '';
+      final devicePublicId = (await _storage.read(key: _kDevicePublicId)) ?? '';
       final deviceSecret = (await _storage.read(key: _kDeviceSecret)) ?? '';
 
       final headers = RequestSigner.instance.buildHeaders(
@@ -208,8 +219,7 @@ class DeviceAuthService {
         body: body,
       );
 
-      final requestPath =
-          queryString != null ? '$path?$queryString' : path;
+      final requestPath = queryString != null ? '$path?$queryString' : path;
 
       // Decode bytes to string so Dio sends the exact same UTF-8 bytes that
       // were used to compute the HMAC. Passing Uint8List directly risks

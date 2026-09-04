@@ -24,7 +24,10 @@ void main() {
       for (int i = 0; i < 5; i++) {
         provider.addImage(_file('img$i'));
       }
-      expect(provider.session.images.length, VerificationSessionProvider.maxImages);
+      expect(
+        provider.session.images.length,
+        VerificationSessionProvider.maxImages,
+      );
     });
 
     test('exactly 4 images are accepted', () {

@@ -47,9 +47,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     });
 
     final success = await _feedbackService.sendFeedback(
-      name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
-      email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-      phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+      name: _nameController.text.trim().isEmpty
+          ? null
+          : _nameController.text.trim(),
+      email: _emailController.text.trim().isEmpty
+          ? null
+          : _emailController.text.trim(),
+      phone: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
       feedbackType: _selectedFeedbackType,
       message: _messageController.text,
       attachments: _attachments,
@@ -63,10 +69,14 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success
-              ? 'Feedback sent successfully!'
-              : 'Failed to send feedback. Please try again.'),
-          backgroundColor: success ? AppTheme.primaryGreen : AppTheme.warningRed,
+          content: Text(
+            success
+                ? 'Feedback sent successfully!'
+                : 'Failed to send feedback. Please try again.',
+          ),
+          backgroundColor: success
+              ? AppTheme.primaryGreen
+              : AppTheme.warningRed,
         ),
       );
       if (success) {
@@ -114,7 +124,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('You have already attached the maximum of 5 images.')),
+            content: Text('You have already attached the maximum of 5 images.'),
+          ),
         );
       }
       return;
@@ -150,21 +161,24 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         if (pickedFiles.length > slotsAvailable) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(
-                    'You can only attach up to 5 images. Some images were not added.')),
+              content: Text(
+                'You can only attach up to 5 images. Some images were not added.',
+              ),
+            ),
           );
         }
         if (oversizedFiles.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(
-                    'Some images were not added because they exceed the 5MB limit.')),
+              content: Text(
+                'Some images were not added because they exceed the 5MB limit.',
+              ),
+            ),
           );
         }
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -277,14 +291,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                           value: progress > 0 ? progress : null,
                           backgroundColor: Colors.grey[200],
                           valueColor: const AlwaysStoppedAnimation<Color>(
-                              AppTheme.primaryGreen),
+                            AppTheme.primaryGreen,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Uploading attachments (${(progress * 100).toInt()}%)...',
                           style: GoogleFonts.publicSans(
-                              fontSize: 12, color: Colors.grey[600]),
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ],
                     ),
@@ -308,14 +325,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         spacing: 8,
         runSpacing: 8,
         children: _attachments
-            .map((file) => Chip(
-                  label: Text(file.path.split('/').last),
-                  onDeleted: () {
-                    setState(() {
-                      _attachments.remove(file);
-                    });
-                  },
-                ))
+            .map(
+              (file) => Chip(
+                label: Text(file.path.split('/').last),
+                onDeleted: () {
+                  setState(() {
+                    _attachments.remove(file);
+                  });
+                },
+              ),
+            )
             .toList(),
       ),
     );
@@ -328,9 +347,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: const Color(0xFF102216),
         minimumSize: const Size(double.infinity, 56),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       icon: _isLoading
           ? const SizedBox(
@@ -425,16 +442,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             ),
             initialValue: _selectedFeedbackType,
-            items: [
-              'Report a Bug',
-              'Feature Suggestion',
-              'Drug Verification Issue',
-              'General Inquiry',
-            ]
-                .map(
-                  (label) => DropdownMenuItem(value: label, child: Text(label)),
-                )
-                .toList(),
+            items:
+                [
+                      'Report a Bug',
+                      'Feature Suggestion',
+                      'Drug Verification Issue',
+                      'General Inquiry',
+                    ]
+                    .map(
+                      (label) =>
+                          DropdownMenuItem(value: label, child: Text(label)),
+                    )
+                    .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() {
