@@ -37,9 +37,9 @@ class _AboutScreenState extends State<AboutScreen> {
     if (canLaunch) {
       await launchUrl(uri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open link.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to open link.')));
     }
   }
 
@@ -241,7 +241,11 @@ class _AboutScreenState extends State<AboutScreen> {
                   color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.handshake_outlined, color: AppTheme.primaryGreen, size: 20),
+                child: const Icon(
+                  Icons.handshake_outlined,
+                  color: AppTheme.primaryGreen,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -259,7 +263,11 @@ class _AboutScreenState extends State<AboutScreen> {
           const SizedBox(height: 12),
           Text(
             'Verification results are matched against publicly available FDA registration records.',
-            style: GoogleFonts.publicSans(fontSize: 13, color: Colors.grey[600], height: 1.5),
+            style: GoogleFonts.publicSans(
+              fontSize: 13,
+              color: Colors.grey[600],
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -280,7 +288,9 @@ class _AboutScreenState extends State<AboutScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.secondGreen,
                 side: const BorderSide(color: AppTheme.primaryGreen),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -297,14 +307,20 @@ class _AboutScreenState extends State<AboutScreen> {
       decoration: BoxDecoration(
         color: AppTheme.warningOrange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.warningOrange.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppTheme.warningOrange.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: AppTheme.warningOrange, size: 22),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppTheme.warningOrange,
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Important Information',
@@ -319,8 +335,8 @@ class _AboutScreenState extends State<AboutScreen> {
           const SizedBox(height: 12),
           Text(
             'MedVerify checks whether a medicine appears in official FDA registration records. '
-                'A successful match does NOT guarantee that the physical product is genuine, counterfeit medicines may imitate legitimate packaging. '
-                'Always purchase medicines from licensed pharmacies and consult a healthcare professional when in doubt.',
+            'A successful match does NOT guarantee that the physical product is genuine, counterfeit medicines may imitate legitimate packaging. '
+            'Always purchase medicines from licensed pharmacies and consult a healthcare professional when in doubt.',
             style: GoogleFonts.publicSans(
               fontSize: 13,
               color: const Color(0xFF92400E),
@@ -349,7 +365,11 @@ class _AboutScreenState extends State<AboutScreen> {
                   color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.code, color: AppTheme.primaryGreen, size: 20),
+                child: const Icon(
+                  Icons.code,
+                  color: AppTheme.primaryGreen,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Column(
@@ -365,7 +385,10 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   Text(
                     'Created by Methuselah Nwodobeh',
-                    style: GoogleFonts.publicSans(fontSize: 12, color: Colors.grey[500]),
+                    style: GoogleFonts.publicSans(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
                   ),
                 ],
               ),
@@ -382,7 +405,9 @@ class _AboutScreenState extends State<AboutScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.secondGreen,
                     side: const BorderSide(color: AppTheme.primaryGreen),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -395,7 +420,9 @@ class _AboutScreenState extends State<AboutScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.secondGreen,
                     side: const BorderSide(color: AppTheme.primaryGreen),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -417,8 +444,14 @@ class _AboutScreenState extends State<AboutScreen> {
           final stats = snapshot.data;
           return Column(
             children: [
-              _buildStatRow('Registered Medicines', stats != null ? '${stats.registeredMedicines}+' : '—'),
-              _buildStatRow('Verification Source', stats?.verificationSource ?? '—'),
+              _buildStatRow(
+                'Registered Medicines',
+                stats != null ? '${stats.registeredMedicines}+' : '—',
+              ),
+              _buildStatRow(
+                'Verification Source',
+                stats?.verificationSource ?? '—',
+              ),
               _buildStatRow('Database Status', stats?.databaseStatus ?? '—'),
               _buildStatRow(
                 'Last Updated',
@@ -434,8 +467,18 @@ class _AboutScreenState extends State<AboutScreen> {
 
   String _formatMonthYear(DateTime date) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
@@ -450,7 +493,10 @@ class _AboutScreenState extends State<AboutScreen> {
             children: [
               Text(
                 label,
-                style: GoogleFonts.publicSans(fontSize: 13, color: Colors.grey[600]),
+                style: GoogleFonts.publicSans(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
               ),
               Text(
                 value,
@@ -498,7 +544,9 @@ class _AboutScreenState extends State<AboutScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryGreen,
                     foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -511,7 +559,9 @@ class _AboutScreenState extends State<AboutScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.textLight,
                     side: BorderSide(color: Colors.grey[300]!),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -544,7 +594,9 @@ class _AboutScreenState extends State<AboutScreen> {
             label: 'Privacy Policy',
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen(initialTabIndex: 1)),
+              MaterialPageRoute(
+                builder: (_) => const PrivacyPolicyScreen(initialTabIndex: 1),
+              ),
             ),
           ),
           _divider(),
@@ -553,17 +605,17 @@ class _AboutScreenState extends State<AboutScreen> {
             label: 'Terms of Service',
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen(initialTabIndex: 0)),
+              MaterialPageRoute(
+                builder: (_) => const PrivacyPolicyScreen(initialTabIndex: 0),
+              ),
             ),
           ),
           _divider(),
           _buildLinkRow(
             icon: Icons.badge_outlined,
             label: 'Licenses',
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: 'MedVerify',
-            ),
+            onTap: () =>
+                showLicensePage(context: context, applicationName: 'MedVerify'),
             showChevron: false,
           ),
         ],
@@ -571,7 +623,8 @@ class _AboutScreenState extends State<AboutScreen> {
     );
   }
 
-  Widget _divider() => Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey[100]);
+  Widget _divider() =>
+      Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey[100]);
 
   Widget _buildLinkRow({
     required IconData icon,
@@ -635,7 +688,10 @@ class _AboutScreenState extends State<AboutScreen> {
           const SizedBox(height: 6),
           Text(
             '© $year MedVerify. All rights reserved.',
-            style: GoogleFonts.publicSans(fontSize: 12, color: Colors.grey[500]),
+            style: GoogleFonts.publicSans(
+              fontSize: 12,
+              color: Colors.grey[500],
+            ),
           ),
           const SizedBox(height: 6),
           Text(

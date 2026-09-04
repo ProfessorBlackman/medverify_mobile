@@ -16,9 +16,7 @@ import '../widgets/verification_warnings_widget.dart';
 
 // Mirrors the status parsing in VerificationResult.fromJson.
 VerificationStatus _parseProductStatus(String statusStr) {
-  final statusMap = {
-    for (final e in VerificationStatus.values) e.name: e,
-  };
+  final statusMap = {for (final e in VerificationStatus.values) e.name: e};
 
   final resolvedStatus = statusMap[statusStr.toLowerCase()];
   if (resolvedStatus == null) {
@@ -286,10 +284,7 @@ class _ProductCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: style.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),

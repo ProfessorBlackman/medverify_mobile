@@ -113,7 +113,9 @@ class ConfidenceCard extends StatelessWidget {
                   Text(
                     'confidence',
                     style: GoogleFonts.publicSans(
-                        fontSize: 10, color: style.color),
+                      fontSize: 10,
+                      color: style.color,
+                    ),
                   ),
                 ],
               ),

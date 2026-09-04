@@ -8,20 +8,9 @@ enum MultiVerificationState {
   noResult,
 }
 
-enum EvidenceStatus {
-  match,
-  partialMatch,
-  mismatch,
-  notAvailable,
-}
+enum EvidenceStatus { match, partialMatch, mismatch, notAvailable }
 
-enum VerificationUploadStatus {
-  idle,
-  uploading,
-  processing,
-  success,
-  failure,
-}
+enum VerificationUploadStatus { idle, uploading, processing, success, failure }
 
 // Module-level parser used by both VerificationMatch and MultiVerificationResult.
 MultiVerificationState _parseVerificationState(String raw) {
@@ -159,14 +148,16 @@ class VerificationMatch {
 
   factory VerificationMatch.fromJson(Map<String, dynamic> json) {
     return VerificationMatch(
-      product:
-          MatchedProduct.fromJson(json['product'] as Map<String, dynamic>),
+      product: MatchedProduct.fromJson(json['product'] as Map<String, dynamic>),
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
       verificationState: _parseVerificationState(
-          json['verification_state'] as String? ?? ''),
-      evidence: (json['evidence'] as List<dynamic>?)
-              ?.map((e) =>
-                  VerificationEvidence.fromJson(e as Map<String, dynamic>))
+        json['verification_state'] as String? ?? '',
+      ),
+      evidence:
+          (json['evidence'] as List<dynamic>?)
+              ?.map(
+                (e) => VerificationEvidence.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
     );
@@ -199,8 +190,7 @@ class MultiVerificationResult {
 
   bool get hasMatches => matches.isNotEmpty;
 
-  VerificationMatch? get bestMatch =>
-      matches.isNotEmpty ? matches.first : null;
+  VerificationMatch? get bestMatch => matches.isNotEmpty ? matches.first : null;
 
   /// Overall state: [MultiVerificationState.noResult] when [matches] is empty,
   /// otherwise the state of the best (first) match.
@@ -215,12 +205,15 @@ class MultiVerificationResult {
   factory MultiVerificationResult.fromJson(Map<String, dynamic> json) {
     return MultiVerificationResult(
       sessionId: json['session_id'] as String? ?? '',
-      matches: (json['matches'] as List<dynamic>?)
+      matches:
+          (json['matches'] as List<dynamic>?)
               ?.map(
-                  (m) => VerificationMatch.fromJson(m as Map<String, dynamic>))
+                (m) => VerificationMatch.fromJson(m as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      warnings: (json['warnings'] as List<dynamic>?)
+      warnings:
+          (json['warnings'] as List<dynamic>?)
               ?.map((w) => w as String)
               .toList() ??
           [],
@@ -272,8 +265,7 @@ class VerificationSession {
       registrationNumber: clearRegistrationNumber
           ? null
           : (registrationNumber ?? this.registrationNumber),
-      productName:
-          clearProductName ? null : (productName ?? this.productName),
+      productName: clearProductName ? null : (productName ?? this.productName),
       manufacturers: manufacturers ?? this.manufacturers,
       ingredients: ingredients ?? this.ingredients,
       status: status ?? this.status,

@@ -19,8 +19,7 @@ class VerificationSessionScreen extends StatefulWidget {
       _VerificationSessionScreenState();
 }
 
-class _VerificationSessionScreenState
-    extends State<VerificationSessionScreen> {
+class _VerificationSessionScreenState extends State<VerificationSessionScreen> {
   final _regNumberController = TextEditingController();
   final _productNameController = TextEditingController();
   final _manufacturerController = TextEditingController();
@@ -50,15 +49,19 @@ class _VerificationSessionScreenState
   }
 
   Future<void> _addImageFromCamera() async {
-    final XFile? picked =
-        await _picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+    final XFile? picked = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
     if (picked == null || !mounted) return;
     context.read<VerificationSessionProvider>().addImage(File(picked.path));
   }
 
   Future<void> _addImageFromGallery() async {
-    final XFile? picked =
-        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final XFile? picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (picked == null || !mounted) return;
     context.read<VerificationSessionProvider>().addImage(File(picked.path));
   }
@@ -88,8 +91,10 @@ class _VerificationSessionScreenState
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: Text('Take Photo',
-                  style: GoogleFonts.publicSans(fontWeight: FontWeight.w500)),
+              title: Text(
+                'Take Photo',
+                style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _addImageFromCamera();
@@ -97,8 +102,10 @@ class _VerificationSessionScreenState
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: Text('Choose from Gallery',
-                  style: GoogleFonts.publicSans(fontWeight: FontWeight.w500)),
+              title: Text(
+                'Choose from Gallery',
+                style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _addImageFromGallery();
@@ -113,7 +120,8 @@ class _VerificationSessionScreenState
 
   Future<void> _submit() async {
     final provider = context.read<VerificationSessionProvider>();
-    final verificationService = context.read<MultiEvidenceVerificationService>();
+    final verificationService = context
+        .read<MultiEvidenceVerificationService>();
     final uploadService = context.read<FileUploadService>();
     await provider.submitVerification(verificationService, uploadService);
 
@@ -122,9 +130,7 @@ class _VerificationSessionScreenState
         provider.result != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => const VerificationResultV2Screen(),
-        ),
+        MaterialPageRoute(builder: (_) => const VerificationResultV2Screen()),
       );
     }
   }
@@ -147,7 +153,7 @@ class _VerificationSessionScreenState
           final sessionStatus = provider.session.status;
           final isSubmitting =
               sessionStatus == VerificationUploadStatus.uploading ||
-                  sessionStatus == VerificationUploadStatus.processing;
+              sessionStatus == VerificationUploadStatus.processing;
 
           return Stack(
             children: [
@@ -175,8 +181,7 @@ class _VerificationSessionScreenState
                     // ── Barcode ──────────────────────────────────────────────
                     _SectionHeader(
                       title: 'Barcode',
-                      subtitle:
-                          'Scan the barcode printed on the packaging.',
+                      subtitle: 'Scan the barcode printed on the packaging.',
                     ),
                     const SizedBox(height: 12),
                     _BarcodeSection(
@@ -198,8 +203,7 @@ class _VerificationSessionScreenState
                     _RegNumberField(
                       controller: _regNumberController,
                       enabled: !isSubmitting,
-                      onChanged: (val) =>
-                          provider.setRegistrationNumber(val),
+                      onChanged: (val) => provider.setRegistrationNumber(val),
                     ),
                     const SizedBox(height: 24),
 
@@ -213,8 +217,7 @@ class _VerificationSessionScreenState
                       ingredientController: _ingredientController,
                       onToggle: () =>
                           setState(() => _detailsExpanded = !_detailsExpanded),
-                      onProductNameChanged: (v) =>
-                          provider.setProductName(v),
+                      onProductNameChanged: (v) => provider.setProductName(v),
                       onAddManufacturer: (v) {
                         provider.addManufacturer(v);
                         _manufacturerController.clear();
@@ -225,8 +228,7 @@ class _VerificationSessionScreenState
                         provider.addIngredient(v);
                         _ingredientController.clear();
                       },
-                      onRemoveIngredient: (i) =>
-                          provider.removeIngredient(i),
+                      onRemoveIngredient: (i) => provider.removeIngredient(i),
                     ),
                     const SizedBox(height: 24),
 
@@ -294,8 +296,7 @@ class _ImageGalleryGrid extends StatelessWidget {
   final VoidCallback? onAdd;
   final void Function(int)? onRemove;
 
-  const _ImageGalleryGrid(
-      {required this.images, this.onAdd, this.onRemove});
+  const _ImageGalleryGrid({required this.images, this.onAdd, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -304,12 +305,11 @@ class _ImageGalleryGrid extends StatelessWidget {
       runSpacing: 8,
       children: [
         ...images.asMap().entries.map(
-              (entry) => _ImageThumbnail(
-                file: entry.value,
-                onRemove:
-                    onRemove != null ? () => onRemove!(entry.key) : null,
-              ),
-            ),
+          (entry) => _ImageThumbnail(
+            file: entry.value,
+            onRemove: onRemove != null ? () => onRemove!(entry.key) : null,
+          ),
+        ),
         if (images.length < 4) _AddImageButton(onTap: onAdd),
       ],
     );
@@ -343,8 +343,7 @@ class _ImageThumbnail extends StatelessWidget {
                   color: Colors.black54,
                   shape: BoxShape.circle,
                 ),
-                child:
-                    const Icon(Icons.close, color: Colors.white, size: 14),
+                child: const Icon(Icons.close, color: Colors.white, size: 14),
               ),
             ),
           ),
@@ -369,17 +368,25 @@ class _AddImageButton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: AppTheme.primaryGreen.withValues(alpha: 0.4)),
+            color: AppTheme.primaryGreen.withValues(alpha: 0.4),
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_outlined,
-                color: AppTheme.primaryGreen, size: 28),
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              color: AppTheme.primaryGreen,
+              size: 28,
+            ),
             const SizedBox(height: 4),
-            Text('Add Photo',
-                style: GoogleFonts.publicSans(
-                    fontSize: 10, color: AppTheme.primaryGreen)),
+            Text(
+              'Add Photo',
+              style: GoogleFonts.publicSans(
+                fontSize: 10,
+                color: AppTheme.primaryGreen,
+              ),
+            ),
           ],
         ),
       ),
@@ -417,8 +424,7 @@ class _BarcodeSection extends StatelessWidget {
               barcode != null
                   ? Icons.check_circle_outline
                   : Icons.qr_code_scanner,
-              color:
-                  barcode != null ? AppTheme.secondGreen : Colors.grey[400],
+              color: barcode != null ? AppTheme.secondGreen : Colors.grey[400],
               size: 24,
             ),
           ),
@@ -428,20 +434,31 @@ class _BarcodeSection extends StatelessWidget {
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Barcode Scanned',
-                          style: GoogleFonts.publicSans(
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.secondGreen,
-                              fontSize: 14)),
-                      Text(barcode!,
-                          style: GoogleFonts.publicSans(
-                              fontSize: 12, color: Colors.grey[500]),
-                          overflow: TextOverflow.ellipsis),
+                      Text(
+                        'Barcode Scanned',
+                        style: GoogleFonts.publicSans(
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.secondGreen,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        barcode!,
+                        style: GoogleFonts.publicSans(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   )
-                : Text('No barcode scanned',
+                : Text(
+                    'No barcode scanned',
                     style: GoogleFonts.publicSans(
-                        fontSize: 14, color: Colors.grey[500])),
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
           ),
           if (barcode != null)
             IconButton(
@@ -453,10 +470,13 @@ class _BarcodeSection extends StatelessWidget {
           else
             TextButton(
               onPressed: onScan,
-              child: Text('Scan',
-                  style: GoogleFonts.publicSans(
-                      color: AppTheme.primaryGreen,
-                      fontWeight: FontWeight.w600)),
+              child: Text(
+                'Scan',
+                style: GoogleFonts.publicSans(
+                  color: AppTheme.primaryGreen,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
         ],
       ),
@@ -559,8 +579,11 @@ class _AdditionalDetailsSection extends StatelessWidget {
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Icon(Icons.tune_outlined,
-                        size: 18, color: Colors.grey[600]),
+                    child: Icon(
+                      Icons.tune_outlined,
+                      size: 18,
+                      color: Colors.grey[600],
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -578,7 +601,9 @@ class _AdditionalDetailsSection extends StatelessWidget {
                         Text(
                           'Product name, manufacturers, or ingredients',
                           style: GoogleFonts.publicSans(
-                              fontSize: 12, color: Colors.grey[500]),
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
                         ),
                       ],
                     ),
@@ -601,11 +626,14 @@ class _AdditionalDetailsSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Product Name
-                  Text('Product Name',
-                      style: GoogleFonts.publicSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textLight)),
+                  Text(
+                    'Product Name',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   _TextInputRow(
                     controller: productNameController,
@@ -616,11 +644,14 @@ class _AdditionalDetailsSection extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Manufacturers
-                  Text('Manufacturers',
-                      style: GoogleFonts.publicSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textLight)),
+                  Text(
+                    'Manufacturers',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   _TagListInput(
                     controller: manufacturerController,
@@ -633,11 +664,14 @@ class _AdditionalDetailsSection extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Ingredients
-                  Text('Active Ingredients',
-                      style: GoogleFonts.publicSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textLight)),
+                  Text(
+                    'Active Ingredients',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   _TagListInput(
                     controller: ingredientController,
@@ -708,10 +742,14 @@ class _TextInputRowState extends State<_TextInputRow> {
               decoration: InputDecoration(
                 hintText: widget.hint,
                 hintStyle: GoogleFonts.publicSans(
-                    color: Colors.grey[400], fontSize: 14),
+                  color: Colors.grey[400],
+                  fontSize: 14,
+                ),
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
@@ -771,10 +809,14 @@ class _TagListInput extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: GoogleFonts.publicSans(
-                        color: Colors.grey[400], fontSize: 13),
+                      color: Colors.grey[400],
+                      fontSize: 13,
+                    ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 12),
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
@@ -793,12 +835,17 @@ class _TagListInput extends StatelessWidget {
                   backgroundColor: AppTheme.primaryGreen,
                   foregroundColor: AppTheme.backgroundDark,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
-                child: Text('Add',
-                    style: GoogleFonts.publicSans(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
+                child: Text(
+                  'Add',
+                  style: GoogleFonts.publicSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ),
           ],
@@ -810,28 +857,37 @@ class _TagListInput extends StatelessWidget {
             runSpacing: 6,
             children: tags.asMap().entries.map((entry) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryGreen.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(entry.value,
-                        style: GoogleFonts.publicSans(
-                            fontSize: 12,
-                            color: AppTheme.secondGreen,
-                            fontWeight: FontWeight.w500)),
+                    Text(
+                      entry.value,
+                      style: GoogleFonts.publicSans(
+                        fontSize: 12,
+                        color: AppTheme.secondGreen,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     if (enabled) ...[
                       const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () => onRemove(entry.key),
-                        child: Icon(Icons.close,
-                            size: 14, color: AppTheme.secondGreen),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: AppTheme.secondGreen,
+                        ),
                       ),
                     ],
                   ],
@@ -884,13 +940,15 @@ class _EvidenceSummaryChips extends StatelessWidget {
         if (session.manufacturers.isNotEmpty)
           _Chip(
             icon: Icons.factory_outlined,
-            label: '${session.manufacturers.length} Manufacturer${session.manufacturers.length == 1 ? '' : 's'}',
+            label:
+                '${session.manufacturers.length} Manufacturer${session.manufacturers.length == 1 ? '' : 's'}',
             hasValue: true,
           ),
         if (session.ingredients.isNotEmpty)
           _Chip(
             icon: Icons.science_outlined,
-            label: '${session.ingredients.length} Ingredient${session.ingredients.length == 1 ? '' : 's'}',
+            label:
+                '${session.ingredients.length} Ingredient${session.ingredients.length == 1 ? '' : 's'}',
             hasValue: true,
           ),
       ],
@@ -903,8 +961,11 @@ class _Chip extends StatelessWidget {
   final String label;
   final bool hasValue;
 
-  const _Chip(
-      {required this.icon, required this.label, required this.hasValue});
+  const _Chip({
+    required this.icon,
+    required this.label,
+    required this.hasValue,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -927,11 +988,14 @@ class _Chip extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: GoogleFonts.publicSans(
-                  fontSize: 12,
-                  color: color,
-                  fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: GoogleFonts.publicSans(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -950,17 +1014,20 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.warningRed.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border:
-            Border.all(color: AppTheme.warningRed.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.warningRed.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(Icons.error_outline, color: AppTheme.warningRed, size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(message,
-                style: GoogleFonts.publicSans(
-                    color: AppTheme.warningRed, fontSize: 13)),
+            child: Text(
+              message,
+              style: GoogleFonts.publicSans(
+                color: AppTheme.warningRed,
+                fontSize: 13,
+              ),
+            ),
           ),
         ],
       ),
@@ -1010,8 +1077,7 @@ class _VerifyButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
                 value: imageUploadProgress > 0 ? imageUploadProgress : null,
-                backgroundColor:
-                    AppTheme.primaryGreen.withValues(alpha: 0.2),
+                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.2),
                 color: AppTheme.primaryGreen,
                 minHeight: 3,
               ),
@@ -1020,7 +1086,9 @@ class _VerifyButton extends StatelessWidget {
             Text(
               'Uploading images... ${(imageUploadProgress * 100).round()}%',
               style: GoogleFonts.publicSans(
-                  fontSize: 12, color: Colors.grey[500]),
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -1028,8 +1096,7 @@ class _VerifyButton extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
-                backgroundColor:
-                    AppTheme.primaryGreen.withValues(alpha: 0.2),
+                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.2),
                 color: AppTheme.primaryGreen,
                 minHeight: 3,
               ),
@@ -1038,7 +1105,9 @@ class _VerifyButton extends StatelessWidget {
             Text(
               'Analyzing product information...',
               style: GoogleFonts.publicSans(
-                  fontSize: 12, color: Colors.grey[500]),
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -1053,18 +1122,24 @@ class _VerifyButton extends StatelessWidget {
                 foregroundColor: AppTheme.backgroundDark,
                 disabledBackgroundColor: Colors.grey[200],
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: _isSubmitting
                   ? const SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : Text(
                       'Verify Product',
                       style: GoogleFonts.publicSans(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
           ),

@@ -14,7 +14,7 @@ import 'device_auth_service.dart';
 // This handles messages when the app is completely closed (Terminated)
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-// TODO: Implement background message handling if needed. Currently, this is a no-op because we don't need to handle background messages in this app.
+  // TODO: Implement background message handling if needed. Currently, this is a no-op because we don't need to handle background messages in this app.
 }
 
 class FirebaseApi {
@@ -99,14 +99,12 @@ class FirebaseApi {
     if (token == null) return;
 
     try {
-      final accessToken =
-          await DeviceAuthService.instance.getValidAccessToken();
+      final accessToken = await DeviceAuthService.instance
+          .getValidAccessToken();
       await ApiClient.instance.dio.patch(
         '/v1/device/fcm-token',
         data: {'fcm_token': token},
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
       );
     } catch (_) {
       // Non-fatal: FCM token upload failing must not block the app
@@ -153,8 +151,7 @@ class FirebaseApi {
       onDidReceiveNotificationResponse: (payload) {
         if (payload.payload == null) return;
         try {
-          final message =
-              RemoteMessage.fromMap(jsonDecode(payload.payload!));
+          final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
           handleMessage(message);
         } catch (_) {}
       },

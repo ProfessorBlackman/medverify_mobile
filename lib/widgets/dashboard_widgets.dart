@@ -54,12 +54,16 @@ class DashboardHeader extends StatelessWidget {
                   ],
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.help_outline, color: AppTheme.textLight),
+                  icon: const Icon(
+                    Icons.help_outline,
+                    color: AppTheme.textLight,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const HowItWorksScreen()),
+                        builder: (context) => const HowItWorksScreen(),
+                      ),
                     );
                   },
                   padding: EdgeInsets.zero,
@@ -332,7 +336,8 @@ class ScanCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const ScannerScreen()),
+                            builder: (context) => const ScannerScreen(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -512,7 +517,10 @@ class RecentScanItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -549,24 +557,33 @@ class CustomBottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.home_outlined, 'Home', true,
-              () => Navigator.pushNamed(context, '/dashboard')),
+          _buildNavItem(
+            Icons.home_outlined,
+            'Home',
+            true,
+            () => Navigator.pushNamed(context, '/dashboard'),
+          ),
           _buildScanButton(context),
           _buildNavItem(
-              Icons.feedback_outlined,
-              'Feedback',
-              false,
-              () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FeedbackScreen()))),
+            Icons.feedback_outlined,
+            'Feedback',
+            false,
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildNavItem(
-      IconData icon, String label, bool isSelected, VoidCallback onTap) {
+    IconData icon,
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8.0),
@@ -655,7 +672,8 @@ class VerifyProductCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (_) => const VerificationSessionScreen()),
+              builder: (_) => const VerificationSessionScreen(),
+            ),
           );
         },
         child: Container(
@@ -704,9 +722,13 @@ class VerifyProductCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1D4ED8).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF1D4ED8,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -732,8 +754,7 @@ class VerifyProductCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward_ios,
-                  size: 14, color: Colors.grey[400]),
+              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
             ],
           ),
         ),

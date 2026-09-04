@@ -45,7 +45,8 @@ Future<void> main() async {
       ApiClient.instance.init();
       await LocalDatabase.instance.init();
       await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
 
       // Non-blocking platform work.
       FirebaseApi().initNotifications();
@@ -76,12 +77,13 @@ Future<void> main() async {
             Provider(create: (_) => FileUploadService()),
             Provider(create: (_) => MultiEvidenceVerificationService()),
             ChangeNotifierProvider(
-                create: (_) => VerificationSessionProvider()),
+              create: (_) => VerificationSessionProvider(),
+            ),
           ],
           child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
         ),
       );
-    }
+    },
   );
 }
 
@@ -100,7 +102,8 @@ class DrugCheckerApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => isFirstTime ? const WelcomeScreen() : const SplashScreen(),
+        '/': (context) =>
+            isFirstTime ? const WelcomeScreen() : const SplashScreen(),
         '/welcome': (context) => const WelcomeScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/scanner': (context) => const ScannerScreen(),

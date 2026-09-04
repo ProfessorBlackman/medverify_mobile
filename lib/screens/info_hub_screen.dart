@@ -40,9 +40,9 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
     if (canLaunch) {
       await launchUrl(uri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open link.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to open link.')));
     }
   }
 
@@ -256,9 +256,21 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildContactButton(Icons.phone, 'Tel', 'tel:0302235100')),
+                Expanded(
+                  child: _buildContactButton(
+                    Icons.phone,
+                    'Tel',
+                    'tel:0302235100',
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _buildContactButton(Icons.email, 'Email', 'mailto:fda@fda.gov.gh')),
+                Expanded(
+                  child: _buildContactButton(
+                    Icons.email,
+                    'Email',
+                    'mailto:fda@fda.gov.gh',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -320,21 +332,28 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                           label: const Text('Website'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.secondGreen,
-                            side: const BorderSide(color: AppTheme.primaryGreen),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: const BorderSide(
+                              color: AppTheme.primaryGreen,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () => Navigator.pushNamed(context, '/feedback'),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/feedback'),
                           icon: const Icon(Icons.bug_report_outlined, size: 16),
                           label: const Text('Report Issue'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryGreen,
                             foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
@@ -361,7 +380,8 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PrivacyPolicyScreen(initialTabIndex: 0),
+                        builder: (context) =>
+                            const PrivacyPolicyScreen(initialTabIndex: 0),
                       ),
                     ),
                   ),
@@ -372,7 +392,8 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PrivacyPolicyScreen(initialTabIndex: 1),
+                        builder: (context) =>
+                            const PrivacyPolicyScreen(initialTabIndex: 1),
                       ),
                     ),
                   ),
@@ -383,7 +404,8 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PrivacyPolicyScreen(initialTabIndex: 0),
+                        builder: (context) =>
+                            const PrivacyPolicyScreen(initialTabIndex: 0),
                       ),
                     ),
                   ),
@@ -461,10 +483,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
                   ),
                   child: const Text(
                     'Medicine Safety Tips',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ),
               ),
@@ -474,7 +493,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
         const SizedBox(height: 16),
         Text(
           'Medicine Safety Center',
-          style: GoogleFonts.publicSans(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textLight),
+          style: GoogleFonts.publicSans(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textLight,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -548,7 +571,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             const SizedBox(height: 10),
             Text(
               label,
-              style: GoogleFonts.publicSans(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textLight),
+              style: GoogleFonts.publicSans(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textLight,
+              ),
             ),
           ],
         ),
@@ -568,7 +595,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
       children: [
         Text(
           title,
-          style: GoogleFonts.publicSans(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textLight),
+          style: GoogleFonts.publicSans(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textLight,
+          ),
         ),
         const SizedBox(height: 12),
         for (final (icon, itemTitle, description) in items) ...[
@@ -659,19 +690,29 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
         children: [
           Text(
             'MedVerify CAN',
-            style: GoogleFonts.publicSans(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.secondGreen),
+            style: GoogleFonts.publicSans(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.secondGreen,
+            ),
           ),
           const SizedBox(height: 12),
-          for (final item in canDo) _buildCapabilityRow(Icons.check_circle, item, AppTheme.secondGreen),
+          for (final item in canDo)
+            _buildCapabilityRow(Icons.check_circle, item, AppTheme.secondGreen),
           const SizedBox(height: 20),
           Divider(color: Colors.grey[200]),
           const SizedBox(height: 20),
           Text(
             'MedVerify CANNOT',
-            style: GoogleFonts.publicSans(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.warningOrange),
+            style: GoogleFonts.publicSans(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.warningOrange,
+            ),
           ),
           const SizedBox(height: 12),
-          for (final item in cannotDo) _buildCapabilityRow(Icons.cancel, item, AppTheme.warningOrange),
+          for (final item in cannotDo)
+            _buildCapabilityRow(Icons.cancel, item, AppTheme.warningOrange),
         ],
       ),
     );
@@ -688,7 +729,10 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.publicSans(fontSize: 13, color: AppTheme.textLight),
+              style: GoogleFonts.publicSans(
+                fontSize: 13,
+                color: AppTheme.textLight,
+              ),
             ),
           ),
         ],
@@ -718,7 +762,13 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
               padding: const EdgeInsets.all(6.0),
               child: TextButton(
                 onPressed: () => _launchUrl(url),
-                child: Text(url, style: TextStyle(color: Colors.blue[600], decoration: TextDecoration.underline)),
+                child: Text(
+                  url,
+                  style: TextStyle(
+                    color: Colors.blue[600],
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
             ),
         ],
@@ -757,7 +807,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
           Text(
             'If someone experiences a serious reaction after taking medicine, seek immediate medical attention or visit the nearest healthcare facility.\n\n'
             'MedVerify cannot provide emergency medical assistance.',
-            style: GoogleFonts.publicSans(fontSize: 13, color: const Color(0xFF991B1B), height: 1.5),
+            style: GoogleFonts.publicSans(
+              fontSize: 13,
+              color: const Color(0xFF991B1B),
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -772,7 +826,10 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
-        leading: const Icon(Icons.menu_book_outlined, color: AppTheme.secondGreen),
+        leading: const Icon(
+          Icons.menu_book_outlined,
+          color: AppTheme.secondGreen,
+        ),
         title: Text(
           title,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -780,7 +837,10 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(content, style: TextStyle(color: Colors.grey[600], height: 1.5)),
+            child: Text(
+              content,
+              style: TextStyle(color: Colors.grey[600], height: 1.5),
+            ),
           ),
         ],
       ),
@@ -792,11 +852,16 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: GoogleFonts.publicSans(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textLight),
+      style: GoogleFonts.publicSans(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: AppTheme.textLight,
+      ),
     );
   }
 
-  Widget _divider() => Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey[100]);
+  Widget _divider() =>
+      Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey[100]);
 
   Widget _buildLinkRow({
     required IconData icon,
@@ -815,7 +880,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.publicSans(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                style: GoogleFonts.publicSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textLight,
+                ),
               ),
             ),
             if (showChevron) Icon(Icons.chevron_right, color: Colors.grey[300]),
@@ -873,8 +942,16 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
 
           return Column(
             children: [
-              _buildAppInfoRow('Version', packageInfo != null ? '${packageInfo.version} (${packageInfo.buildNumber})' : '—'),
-              _buildAppInfoRow('Database Source', stats?.verificationSource ?? '—'),
+              _buildAppInfoRow(
+                'Version',
+                packageInfo != null
+                    ? '${packageInfo.version} (${packageInfo.buildNumber})'
+                    : '—',
+              ),
+              _buildAppInfoRow(
+                'Database Source',
+                stats?.verificationSource ?? '—',
+              ),
               _buildAppInfoRow('Database Status', stats?.databaseStatus ?? '—'),
               _buildAppInfoRow(
                 'Last Database Update',
@@ -884,7 +961,11 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
               const SizedBox(height: 16),
               Text(
                 'Built in Ghana 🇬🇭',
-                style: GoogleFonts.publicSans(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                style: GoogleFonts.publicSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textLight,
+                ),
               ),
             ],
           );
@@ -895,13 +976,27 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
 
   String _formatMonthYear(DateTime date) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  Widget _buildAppInfoRow(String label, String value, {bool showDivider = true}) {
+  Widget _buildAppInfoRow(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
     return Column(
       children: [
         Padding(
@@ -909,10 +1004,20 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: GoogleFonts.publicSans(fontSize: 13, color: Colors.grey[700])),
+              Text(
+                label,
+                style: GoogleFonts.publicSans(
+                  fontSize: 13,
+                  color: Colors.grey[700],
+                ),
+              ),
               Text(
                 value,
-                style: GoogleFonts.publicSans(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textLight),
+                style: GoogleFonts.publicSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textLight,
+                ),
               ),
             ],
           ),

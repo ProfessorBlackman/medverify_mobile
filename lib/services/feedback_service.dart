@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -10,7 +9,7 @@ class FeedbackService {
   final FileUploadService _uploadService;
 
   FeedbackService({FileUploadService? uploadService})
-      : _uploadService = uploadService ?? FileUploadService();
+    : _uploadService = uploadService ?? FileUploadService();
 
   Future<bool> sendFeedback({
     String? name,
@@ -51,11 +50,12 @@ class FeedbackService {
       if (name != null && name.isNotEmpty) payload['name'] = name;
       if (email != null && email.isNotEmpty) payload['email'] = email;
       if (phone != null && phone.isNotEmpty) payload['phone'] = phone;
-      final bodyBytes =
-          Uint8List.fromList(utf8.encode(jsonEncode(payload)));
+      final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode(payload)));
 
-      final response = await DeviceAuthService.instance
-          .authenticatedPost('/v1/feedback', bodyBytes);
+      final response = await DeviceAuthService.instance.authenticatedPost(
+        '/v1/feedback',
+        bodyBytes,
+      );
 
       return response.statusCode == 201;
     } catch (e) {

@@ -38,8 +38,10 @@ class LocalDatabase {
     final results = box.values
         .map((e) => VerificationResult.fromMap(e.cast<String, dynamic>()))
         .toList();
-    results.sort((a, b) =>
-        (b.scannedAt ?? DateTime(0)).compareTo(a.scannedAt ?? DateTime(0)));
+    results.sort(
+      (a, b) =>
+          (b.scannedAt ?? DateTime(0)).compareTo(a.scannedAt ?? DateTime(0)),
+    );
     return results;
   }
 

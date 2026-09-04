@@ -25,13 +25,10 @@ class AppSettingsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-         iconTheme: const IconThemeData(color: AppTheme.textLight),
-         bottom: PreferredSize(
+        iconTheme: const IconThemeData(color: AppTheme.textLight),
+        bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: Colors.grey[200],
-            height: 1.0,
-          ),
+          child: Container(color: Colors.grey[200], height: 1.0),
         ),
       ),
       body: SingleChildScrollView(
@@ -45,7 +42,7 @@ class AppSettingsScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey[100]!),
-                 boxShadow: [
+                boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.04),
                     offset: const Offset(0, 2),
@@ -62,15 +59,22 @@ class AppSettingsScreen extends StatelessWidget {
                     iconColor: Colors.orange,
                     iconBgColor: Colors.orange[50]!,
                     onTap: () async {
-                      final url = Uri.parse('https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile');
+                      final url = Uri.parse(
+                        'https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile',
+                      );
                       try {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        );
                       } catch (e) {
-                         if (context.mounted) {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             const SnackBar(content: Text('Could not open the app store.')),
-                           );
-                         }
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Could not open the app store.'),
+                            ),
+                          );
+                        }
                       }
                     },
                     isFirst: true,
@@ -83,10 +87,12 @@ class AppSettingsScreen extends StatelessWidget {
                     iconBgColor: Colors.grey[50]!,
                     onTap: () {
                       // ignore: deprecated_member_use
-                      Share.share('Check out MedVerify! A life-saving app that lets you verify your medication safely in Ghana. Get it on the Play Store: https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile');
+                      Share.share(
+                        'Check out MedVerify! A life-saving app that lets you verify your medication safely in Ghana. Get it on the Play Store: https://play.google.com/store/apps/details?id=com.tlc.medverify_mobile',
+                      );
                     },
                   ),
-                   _buildDivider(),
+                  _buildDivider(),
                   _buildSettingItem(
                     icon: Icons.info,
                     title: 'About MedVerify',
@@ -96,21 +102,21 @@ class AppSettingsScreen extends StatelessWidget {
                       Navigator.pushNamed(context, '/about');
                     },
                   ),
-                   _buildDivider(),
+                  _buildDivider(),
                   _buildSettingItem(
                     icon: Icons.privacy_tip,
                     title: 'Privacy Policy',
                     iconColor: Colors.grey[600]!,
                     iconBgColor: Colors.grey[50]!,
                     onTap: () {
-                       Navigator.pushNamed(context, '/privacy');
+                      Navigator.pushNamed(context, '/privacy');
                     },
                     isLast: true,
                   ),
                 ],
               ),
             ),
-             const SizedBox(height: 32),
+            const SizedBox(height: 32),
             _buildSectionHeader('DATA MANAGEMENT'),
             const SizedBox(height: 12),
             Container(
@@ -149,7 +155,7 @@ class AppSettingsScreen extends StatelessWidget {
                   //   onTap: () {},
                   // ),
                   _buildDivider(),
-                    _buildSettingItem(
+                  _buildSettingItem(
                     icon: Icons.delete_outline,
                     title: 'Clear All Data',
                     titleColor: Colors.red[600],
@@ -158,20 +164,20 @@ class AppSettingsScreen extends StatelessWidget {
                     onTap: () {
                       _showClearDataDialog(context);
                     },
-                     isLast: true,
-                     showChevron: false
+                    isLast: true,
+                    showChevron: false,
                   ),
                 ],
               ),
             ),
-             const SizedBox(height: 32),
-             Text(
+            const SizedBox(height: 32),
+            Text(
               'MedVerify v1.0.0',
               style: GoogleFonts.publicSans(
                 fontSize: 12,
                 color: Colors.grey[500],
               ),
-             ),
+            ),
           ],
         ),
       ),
@@ -263,7 +269,7 @@ class AppSettingsScreen extends StatelessWidget {
     );
   }
 
-    Widget _buildDivider() {
+  Widget _buildDivider() {
     return Divider(
       height: 1,
       thickness: 1,
@@ -288,13 +294,16 @@ class AppSettingsScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              await Provider.of<AppProvider>(context, listen: false)
-                  .clearHistory();
+              await Provider.of<AppProvider>(
+                context,
+                listen: false,
+              ).clearHistory();
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                      content: Text('All data cleared successfully')),
+                    content: Text('All data cleared successfully'),
+                  ),
                 );
               }
             },

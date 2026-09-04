@@ -18,10 +18,15 @@ class RequestSigner {
     required String path,
     required Uint8List body,
   }) {
-    final timestamp =
-        (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
-    final signature =
-        _computeSignature(deviceSecretHex, method, path, timestamp, body);
+    final timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000)
+        .toString();
+    final signature = _computeSignature(
+      deviceSecretHex,
+      method,
+      path,
+      timestamp,
+      body,
+    );
 
     return {
       'Authorization': 'Bearer $accessToken',

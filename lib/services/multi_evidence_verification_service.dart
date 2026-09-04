@@ -15,7 +15,8 @@ class MultiEvidenceVerificationService {
     List<String>? manufacturers,
     List<String>? ingredients,
   }) async {
-    final hasEvidence = (imageUrls != null && imageUrls.isNotEmpty) ||
+    final hasEvidence =
+        (imageUrls != null && imageUrls.isNotEmpty) ||
         barcode != null ||
         registrationNumber != null ||
         productName != null ||
@@ -66,23 +67,26 @@ class MultiEvidenceVerificationService {
 
     if (response.statusCode == 422) {
       throw Exception(
-          'Invalid request: no valid inputs provided or unsupported image format.');
+        'Invalid request: no valid inputs provided or unsupported image format.',
+      );
     }
     if (response.statusCode == 429) {
-      throw Exception(
-          'Too many requests. Please wait a moment and try again.');
+      throw Exception('Too many requests. Please wait a moment and try again.');
     }
     if (response.statusCode != 200) {
       await Sentry.captureMessage(
-          'Multi-evidence verification error: ${response.statusCode}');
+        'Multi-evidence verification error: ${response.statusCode}',
+      );
       throw Exception('Server error: ${response.statusCode}');
     }
 
     if (response.data is! Map<String, dynamic>) {
       throw FormatException(
-          'Unexpected response shape: ${response.data.runtimeType}');
+        'Unexpected response shape: ${response.data.runtimeType}',
+      );
     }
     return MultiVerificationResult.fromJson(
-        response.data as Map<String, dynamic>);
+      response.data as Map<String, dynamic>,
+    );
   }
 }

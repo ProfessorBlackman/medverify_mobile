@@ -157,15 +157,19 @@ class DashboardScreen extends StatelessWidget {
                               name: scan.productName ?? 'Unknown Product',
                               status: statusText,
                               time: scan.scannedAt != null
-                                  ? DateFormat('MMM d, h:mm a')
-                                      .format(scan.scannedAt!)
+                                  ? DateFormat(
+                                      'MMM d, h:mm a',
+                                    ).format(scan.scannedAt!)
                                   : 'N/A',
                               isSafe: statusText == 'Verified',
                               imageUrl: scan.imageUrls?.first,
                               statusColor: statusColor,
                               onTap: () {
-                                Navigator.pushNamed(context, '/results',
-                                    arguments: scan);
+                                Navigator.pushNamed(
+                                  context,
+                                  '/results',
+                                  arguments: scan,
+                                );
                               },
                             );
                           },

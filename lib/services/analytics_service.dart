@@ -7,8 +7,6 @@ import 'package:uuid/uuid.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'device_auth_service.dart';
 
-
-
 class AnalyticsService {
   // Private constructor
   AnalyticsService._();
@@ -19,7 +17,8 @@ class AnalyticsService {
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
   // Getter for the NavigatorObserver (used in MaterialApp)
-  FirebaseAnalyticsObserver get observer => FirebaseAnalyticsObserver(analytics: _analytics);
+  FirebaseAnalyticsObserver get observer =>
+      FirebaseAnalyticsObserver(analytics: _analytics);
 
   Future<void> _askPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -29,7 +28,7 @@ class AnalyticsService {
     }
   }
 
-  Future<void> init(){
+  Future<void> init() {
     return _askPermission();
   }
 
@@ -115,33 +114,39 @@ class AnalyticsService {
   }) async {
     final timestamp = DateTime.now().toIso8601String();
 
-    final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode({
-      'drug_name': drugName,
-      'status': status,
-      'unique_code': uniqueCode,
-      'timestamp': timestamp,
-      'reg_number': regNumber,
-      'latitude': pos?.latitude.toString(),
-      'longitude': pos?.longitude.toString(),
-      'region': region,
-      'source': source,
-    })));
+    final bodyBytes = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode({
+          'drug_name': drugName,
+          'status': status,
+          'unique_code': uniqueCode,
+          'timestamp': timestamp,
+          'reg_number': regNumber,
+          'latitude': pos?.latitude.toString(),
+          'longitude': pos?.longitude.toString(),
+          'region': region,
+          'source': source,
+        }),
+      ),
+    );
 
-    await DeviceAuthService.instance
-        .authenticatedPost('/v1/analytics/scan', bodyBytes);
+    await DeviceAuthService.instance.authenticatedPost(
+      '/v1/analytics/scan',
+      bodyBytes,
+    );
   }
 
   Future<String> _getRegion(Position? pos) async {
     String region = "Unknown";
-    
+
     if (pos != null) {
       try {
         // Reverse geocode the coordinates to get the Region name
         List<Placemark> placemarks = await placemarkFromCoordinates(
-            pos.latitude,
-            pos.longitude
+          pos.latitude,
+          pos.longitude,
         );
-    
+
         if (placemarks.isNotEmpty) {
           // 'administrativeArea' usually maps to the Region (e.g., Ashanti Region)
           region = placemarks.first.administrativeArea ?? "Unknown";
@@ -159,7 +164,10 @@ class AnalyticsService {
   }
 
   // Set User Properties (e.g., user_type: 'premium')
-  Future<void> setUserProperty({required String name, required String value}) async {
+  Future<void> setUserProperty({
+    required String name,
+    required String value,
+  }) async {
     await _analytics.setUserProperty(name: name, value: value);
   }
 

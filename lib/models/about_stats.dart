@@ -19,7 +19,8 @@ class AboutStats {
     return AboutStats(
       databaseStatus: json['databaseStatus'] as String? ?? 'Unknown',
       registeredMedicines: (json['registeredMedicines'] as num?)?.toInt() ?? 0,
-      lastUpdated: DateTime.tryParse(json['lastUpdated'] as String? ?? '') ??
+      lastUpdated:
+          DateTime.tryParse(json['lastUpdated'] as String? ?? '') ??
           DateTime.now(),
       verificationSource: json['verificationSource'] as String? ?? 'Ghana FDA',
     );

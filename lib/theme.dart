@@ -33,12 +33,8 @@ class AppTheme {
           color: textLight,
           fontWeight: FontWeight.bold,
         ),
-        bodyLarge: GoogleFonts.notoSans(
-          color: textLight,
-        ),
-        bodyMedium: GoogleFonts.notoSans(
-          color: textLight,
-        ),
+        bodyLarge: GoogleFonts.notoSans(color: textLight),
+        bodyMedium: GoogleFonts.notoSans(color: textLight),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: backgroundLight,
@@ -49,9 +45,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: Colors.black,
-          textStyle: GoogleFonts.publicSans(
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -72,18 +66,15 @@ class AppTheme {
         onSurface: textDark,
         error: warningRed,
       ),
-      textTheme: GoogleFonts.publicSansTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: GoogleFonts.publicSans(
-          color: textDark,
-          fontWeight: FontWeight.bold,
-        ),
-        bodyLarge: GoogleFonts.notoSans(
-          color: textDark,
-        ),
-        bodyMedium: GoogleFonts.notoSans(
-          color: textDark,
-        ),
-      ),
+      textTheme: GoogleFonts.publicSansTextTheme(ThemeData.dark().textTheme)
+          .copyWith(
+            displayLarge: GoogleFonts.publicSans(
+              color: textDark,
+              fontWeight: FontWeight.bold,
+            ),
+            bodyLarge: GoogleFonts.notoSans(color: textDark),
+            bodyMedium: GoogleFonts.notoSans(color: textDark),
+          ),
       appBarTheme: const AppBarTheme(
         backgroundColor: backgroundDark,
         foregroundColor: textDark,
@@ -93,9 +84,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: Colors.black,
-          textStyle: GoogleFonts.publicSans(
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

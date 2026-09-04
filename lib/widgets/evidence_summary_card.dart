@@ -31,8 +31,11 @@ class _EvidenceSummaryCardState extends State<EvidenceSummaryCard> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.analytics_outlined,
-                      color: AppTheme.secondGreen, size: 20),
+                  const Icon(
+                    Icons.analytics_outlined,
+                    color: AppTheme.secondGreen,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -107,9 +110,10 @@ class _EvidenceRow extends StatelessWidget {
   String _formatType(String type) {
     return type
         .split('_')
-        .map((w) => w.isEmpty
-            ? w
-            : w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .map(
+          (w) =>
+              w.isEmpty ? w : w[0].toUpperCase() + w.substring(1).toLowerCase(),
+        )
         .join(' ');
   }
 
@@ -142,7 +146,9 @@ class _EvidenceRow extends StatelessWidget {
                 Text(
                   '${style.label}$similarityText',
                   style: GoogleFonts.publicSans(
-                      fontSize: 11, color: style.color),
+                    fontSize: 11,
+                    color: style.color,
+                  ),
                 ),
               ],
             ),
