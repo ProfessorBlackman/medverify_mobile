@@ -61,13 +61,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       'image': 'assets/images/official_fda_data.png',
       'title': 'Direct FDA Database',
       'description':
-          'Access real-time information from the FDA of Ghana to ensure the medicines you buy are licensed and safe for use.',
+          'Look up medicines against the FDA of Ghana\'s register to see whether they are registered and what the record says.',
     },
     {
       'image': 'assets/images/safer_ghana.png',
       'title': 'Build a Safer Ghana',
       'description':
-          'Contribute to our database by sharing prices and purchase locations to help others find affordable and authentic drugs.',
+          'Contribute to our database by sharing prices and purchase locations to help others find affordable, registered medicines.',
     },
   ];
 

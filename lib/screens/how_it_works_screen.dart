@@ -47,7 +47,7 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Choose the method that suits you to ensure your\nmedication is genuine and approved by FDA Ghana.',
+              'Choose the method that suits you to check your\nmedication\'s registration status with FDA Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 14,

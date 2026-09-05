@@ -2,7 +2,9 @@
 
 ## Overview
 
-MedVerify Mobile is a Flutter-based mobile application designed to verify the authenticity of pharmaceutical drugs through multiple verification methods. The app helps users identify genuine, expired, recalled, or counterfeit medications by scanning barcodes, FDA numbers, or performing text-based searches.
+MedVerify Mobile is a Flutter-based mobile application that checks a pharmaceutical product's **registration status** against Ghana FDA records. It reports whether a product is registered, and what the official record says about it — including expired and recalled entries — by scanning barcodes, looking up FDA registration numbers, searching by name, or weighing several details together in a multi-evidence check.
+
+It is **not** an authenticity test. A counterfeit can carry a registration number copied from a genuine product and will match; see *Non-Goals* in `docs/Execution Engine.md`.
 
 ## Key Features
 

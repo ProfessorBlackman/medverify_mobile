@@ -666,7 +666,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
     const canDo = [
       'Verify FDA registration',
       'Scan barcodes',
-      'Read medicine labels',
+      'Match on several details at once',
       'Display registration information',
       'Search medicines',
     ];
