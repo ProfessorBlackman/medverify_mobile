@@ -695,7 +695,7 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Made with ❤️ to help combat counterfeit medicines.',
+            'Made with ❤️ to make Ghana\'s medicine register easy to check.',
             style: GoogleFonts.publicSans(
               fontSize: 12,
               fontStyle: FontStyle.italic,
