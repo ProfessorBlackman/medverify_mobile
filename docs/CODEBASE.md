@@ -1,8 +1,10 @@
 # MedVerify Mobile — Codebase Documentation
 
-> A Flutter mobile application that enables Ghanaians to instantly verify the authenticity and FDA approval status of medications by scanning barcodes/QR codes or searching by drug name against the Ghana Food & Drugs Authority (FDA) database.
+> A Flutter mobile application that checks a medicine's **registration status** against Ghana Food & Drugs Authority records — by scanning a barcode, searching by name or registration number, or submitting multiple pieces of evidence at once — and shows what the official record holds about it.
+>
+> It is **not** an authenticity test. A counterfeit carrying a registration number copied from a genuine product will match. See the *Accuracy* section of `README.md`; no copy in this app or its docs may claim more than a register lookup supports.
 
-**Version:** 1.0.0  
+**Version:** 1.0.1 (`pubspec.yaml` is the source of truth)  
 **Platform:** Android & iOS (Flutter)  
 **Backend API:** `https://medverify-api.methuselah.site`  
 **Android Target/Compile SDK:** 36  
@@ -176,12 +178,14 @@ Full scan history from `AppProvider` with:
 ### Info Hub Screen
 **File:** `lib/screens/info_hub_screen.dart`  
 **Route:** `/info`  
-Safety reference page. Sections include:
-- Hero card with call-to-action
-- Signs of counterfeit drugs (packaging, spelling errors, FDA registration, reporting)
-- FAQ expansion tiles
-- Contact buttons (phone, email)
-- Links to Privacy Policy and Terms of Service
+Safety reference page, restructured around when the reader needs each thing
+(see `INFO_HUB_UPDATES.md`). Sections:
+- **Before Buying** — what to check at the point of purchase
+- **Before Using** — what to check on the pack you already have
+- **If You Suspect a Counterfeit** — including reporting it to the FDA, which is the action that matters
+- FAQ expansion tiles, covering what a registration match does and does not prove
+- FDA resources (website, registration database, complaint form) and contact buttons
+- Support contact, and links to Privacy Policy and Terms of Service
 
 ---
 
@@ -240,14 +244,29 @@ Accepts an `initialTabIndex` argument to open directly to either tab.
 
 ### Verification Statuses
 
-| Status               | Display              | Color  |
-|----------------------|----------------------|--------|
-| `verified` / `valid` | Verified Safe        | Green  |
-| `nearExpiry`         | Nearing Expiry       | Orange |
-| `expired`            | License Expired      | Red    |
-| `recalled`           | Product Recalled     | Red    |
-| `unregistered`       | Unregistered Product | Red    |
-| `pending`            | Unknown Status       | Gray   |
+Every label reports what the **FDA register** says. None of them may claim the
+medicine is genuine, safe or still good — see *Accuracy* in `README.md`.
+
+| Status | Display (search flow) | Colour |
+|---|---|---|
+| `verified` / `valid` | Registered with FDA Ghana | Green |
+| `nearExpiry` | Nearing Expiry | Orange |
+| `expired` | Registration Expired | Red |
+| `recalled` | Product Recalled | Red |
+| `unregistered` | Not in the FDA Register | Red |
+| `invalid` | Registration Not Valid | Red |
+| `pending` | Registration Pending | Orange |
+| `none` | Registration Status Unknown | Grey |
+
+`none` means the register held a value the app could not read. It is **not**
+`unregistered` — that is the positive claim that a product is absent from the
+register, and it must never be shown for a parse failure.
+
+The multi-evidence screen (`verification_result_v2_screen.dart`) shows the same
+statuses on its *FDA Register Entry* card, worded to keep them distinct from
+the match-confidence label above them (`REGISTERED`, `NOT IN REGISTER`,
+`REGISTRATION EXPIRED`, …). A `VERIFIED MATCH` against an expired registration
+is a normal, meaningful result: the right entry was found, and it has lapsed.
 
 ### Scan History
 - All scans stored locally in Hive (`scan_history` box)

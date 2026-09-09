@@ -141,14 +141,14 @@ The core data model representing drug verification information:
 
 ```dart
 enum VerificationStatus {
-  verified,      // Authentic drug
-  valid,         // Valid registration
-  invalid,       // Invalid/fake drug
-  unregistered,  // Not registered with FDA
-  expired,       // Past expiry date
-  recalled,      // Recalled by manufacturer
-  near_expiry,   // Approaching expiry
-  pending,       // Verification in progress
+  verified,      // Registration confirmed against the FDA record
+  valid,         // Currently registered and within expiry
+  invalid,       // Registration is not valid
+  unregistered,  // No matching entry in the FDA register
+  expired,       // Registration has lapsed
+  recalled,      // Product has been recalled
+  nearExpiry,    // Approaching expiry
+  pending,       // Registration pending
 }
 
 class VerificationResult {
