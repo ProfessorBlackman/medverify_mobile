@@ -339,12 +339,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
           child: Icon(Icons.shield, color: Colors.white),
         ),
         const SizedBox(height: 8),
+        // "Powered by FDA Ghana" read as an FDA endorsement; MedVerify is
+        // independent of the regulator. Naming the *data* is the accurate
+        // claim, and matches welcome_screen.dart and splash_screen.dart.
         Text(
-          'Powered by FDA Ghana',
+          'Powered by FDA Ghana Data',
           style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
         ),
         Text(
-          'Verifying drug authenticity for your safety',
+          'Checking registration against the official register',
           style: GoogleFonts.publicSans(color: Colors.grey[600], fontSize: 12),
         ),
       ],

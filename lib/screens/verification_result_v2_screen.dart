@@ -14,15 +14,20 @@ import '../widgets/evidence_summary_card.dart';
 import '../widgets/location_input_dialog.dart';
 import '../widgets/verification_warnings_widget.dart';
 
-// Mirrors the status parsing in VerificationResult.fromJson.
+// The product's **FDA registration status** — what the register says about
+// this entry. Not to be confused with the match confidence shown above it,
+// which is how well the entry matches what the user supplied. A product can
+// be a VERIFIED MATCH for a registration that has EXPIRED.
+//
+// Falls back to `none` (status unknown), never to `unregistered`: saying a
+// medicine is absent from the register is a claim, and it must not be made
+// just because a value failed to parse.
 VerificationStatus _parseProductStatus(String statusStr) {
-  final statusMap = {for (final e in VerificationStatus.values) e.name: e};
-
-  final resolvedStatus = statusMap[statusStr.toLowerCase()];
-  if (resolvedStatus == null) {
+  final resolved = verificationStatusFromApi(statusStr);
+  if (resolved == null) {
     Sentry.captureMessage('Unknown drug status received: "$statusStr"');
   }
-  return resolvedStatus ?? VerificationStatus.unregistered;
+  return resolved ?? VerificationStatus.none;
 }
 
 // Same green/orange/red grouping used across the app (see results_screen.dart).
@@ -51,7 +56,7 @@ _ProductStatusStyle _productStatusStyle(VerificationStatus status) {
         bgColor: Color(0xFFECFDF5),
         borderColor: Color(0xFF6EE7B7),
         icon: Icons.verified,
-        label: 'VERIFIED',
+        label: 'REGISTERED',
       );
     case VerificationStatus.nearExpiry:
       return const _ProductStatusStyle(
@@ -75,7 +80,7 @@ _ProductStatusStyle _productStatusStyle(VerificationStatus status) {
         bgColor: Color(0xFFFEF2F2),
         borderColor: Color(0xFFFECACA),
         icon: Icons.event_busy,
-        label: 'EXPIRED',
+        label: 'REGISTRATION EXPIRED',
       );
     case VerificationStatus.recalled:
       return const _ProductStatusStyle(
@@ -91,7 +96,7 @@ _ProductStatusStyle _productStatusStyle(VerificationStatus status) {
         bgColor: Color(0xFFFEF2F2),
         borderColor: Color(0xFFFECACA),
         icon: Icons.block,
-        label: 'UNREGISTERED',
+        label: 'NOT IN REGISTER',
       );
     case VerificationStatus.invalid:
       return const _ProductStatusStyle(
@@ -99,7 +104,18 @@ _ProductStatusStyle _productStatusStyle(VerificationStatus status) {
         bgColor: Color(0xFFFEF2F2),
         borderColor: Color(0xFFFECACA),
         icon: Icons.cancel_outlined,
-        label: 'INVALID',
+        label: 'REGISTRATION INVALID',
+      );
+    case VerificationStatus.none:
+      // Deliberately neutral. The register holds something we cannot
+      // interpret, which is not evidence for or against the product — red
+      // would read as a warning we have no grounds to give.
+      return _ProductStatusStyle(
+        color: Colors.grey[700]!,
+        bgColor: const Color(0xFFF6F7F8),
+        borderColor: const Color(0xFFD9DDE1),
+        icon: Icons.help_outline,
+        label: 'STATUS UNKNOWN',
       );
   }
 }
@@ -275,7 +291,7 @@ class _ProductCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Product Information',
+                  'FDA Register Entry',
                   style: GoogleFonts.publicSans(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -306,6 +322,15 @@ class _ProductCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'What the register says about this entry — separate from how well '
+            'it matches what you supplied.',
+            style: GoogleFonts.publicSans(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 12),
           Text(
