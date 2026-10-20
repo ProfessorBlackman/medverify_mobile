@@ -192,7 +192,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           icon: Icons.campaign_outlined,
           title: 'Reporting Suspicious Medicines',
           child: _bodyText(
-            'Unapproved and Counterfeit drug detection is a community effort. If a product is flagged as "Unregistered" or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps protect other users and strengthens the community\'s ability to spot counterfeit activity.',
+            'Identifying unregistered products is a community effort. If a product is not found in the register or gives you cause for concern, you are encouraged to report it. Sharing accurate prices and pharmacy sources helps other users and makes it easier to see where unregistered products are being sold.',
           ),
         ),
         _buildCollapsibleSection(
@@ -304,7 +304,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                 'Optional community contributions: drug images, purchase prices, and pharmacy locations you choose to share.',
               ),
               _buildBulletPoint(
-                'Approximate location: collected only when you perform a verification or voluntarily submit community data, to help identify regional counterfeit activity.',
+                'Approximate location: collected only when you perform a check or voluntarily submit community data, to help identify where unregistered or suspicious products are being reported.',
               ),
               _buildBulletPoint(
                 'Device information: app version, operating system, device model, crash logs, and an anonymous device identifier, used for security and performance monitoring.',
@@ -316,14 +316,14 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           icon: Icons.tune,
           title: 'How We Use Information',
           child: _bodyText(
-            'We use the information above to verify products against FDA Ghana registration records, identify patterns of counterfeit distribution, maintain and improve app performance and stability, and prepare aggregated reports that may be submitted to the appropriate regulatory authorities.',
+            'We use the information above to look products up against FDA Ghana registration records, identify where unregistered or suspicious products are being reported, maintain and improve app performance and stability, and prepare aggregated reports that may be submitted to the appropriate regulatory authorities.',
           ),
         ),
         _buildCollapsibleSection(
           icon: Icons.gavel_outlined,
           title: 'Legal Basis',
           child: _bodyText(
-            'We process your information based on your consent (for optional community contributions and location data), our legitimate interest in protecting public health and preventing counterfeit distribution, and compliance with Ghana\'s Data Protection Act, 2012 (Act 843).',
+            'We process your information based on your consent (for optional community contributions and location data), our legitimate interest in protecting public health and improving access to regulatory information, and compliance with Ghana\'s Data Protection Act, 2012 (Act 843).',
           ),
         ),
         _buildCollapsibleSection(
@@ -471,7 +471,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             'Community contributions (photos, prices, locations) are optional.',
           ),
           _buildGlanceBullet(
-            'Location is only collected during a verification and used to spot regional counterfeit activity.',
+            'Location is only collected during a check and used to see where unregistered or suspicious products are turning up.',
           ),
           _buildGlanceBullet(
             'You can request access to, correction of, or deletion of your data at any time.',

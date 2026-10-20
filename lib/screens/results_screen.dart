@@ -74,15 +74,33 @@ class _ResultsScreenState extends State<ResultsScreen> {
         .catchError((Object e) async => Sentry.captureException(e));
   }
 
+  // Every result screen reports one thing: what the FDA register says. It may
+  // not claim the medicine is genuine, safe, or still good — a counterfeit
+  // carrying a registration number copied from a real product will land here
+  // as registered. See the Accuracy section of README.md before changing any
+  // wording below.
+  //
+  // These switches are exhaustive on purpose. A `default:` sent every
+  // unhandled status — including `none`, which means "we could not read the
+  // register value" — to a red alarm, which is a claim the data does not
+  // support.
+
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return AppTheme.primaryGreen;
       case VerificationStatus.nearExpiry:
+      case VerificationStatus.pending:
         return AppTheme.warningOrange;
-      default:
+      case VerificationStatus.expired:
+      case VerificationStatus.recalled:
+      case VerificationStatus.unregistered:
+      case VerificationStatus.invalid:
         return AppTheme.warningRed;
+      case VerificationStatus.none:
+      case null:
+        return AppTheme.secondaryText;
     }
   }
 
@@ -93,8 +111,19 @@ class _ResultsScreenState extends State<ResultsScreen> {
         return Icons.verified_user;
       case VerificationStatus.nearExpiry:
         return Icons.warning_amber_rounded;
-      default:
+      case VerificationStatus.pending:
+        return Icons.hourglass_empty;
+      case VerificationStatus.expired:
+        return Icons.event_busy;
+      case VerificationStatus.recalled:
         return Icons.report_problem;
+      case VerificationStatus.unregistered:
+        return Icons.block;
+      case VerificationStatus.invalid:
+        return Icons.cancel_outlined;
+      case VerificationStatus.none:
+      case null:
+        return Icons.help_outline;
     }
   }
 
@@ -102,26 +131,52 @@ class _ResultsScreenState extends State<ResultsScreen> {
     switch (status) {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
-        return 'Verified Safe';
+        return 'Registered with FDA Ghana';
       case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
       case VerificationStatus.expired:
-        return 'License Expired';
+        return 'Registration Expired';
       case VerificationStatus.recalled:
         return 'Product Recalled';
       case VerificationStatus.unregistered:
-        return 'Unregistered Product';
-      default:
-        return 'Unknown Status';
+        return 'Not in the FDA Register';
+      case VerificationStatus.invalid:
+        return 'Registration Not Valid';
+      case VerificationStatus.pending:
+        return 'Registration Pending';
+      case VerificationStatus.none:
+      case null:
+        return 'Registration Status Unknown';
     }
   }
 
   String _getSubtitle(VerificationResult result) {
-    if (result.status == VerificationStatus.verified ||
-        result.status == VerificationStatus.valid) {
-      return 'Authenticity confirmed by FDA Ghana';
+    switch (result.status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return 'Registration valid — this is not a check of authenticity or '
+            'safety.';
+      case VerificationStatus.nearExpiry:
+        return 'Registered, but approaching its expiry date. Check the pack.';
+      case VerificationStatus.expired:
+        return 'This registration has lapsed. It is not currently valid.';
+      case VerificationStatus.recalled:
+        return 'This product has been recalled. Do not use it.';
+      case VerificationStatus.unregistered:
+        return 'No matching entry in the FDA register. That is not proof the '
+            'product is fake — the details may simply not match.';
+      case VerificationStatus.invalid:
+        return 'The register holds this registration as not valid.';
+      case VerificationStatus.pending:
+        return 'Registration is pending, not yet granted.';
+      case VerificationStatus.none:
+      case null:
+        // `message` is parsed as `?? ''`, so an absent one is empty, not null
+        // — which is how the other branches used to render a blank subtitle.
+        final message = result.message;
+        if (message != null && message.trim().isNotEmpty) return message;
+        return 'We could not read a registration status for this entry.';
     }
-    return result.message ?? 'No additional details available.';
   }
 
   bool _showReportButton(VerificationStatus? status) {

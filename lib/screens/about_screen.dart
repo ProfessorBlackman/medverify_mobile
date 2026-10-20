@@ -119,9 +119,10 @@ class _AboutScreenState extends State<AboutScreen> {
         Container(
           width: 96,
           height: 96,
+          // The logo carries its own mint tile and transparent corners, so
+          // the box only casts the shadow; its radius matches the tile's.
           decoration: BoxDecoration(
-            color: AppTheme.primaryGreen,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(21),
             boxShadow: [
               BoxShadow(
                 color: AppTheme.logoColor.withValues(alpha: 0.2),
@@ -695,7 +696,7 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Made with ❤️ to help combat counterfeit medicines.',
+            'Made with ❤️ to make Ghana\'s medicine register easy to check.',
             style: GoogleFonts.publicSans(
               fontSize: 12,
               fontStyle: FontStyle.italic,

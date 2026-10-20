@@ -57,3 +57,9 @@ android/key.properties
 *.keystore
 /android/key.properties
 /android/build/reports/problems/problems-report.html
+
+# Credentials and local artefacts — never commit
+keys_64.txt
+sentry.properties
+services.txt
+run_logs.txt

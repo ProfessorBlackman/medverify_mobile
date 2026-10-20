@@ -9,6 +9,43 @@ enum VerificationStatus {
   recalled,
   nearExpiry,
   pending,
+  // The register holds a value we do not recognise. Distinct from
+  // `unregistered`, which is the positive claim that a product is absent from
+  // the register — never show one as the other. Appended last on purpose:
+  // Hive persists this enum by index, so existing scan history keeps its
+  // meaning.
+  none,
+}
+
+/// Maps the API's `status` string onto [VerificationStatus].
+///
+/// The wire format is snake_case (`near_expiry`) and the enum is lowerCamel,
+/// so the two need an explicit bridge. Every caller must use this one —
+/// `/v1/search` and `/v1/verifications` both send this vocabulary, and a
+/// second hand-rolled copy of this mapping is what caused matched products to
+/// render as UNREGISTERED.
+///
+/// Returns `null` for a value this build does not know, so the caller can
+/// decide what to do; it does **not** silently fall back to a status that
+/// makes a claim about the product.
+VerificationStatus? verificationStatusFromApi(Object? raw) {
+  final value = raw?.toString().trim();
+  if (value == null || value.isEmpty) return null;
+
+  const wireNames = <String, VerificationStatus>{
+    'near_expiry': VerificationStatus.nearExpiry,
+    'near-expiry': VerificationStatus.nearExpiry,
+    'near expiry': VerificationStatus.nearExpiry,
+  };
+
+  final normalised = value.toLowerCase();
+  final aliased = wireNames[normalised];
+  if (aliased != null) return aliased;
+
+  for (final status in VerificationStatus.values) {
+    if (status.name.toLowerCase() == normalised) return status;
+  }
+  return null;
 }
 
 class VerificationResult {
@@ -133,26 +170,29 @@ class VerificationResult {
   }
 
   factory VerificationResult.fromJson(Map<String, dynamic> json) {
-    String statusStr = json['status']?.toString() ?? '';
-    if (statusStr == 'near_expiry') {
-      statusStr = 'nearExpiry';
-    }
-
-    final statusMap = {for (final e in VerificationStatus.values) e.name: e};
-
-    final resolvedStatus = statusMap[statusStr];
+    final resolvedStatus = verificationStatusFromApi(json['status']);
     if (resolvedStatus == null) {
-      Sentry.captureMessage('Unknown drug status received: "$statusStr"');
+      Sentry.captureMessage(
+        'Unknown drug status received: "${json['status']}"',
+      );
     }
 
-    // Handle both new list format ('image_urls') and legacy string format ('image_url').
+    // 'image_url' is what the API actually returns, and it is a list — see
+    // VerificationResult in the backend's schemas/drug_schemas.py. It is
+    // ordered operator-first, so imageUrls.first is the most accountable
+    // photograph. 'image_urls' is only ever a *request* field on
+    // /v1/verifications; it is accepted here for older cached payloads, as is
+    // the single-string form 'image_url' predates.
     List<String>? imageUrls;
-    if (json['image_urls'] is List) {
-      imageUrls = (json['image_urls'] as List)
+    final rawImages = json['image_url'] ?? json['image_urls'];
+    if (rawImages is List) {
+      imageUrls = rawImages
           .map((e) => e.toString())
+          .where((e) => e.isNotEmpty)
           .toList();
-    } else if (json['image_url'] is String) {
-      imageUrls = [json['image_url'] as String];
+      if (imageUrls.isEmpty) imageUrls = null;
+    } else if (rawImages is String && rawImages.isNotEmpty) {
+      imageUrls = [rawImages];
     }
 
     return VerificationResult(
