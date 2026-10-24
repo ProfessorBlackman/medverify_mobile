@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/app_provider.dart';
 import '../models/verification_result.dart';
 import '../theme.dart';
+import '../utils/variables.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Scan History',
+          'History',
           style: GoogleFonts.publicSans(
             color: AppTheme.textLight,
             fontSize: 18,
@@ -107,7 +108,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   });
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search scanned drugs...',
+                  hintText: 'Search your past checks...',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -196,64 +197,65 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Type Filter Chips
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    FilterChip(
-                      label: Text(
-                        'All Types',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _selectedTypeFilter == 0
-                              ? Colors.white
-                              : Colors.black,
+              // Type Filter Chips — every entry is a search while scanning is off
+              if (photoAndBarcodeEnabled)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      FilterChip(
+                        label: Text(
+                          'All Types',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _selectedTypeFilter == 0
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
+                        selected: _selectedTypeFilter == 0,
+                        onSelected: (selected) =>
+                            setState(() => _selectedTypeFilter = 0),
+                        selectedColor: AppTheme.primaryGreen,
+                        side: BorderSide(color: Colors.transparent),
                       ),
-                      selected: _selectedTypeFilter == 0,
-                      onSelected: (selected) =>
-                          setState(() => _selectedTypeFilter = 0),
-                      selectedColor: AppTheme.primaryGreen,
-                      side: BorderSide(color: Colors.transparent),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(
-                        'Scanned',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _selectedTypeFilter == 1
-                              ? Colors.white
-                              : Colors.black,
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: Text(
+                          'Scanned',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _selectedTypeFilter == 1
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
+                        selected: _selectedTypeFilter == 1,
+                        onSelected: (selected) =>
+                            setState(() => _selectedTypeFilter = 1),
+                        selectedColor: AppTheme.primaryGreen,
+                        side: BorderSide(color: Colors.transparent),
                       ),
-                      selected: _selectedTypeFilter == 1,
-                      onSelected: (selected) =>
-                          setState(() => _selectedTypeFilter = 1),
-                      selectedColor: AppTheme.primaryGreen,
-                      side: BorderSide(color: Colors.transparent),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(
-                        'Searched/Manual',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _selectedTypeFilter == 2
-                              ? Colors.white
-                              : Colors.black,
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: Text(
+                          'Searched/Manual',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _selectedTypeFilter == 2
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
+                        selected: _selectedTypeFilter == 2,
+                        onSelected: (selected) =>
+                            setState(() => _selectedTypeFilter = 2),
+                        selectedColor: AppTheme.primaryGreen,
+                        side: BorderSide(color: Colors.transparent),
                       ),
-                      selected: _selectedTypeFilter == 2,
-                      onSelected: (selected) =>
-                          setState(() => _selectedTypeFilter = 2),
-                      selectedColor: AppTheme.primaryGreen,
-                      side: BorderSide(color: Colors.transparent),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
               const SizedBox(height: 24),
 

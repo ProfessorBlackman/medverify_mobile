@@ -50,8 +50,6 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   const DashboardHeader(),
                   const CustomSearchBar(),
-                  const ScanCard(),
-                  const SizedBox(height: 8),
                   const VerifyProductCard(),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -75,7 +73,7 @@ class DashboardScreen extends StatelessWidget {
                           child: QuickActionCard(
                             icon: Icons.history,
                             title: 'View History',
-                            subtitle: 'Review past scans',
+                            subtitle: 'Review past checks',
                             iconColor: Colors.blue[600]!,
                             iconBgColor: Colors.blue[50]!,
                             onTap: () {
@@ -109,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Recent Scans',
+                          'Recent Checks',
                           style: GoogleFonts.publicSans(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -139,7 +137,7 @@ class DashboardScreen extends StatelessWidget {
                         return const Center(
                           child: Padding(
                             padding: EdgeInsets.all(20.0),
-                            child: Text('No recent scans to show.'),
+                            child: Text('No recent checks to show.'),
                           ),
                         );
                       }

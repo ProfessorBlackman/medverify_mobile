@@ -104,9 +104,9 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
               color: AppTheme.secondGreen,
               items: const [
                 (
-                  Icons.qr_code_scanner,
-                  'Scan Barcode',
-                  'Scan the drug\'s barcode in MedVerify to confirm it matches FDA registration records.',
+                  Icons.search,
+                  'Look It Up',
+                  'Search the drug\'s name or registration number in MedVerify to confirm it matches FDA registration records.',
                 ),
                 (
                   Icons.compare,
@@ -162,13 +162,8 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             _buildSectionHeader('Frequently Asked Questions'),
             const SizedBox(height: 16),
             _buildFAQItem(
-              'What if my barcode won\'t scan?',
-              'Try cleaning your camera lens or moving to a brighter, well-lit area. You can also fall back to Search or Multi-Evidence Verify to enter the drug\'s name or registration number instead.',
-              null,
-            ),
-            _buildFAQItem(
               'Why can\'t I find my medicine?',
-              'The medicine may not yet be registered with FDA Ghana, or its name may be spelled differently in the database. Try searching by generic name, or use Multi-Evidence Verify to submit a photo, barcode, and registration number together for a more thorough check.',
+              'The medicine may not yet be registered with FDA Ghana, or its name may be spelled differently in the database. Try searching by generic name, or use Multi-Evidence Verify to enter the registration number, manufacturer and active ingredient together for a more thorough check.',
               null,
             ),
             _buildFAQItem(
@@ -185,7 +180,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             ),
             _buildFAQItem(
               'Does MedVerify collect personal data?',
-              'The main data collected from you is the photo you take, the barcode you scan, and any feedback you give us. We also collect analytics data to fix bugs and improve the app.',
+              'The main data collected from you is what you search for, anything you choose to contribute (like the price you paid or where you bought it), and any feedback you give us. We also collect analytics data to fix bugs and improve the app.',
               null,
             ),
             _buildFAQItem(
@@ -205,7 +200,7 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
             ),
             _buildFAQItem(
               'How can I help improve MedVerify?',
-              'After verifying a drug, you can voluntarily submit the pharmacy name where you bought it, take a picture of the drug, and provide the price you paid. This helps map authentic medicine availability and average prices for everyone. You can also send feedback or report issues at any time.',
+              'After verifying a drug, you can voluntarily submit the pharmacy name where you bought it and the price you paid. This helps map authentic medicine availability and average prices for everyone. You can also send feedback or report issues at any time.',
               null,
             ),
             const SizedBox(height: 32),
@@ -520,10 +515,10 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
       childAspectRatio: 1.6,
       children: [
         _buildQuickAction(
-          icon: Icons.qr_code_scanner,
-          label: 'Scan Medicine',
+          icon: Icons.fact_check_outlined,
+          label: 'Multi-Evidence Verify',
           color: AppTheme.secondGreen,
-          onTap: () => Navigator.pushNamed(context, '/scanner'),
+          onTap: () => Navigator.pushNamed(context, '/verify'),
         ),
         _buildQuickAction(
           icon: Icons.search,
@@ -665,7 +660,6 @@ class _InfoHubScreenState extends State<InfoHubScreen> {
   Widget _buildCapabilitiesCard() {
     const canDo = [
       'Verify FDA registration',
-      'Scan barcodes',
       'Match on several details at once',
       'Display registration information',
       'Search medicines',

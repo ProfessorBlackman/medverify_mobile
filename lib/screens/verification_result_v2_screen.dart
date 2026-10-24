@@ -616,7 +616,7 @@ class _ManualSearchCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try searching by product name or scan the registration number printed on the packaging.',
+            'Try searching by product name or type the registration number printed on the packaging.',
             style: GoogleFonts.publicSans(
               fontSize: 13,
               color: Colors.orange[700],
