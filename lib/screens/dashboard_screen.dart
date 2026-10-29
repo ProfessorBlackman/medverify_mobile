@@ -18,6 +18,8 @@ class DashboardScreen extends StatelessWidget {
         return 'Verified';
       case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
+      case VerificationStatus.expired:
+        return 'Expired';
       default:
         return 'Unverified';
     }
