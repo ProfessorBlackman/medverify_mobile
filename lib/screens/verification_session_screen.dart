@@ -8,6 +8,7 @@ import '../providers/verification_session_provider.dart';
 import '../services/file_upload_service.dart';
 import '../services/multi_evidence_verification_service.dart';
 import '../theme.dart';
+import '../utils/variables.dart';
 import '../widgets/barcode_scanner_modal.dart';
 import 'verification_result_v2_screen.dart';
 
@@ -25,7 +26,7 @@ class _VerificationSessionScreenState extends State<VerificationSessionScreen> {
   final _manufacturerController = TextEditingController();
   final _ingredientController = TextEditingController();
   final _picker = ImagePicker();
-  bool _detailsExpanded = false;
+  bool _detailsExpanded = !photoAndBarcodeEnabled;
 
   @override
   void initState() {
@@ -162,36 +163,38 @@ class _VerificationSessionScreenState extends State<VerificationSessionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Images ───────────────────────────────────────────────
-                    _SectionHeader(
-                      title: 'Product Images',
-                      subtitle:
-                          'Add up to 4 photos — front, back, and both sides of the packaging.',
-                    ),
-                    const SizedBox(height: 12),
-                    _ImageGalleryGrid(
-                      images: provider.session.images,
-                      onAdd: isSubmitting ? null : _showImageOptions,
-                      onRemove: isSubmitting
-                          ? null
-                          : (i) => provider.removeImage(i),
-                    ),
-                    const SizedBox(height: 24),
+                    if (photoAndBarcodeEnabled) ...[
+                      // ── Images ───────────────────────────────────────────────
+                      _SectionHeader(
+                        title: 'Product Images',
+                        subtitle:
+                            'Add up to 4 photos — front, back, and both sides of the packaging.',
+                      ),
+                      const SizedBox(height: 12),
+                      _ImageGalleryGrid(
+                        images: provider.session.images,
+                        onAdd: isSubmitting ? null : _showImageOptions,
+                        onRemove: isSubmitting
+                            ? null
+                            : (i) => provider.removeImage(i),
+                      ),
+                      const SizedBox(height: 24),
 
-                    // ── Barcode ──────────────────────────────────────────────
-                    _SectionHeader(
-                      title: 'Barcode',
-                      subtitle: 'Scan the barcode printed on the packaging.',
-                    ),
-                    const SizedBox(height: 12),
-                    _BarcodeSection(
-                      barcode: provider.session.barcode,
-                      onScan: isSubmitting ? null : _scanBarcode,
-                      onClear: isSubmitting
-                          ? null
-                          : () => provider.clearBarcode(),
-                    ),
-                    const SizedBox(height: 24),
+                      // ── Barcode ──────────────────────────────────────────────
+                      _SectionHeader(
+                        title: 'Barcode',
+                        subtitle: 'Scan the barcode printed on the packaging.',
+                      ),
+                      const SizedBox(height: 12),
+                      _BarcodeSection(
+                        barcode: provider.session.barcode,
+                        onScan: isSubmitting ? null : _scanBarcode,
+                        onClear: isSubmitting
+                            ? null
+                            : () => provider.clearBarcode(),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
                     // ── Registration number ───────────────────────────────────
                     _SectionHeader(
@@ -912,18 +915,20 @@ class _EvidenceSummaryChips extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _Chip(
-          icon: Icons.image_outlined,
-          label: session.images.isEmpty
-              ? 'No Images'
-              : '${session.images.length} Image${session.images.length == 1 ? '' : 's'}',
-          hasValue: session.images.isNotEmpty,
-        ),
-        _Chip(
-          icon: Icons.qr_code,
-          label: session.barcode != null ? 'Barcode' : 'No Barcode',
-          hasValue: session.barcode != null,
-        ),
+        if (photoAndBarcodeEnabled) ...[
+          _Chip(
+            icon: Icons.image_outlined,
+            label: session.images.isEmpty
+                ? 'No Images'
+                : '${session.images.length} Image${session.images.length == 1 ? '' : 's'}',
+            hasValue: session.images.isNotEmpty,
+          ),
+          _Chip(
+            icon: Icons.qr_code,
+            label: session.barcode != null ? 'Barcode' : 'No Barcode',
+            hasValue: session.barcode != null,
+          ),
+        ],
         _Chip(
           icon: Icons.numbers,
           label: session.registrationNumber != null

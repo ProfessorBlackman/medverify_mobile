@@ -52,12 +52,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           "Don't guess with your health. Use MedVerify to instantly check if your medication is licensed by the Food and Drugs Authority (FDA) of Ghana.",
     },
     {
-      'image': 'assets/images/instant_scanning.png',
-      'title': 'Instant Verification',
-      'description':
-          'Quickly scan any drug barcode or QR code to check its registration status with the Ghana FDA.',
-    },
-    {
       'image': 'assets/images/official_fda_data.png',
       'title': 'Direct FDA Database',
       'description':

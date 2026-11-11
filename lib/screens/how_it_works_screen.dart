@@ -38,7 +38,7 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Three ways to verify, instantly',
+              'Two ways to verify, instantly',
               style: GoogleFonts.publicSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -75,21 +75,14 @@ class HowItWorksScreen extends StatelessWidget {
               iconColor: AppTheme.primaryGreen,
               title: 'Search',
               subtitle:
-                  'Type the drug\'s name into the search bar on the dashboard to look it up in the FDA Ghana database.',
-            ),
-            _buildMethodCard(
-              icon: Icons.qr_code_scanner,
-              iconColor: const Color(0xFF047857),
-              title: 'Scan Barcode',
-              subtitle:
-                  'Point your camera at the drug\'s barcode for a quick, automatic lookup.',
+                  'Type the drug\'s brand name, generic name or FDA registration number into the search on the dashboard. Spelling doesn\'t have to be exact.',
             ),
             _buildMethodCard(
               icon: Icons.verified_outlined,
               iconColor: const Color(0xFF1D4ED8),
               title: 'Multi-Evidence Verify',
               subtitle:
-                  'Upload photos of the packaging, scan the barcode, and enter the registration number together for a confidence-scored result backed by multiple signals.',
+                  'Can\'t find it by name? Enter whatever the pack shows — registration number, manufacturer, active ingredient — for a confidence-scored result backed by multiple signals.',
             ),
             const SizedBox(height: 24),
             Padding(
@@ -122,8 +115,7 @@ class HowItWorksScreen extends StatelessWidget {
             _buildStep(
               icon: Icons.volunteer_activism,
               title: '3. Help the Community',
-              subtitle:
-                  'Help others by providing an image of the drug, scanning its barcode, and adding the price you bought it at.',
+              subtitle: 'Help others by adding the price you bought it at.',
               isLast: true,
             ),
             const SizedBox(height: 24),

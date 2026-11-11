@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
       setState(() {
         _progress = 0.7;
-        _loadingText = 'Loading your scan history...';
+        _loadingText = 'Loading your history...';
       });
       await context.read<AppProvider>().init();
 

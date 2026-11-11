@@ -136,8 +136,8 @@ class AppSettingsScreen extends StatelessWidget {
                 children: [
                   _buildSettingItem(
                     icon: Icons.history,
-                    title: 'Scan History',
-                    subtitle: 'Manage your past scans',
+                    title: 'History',
+                    subtitle: 'Manage your past checks',
                     iconColor: Colors.grey[600]!,
                     iconBgColor: Colors.grey[50]!,
                     onTap: () {
@@ -285,7 +285,7 @@ class AppSettingsScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('Clear All Data?'),
         content: const Text(
-          'This will permanently delete your scan history and reset the app data. This action cannot be undone.',
+          'This will permanently delete your history and reset the app data. This action cannot be undone.',
         ),
         actions: [
           TextButton(

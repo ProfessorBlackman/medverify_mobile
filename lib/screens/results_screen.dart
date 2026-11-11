@@ -16,6 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/verification_result.dart';
 import '../services/file_upload_service.dart';
 import '../theme.dart';
+import '../utils/variables.dart';
 import '../widgets/barcode_scanner_modal.dart';
 
 import 'package:provider/provider.dart';
@@ -390,7 +391,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           SnackBar(
             content: Text(
               response == 200
-                  ? 'Thank you for helping improve our data!'
+                  ? 'Thanks! We\'ll check the photos before they go live.'
                   : 'Photos uploaded but data update failed.',
             ),
             backgroundColor: response == 200
@@ -474,7 +475,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           SnackBar(
             content: Text(
               response == 200
-                  ? 'Barcode added successfully! Thank you.'
+                  ? 'Thanks! We\'ll check the barcode before it goes live.'
                   : 'Failed to add barcode. Please try again.',
             ),
             backgroundColor: response == 200
@@ -614,8 +615,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
+              // The typical price only appears once a few people have
+              // reported one, so don't promise it shows up straight away.
               response == 200
-                  ? 'Price added successfully! Thank you.'
+                  ? 'Thanks! Prices appear once a few people have reported them.'
+                  : response == 422
+                  ? 'That price doesn\'t look right. Enter the amount in cedis.'
                   : 'Failed to add price. Please try again.',
             ),
             backgroundColor: response == 200
@@ -666,7 +671,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Scan Result',
+          'Check Result',
           style: GoogleFonts.publicSans(
             color: AppTheme.textLight,
             fontWeight: FontWeight.bold,
@@ -692,7 +697,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             _buildImproveCard(context, result),
             const SizedBox(height: 16),
             Text(
-              'Scan results are based on data from the Food and Drugs Authority (FDA) Ghana.',
+              'Results are based on data from the Food and Drugs Authority (FDA) Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 12,
@@ -1100,30 +1105,32 @@ class _ResultsScreenState extends State<ResultsScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildImproveButton(
-                  context,
-                  icon: Icons.qr_code_scanner,
-                  label: 'Scan Barcode',
-                  isLoading: _isSendingBarcode,
-                  onTap: () => _scanAndAddBarcode(result),
+          if (contributionsEnabled) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildImproveButton(
+                    context,
+                    icon: Icons.qr_code_scanner,
+                    label: 'Scan Barcode',
+                    isLoading: _isSendingBarcode,
+                    onTap: () => _scanAndAddBarcode(result),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildImproveButton(
-                  context,
-                  icon: Icons.photo_camera,
-                  label: 'Add Photos',
-                  isLoading: _isUploadingPhotos,
-                  onTap: () => _showPhotoPickerSheet(result),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildImproveButton(
+                    context,
+                    icon: Icons.photo_camera,
+                    label: 'Add Photos',
+                    isLoading: _isUploadingPhotos,
+                    onTap: () => _showPhotoPickerSheet(result),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           GestureDetector(
             onTap: _isAddingPrice ? null : () => _showPriceInputDialog(result),
@@ -1283,11 +1290,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(
-                showReport ? Icons.report_problem : Icons.qr_code_scanner,
-              ),
+              icon: Icon(showReport ? Icons.report_problem : Icons.search),
               label: Text(
-                showReport ? 'Report to FDA' : 'Scan Another Product',
+                showReport ? 'Report to FDA' : 'Check Another Medicine',
                 style: GoogleFonts.publicSans(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,

@@ -173,9 +173,10 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget _buildDescription() {
     return Text(
       'MedVerify helps you verify whether medicines are registered with the '
-      'Ghana Food and Drugs Authority (FDA). You can search teh name, scan a barcode or medicine '
-      'package to compare it against official FDA registration records and '
-      'make more informed decisions about your medication.',
+      'Ghana Food and Drugs Authority (FDA). Search by name or registration '
+      'number, or enter the details on the pack, to compare a medicine '
+      'against official FDA registration records and make more informed '
+      'decisions about your medication.',
       textAlign: TextAlign.center,
       style: GoogleFonts.publicSans(
         fontSize: 15,
@@ -189,8 +190,8 @@ class _AboutScreenState extends State<AboutScreen> {
 
   Widget _buildFeaturesCard() {
     const features = [
-      (Icons.qr_code_scanner, 'Scan medicine barcodes'),
-      (Icons.camera_alt_outlined, 'Scan medicine packaging'),
+      (Icons.search, 'Search by name or registration number'),
+      (Icons.layers_outlined, 'Match on several details at once'),
       (Icons.verified_outlined, 'Verify FDA registration'),
       (Icons.description_outlined, 'View registration details'),
       (Icons.warning_amber_outlined, 'Identify potential issues'),
