@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../models/verification_result.dart';
@@ -37,18 +38,20 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       try {
         final service = context.read<VerificationService>();
-        Set<VerificationResult> results =
-            await service.verifyBarcode(barcodes.first.rawValue!);
+        Set<VerificationResult> results = await service.verifyBarcode(
+          barcodes.first.rawValue!,
+        );
 
         if (!mounted) return;
         if (results.isEmpty) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
-              const ManualEntryScreen(fromScanningError: true),
+                  const ManualEntryScreen(fromScanningError: true),
             ),
           );
+          return; // CRIT-01: guard results.first on the empty-set path
         }
 
         final bestResult = results.first;
@@ -66,7 +69,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           approvalDate: bestResult.approvalDate,
           postalAddress: bestResult.postalAddress,
           registrationType: bestResult.registrationType,
-          imageUrl: bestResult.imageUrl,
+          imageUrls: bestResult.imageUrls,
           barcode: bestResult.barcode,
           category: bestResult.category,
           message: bestResult.message,
@@ -74,7 +77,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         );
 
         if (resultWithTimestamp.status == VerificationStatus.unregistered) {
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
@@ -83,12 +86,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
           );
         } else {
           context.read<AppProvider>().addScan(resultWithTimestamp);
-          await Navigator.pushNamed(context, '/results',
-              arguments: resultWithTimestamp);
+          await Navigator.pushNamed(
+            context,
+            '/results',
+            arguments: resultWithTimestamp,
+          );
         }
       } catch (e) {
         if (!mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
@@ -102,6 +108,41 @@ class _ScannerScreenState extends State<ScannerScreen> {
           });
         }
       }
+    }
+  }
+
+  Future<void> _pickImageAndScan() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
+    try {
+      final capture = await _controller.analyzeImage(pickedFile.path);
+      if (!mounted) return;
+
+      if (capture == null || capture.barcodes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No barcode found in the selected image.'),
+          ),
+        );
+        setState(() => _isProcessing = false);
+        return;
+      }
+
+      await _handleBarcode(capture);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not read the image. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -204,7 +245,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Widget _buildScannerOverlay() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2),
+        border: Border.all(
+          color: Colors.green.withValues(alpha: 0.5),
+          width: 2,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       width: MediaQuery.of(context).size.width * 0.6,
@@ -251,7 +295,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _buildActionButton(
           icon: Icons.image,
           label: 'Upload Image',
-          onPressed: () {},
+          onPressed: _pickImageAndScan,
         ),
         _buildActionButton(
           icon: Icons.edit,
@@ -295,12 +339,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
           child: Icon(Icons.shield, color: Colors.white),
         ),
         const SizedBox(height: 8),
+        // "Powered by FDA Ghana" read as an FDA endorsement; MedVerify is
+        // independent of the regulator. Naming the *data* is the accurate
+        // claim, and matches welcome_screen.dart and splash_screen.dart.
         Text(
-          'Powered by FDA Ghana',
+          'Powered by FDA Ghana Data',
           style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
         ),
         Text(
-          'Verifying drug authenticity for your safety',
+          'Checking registration against the official register',
           style: GoogleFonts.publicSans(color: Colors.grey[600], fontSize: 12),
         ),
       ],

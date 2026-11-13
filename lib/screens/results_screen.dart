@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:medverify_mobile/services/analytics_service.dart';
+import 'package:medverify_mobile/services/device_auth_service.dart';
 import 'package:medverify_mobile/widgets/location_input_dialog.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +16,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/verification_result.dart';
 import '../services/file_upload_service.dart';
 import '../theme.dart';
+import '../utils/variables.dart';
 import '../widgets/barcode_scanner_modal.dart';
+
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
 
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
@@ -26,7 +31,7 @@ class ResultsScreen extends StatefulWidget {
 
 class _ResultsScreenState extends State<ResultsScreen> {
   final FileUploadService _fileUploadService = FileUploadService();
-  bool _isUploadingPhoto = false;
+  bool _isUploadingPhotos = false;
   bool _isSendingBarcode = false;
   bool _isAddingPrice = false;
 
@@ -34,11 +39,17 @@ class _ResultsScreenState extends State<ResultsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final arguments = ModalRoute.of(context)!.settings.arguments;
+      if (!mounted) return;
+      final arguments = ModalRoute.of(context)?.settings.arguments;
       if (arguments is VerificationResult) {
-        _showLocationDialog(arguments);
-      } else if (arguments is List<VerificationResult> && arguments.isNotEmpty) {
-        _showLocationDialog(arguments.first);
+        if (arguments.source == null) {
+          _showLocationDialog(arguments);
+        }
+      } else if (arguments is List<VerificationResult> &&
+          arguments.isNotEmpty) {
+        if (arguments.first.source == null) {
+          _showLocationDialog(arguments.first);
+        }
       }
     });
   }
@@ -50,25 +61,47 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
 
     if (location != null && location.isNotEmpty) {
-      AnalyticsService.instance.logDrugScan(
-        drugName: result.productName ?? 'N/A',
-        regNumber: result.regNumber ?? 'N/A',
-        status: result.status.toString(),
-        source: location,
-      );
+      if (mounted) {
+        await context.read<AppProvider>().updateResult(result, location);
+      }
     }
+    AnalyticsService.instance
+        .logDrugScan(
+          drugName: result.productName ?? 'N/A',
+          regNumber: result.regNumber ?? 'N/A',
+          status: result.status.toString(),
+          source: location,
+        )
+        .catchError((Object e) async => Sentry.captureException(e));
   }
 
+  // Every result screen reports one thing: what the FDA register says. It may
+  // not claim the medicine is genuine, safe, or still good — a counterfeit
+  // carrying a registration number copied from a real product will land here
+  // as registered. See the Accuracy section of README.md before changing any
+  // wording below.
+  //
+  // These switches are exhaustive on purpose. A `default:` sent every
+  // unhandled status — including `none`, which means "we could not read the
+  // register value" — to a red alarm, which is a claim the data does not
+  // support.
 
   Color _getStatusColor(VerificationStatus? status) {
     switch (status) {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return AppTheme.primaryGreen;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
+      case VerificationStatus.pending:
         return AppTheme.warningOrange;
-      default:
+      case VerificationStatus.expired:
+      case VerificationStatus.recalled:
+      case VerificationStatus.unregistered:
+      case VerificationStatus.invalid:
         return AppTheme.warningRed;
+      case VerificationStatus.none:
+      case null:
+        return AppTheme.secondaryText;
     }
   }
 
@@ -77,10 +110,21 @@ class _ResultsScreenState extends State<ResultsScreen> {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return Icons.verified_user;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return Icons.warning_amber_rounded;
-      default:
+      case VerificationStatus.pending:
+        return Icons.hourglass_empty;
+      case VerificationStatus.expired:
+        return Icons.event_busy;
+      case VerificationStatus.recalled:
         return Icons.report_problem;
+      case VerificationStatus.unregistered:
+        return Icons.block;
+      case VerificationStatus.invalid:
+        return Icons.cancel_outlined;
+      case VerificationStatus.none:
+      case null:
+        return Icons.help_outline;
     }
   }
 
@@ -88,115 +132,307 @@ class _ResultsScreenState extends State<ResultsScreen> {
     switch (status) {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
-        return 'Verified Safe';
-      case VerificationStatus.near_expiry:
+        return 'Registered with FDA Ghana';
+      case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
       case VerificationStatus.expired:
-        return 'License Expired';
+        return 'Registration Expired';
       case VerificationStatus.recalled:
         return 'Product Recalled';
       case VerificationStatus.unregistered:
-        return 'Unregistered Product';
-      default:
-        return 'Unknown Status';
+        return 'Not in the FDA Register';
+      case VerificationStatus.invalid:
+        return 'Registration Not Valid';
+      case VerificationStatus.pending:
+        return 'Registration Pending';
+      case VerificationStatus.none:
+      case null:
+        return 'Registration Status Unknown';
     }
   }
 
   String _getSubtitle(VerificationResult result) {
-    if (result.status == VerificationStatus.verified ||
-        result.status == VerificationStatus.valid) {
-      return 'Authenticity confirmed by FDA Ghana';
+    switch (result.status) {
+      case VerificationStatus.verified:
+      case VerificationStatus.valid:
+        return 'Registration valid — this is not a check of authenticity or '
+            'safety.';
+      case VerificationStatus.nearExpiry:
+        return 'Registered, but approaching its expiry date. Check the pack.';
+      case VerificationStatus.expired:
+        return 'This registration has lapsed. It is not currently valid.';
+      case VerificationStatus.recalled:
+        return 'This product has been recalled. Do not use it.';
+      case VerificationStatus.unregistered:
+        return 'No matching entry in the FDA register. That is not proof the '
+            'product is fake — the details may simply not match.';
+      case VerificationStatus.invalid:
+        return 'The register holds this registration as not valid.';
+      case VerificationStatus.pending:
+        return 'Registration is pending, not yet granted.';
+      case VerificationStatus.none:
+      case null:
+        // `message` is parsed as `?? ''`, so an absent one is empty, not null
+        // — which is how the other branches used to render a blank subtitle.
+        final message = result.message;
+        if (message != null && message.trim().isNotEmpty) return message;
+        return 'We could not read a registration status for this entry.';
     }
-    return result.message ?? 'No additional details available.';
   }
 
   bool _showReportButton(VerificationStatus? status) {
     return status != VerificationStatus.verified &&
         status != VerificationStatus.valid &&
-        status != VerificationStatus.near_expiry;
+        status != VerificationStatus.nearExpiry;
   }
 
-  Future<void> _takeAndUploadPhoto(VerificationResult result) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile == null) return;
-
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: AppTheme.primaryGreen,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false,
-        ),
-        IOSUiSettings(title: 'Crop Image'),
-      ],
-    );
-
-    if (croppedFile == null) return;
-
-    setState(() {
-      _isUploadingPhoto = true;
-    });
-
-    final uploadedUrl = await _fileUploadService.uploadFile(
-      File(croppedFile.path),
-      FilePurpose.improve,
-    );
-    final response = await _uploadProductImprovements(
-      null,
-      uploadedUrl,
-      result.regNumber!,
-    );
-
-    if (mounted) {
+  Future<void> _showPhotoPickerSheet(VerificationResult result) async {
+    if (result.regNumber == null ||
+        result.regNumber!.isEmpty ||
+        result.regNumber == 'N/A') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            uploadedUrl != null && response?.statusCode == 200
-                ? 'Thank you for helping improve our data!'
-                : 'Photo upload failed.',
-          ),
-          backgroundColor: response?.statusCode == 200 && uploadedUrl != null
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
+        const SnackBar(
+          content: Text('Cannot add photos without a registration number.'),
+          backgroundColor: AppTheme.warningRed,
         ),
       );
-      setState(() {
-        _isUploadingPhoto = false;
-      });
+      return;
+    }
+
+    final List<File> images = [];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            Future<void> pickImage() async {
+              if (images.length >= 4) return;
+              final picker = ImagePicker();
+              final picked = await picker.pickImage(source: ImageSource.camera);
+              if (picked == null) return;
+              final cropped = await ImageCropper().cropImage(
+                sourcePath: picked.path,
+                uiSettings: [
+                  AndroidUiSettings(
+                    toolbarTitle: 'Crop Image',
+                    toolbarColor: AppTheme.primaryGreen,
+                    toolbarWidgetColor: Colors.white,
+                    initAspectRatio: CropAspectRatioPreset.original,
+                    lockAspectRatio: false,
+                  ),
+                  IOSUiSettings(title: 'Crop Image'),
+                ],
+              );
+              if (cropped == null) return;
+              setSheetState(() => images.add(File(cropped.path)));
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Add Drug Photos',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Photograph all sides of the packaging (up to 4 photos).',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ...images.asMap().entries.map((entry) {
+                        return Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                entry.value,
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () => setSheetState(
+                                  () => images.removeAt(entry.key),
+                                ),
+                                child: const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.black54,
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      if (images.length < 4)
+                        GestureDetector(
+                          onTap: pickImage,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: const Icon(
+                              Icons.add_a_photo,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: images.isEmpty
+                          ? null
+                          : () {
+                              Navigator.of(sheetContext).pop();
+                              _uploadPhotos(result, List<File>.from(images));
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        disabledBackgroundColor: Colors.grey[300],
+                      ),
+                      child: Text(
+                        images.isEmpty
+                            ? 'Add at least one photo'
+                            : 'Upload ${images.length} Photo${images.length == 1 ? '' : 's'}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: AppTheme.textLight),
+                    ),
+                  ),
+                  const SizedBox(height: 29),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _uploadPhotos(
+    VerificationResult result,
+    List<File> images,
+  ) async {
+    setState(() => _isUploadingPhotos = true);
+    try {
+      final List<String> uploadedUrls = [];
+      for (final image in images) {
+        final uploadResult = await _fileUploadService.uploadFile(
+          image,
+          FilePurpose.improve,
+        );
+        if (uploadResult.isSuccess && uploadResult.url != null) {
+          uploadedUrls.add(uploadResult.url!);
+        }
+      }
+
+      if (uploadedUrls.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('All photo uploads failed. Please try again.'),
+              backgroundColor: AppTheme.warningRed,
+            ),
+          );
+        }
+        return;
+      }
+
+      final response = await _uploadProductImprovements(
+        null,
+        uploadedUrls,
+        null,
+        result.regNumber!,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response == 200
+                  ? 'Thanks! We\'ll check the photos before they go live.'
+                  : 'Photos uploaded but data update failed.',
+            ),
+            backgroundColor: response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingPhotos = false);
     }
   }
 
-  Future<http.Response?> _uploadProductImprovements(
+  // Returns the HTTP status code, or null on network/auth error.
+  Future<int?> _uploadProductImprovements(
     String? barcode,
-    String? imageUrl,
+    List<String>? imageUrls,
+    String? price,
     String regNumber,
   ) async {
-    if (barcode == null && imageUrl == null) {
+    if (barcode == null &&
+        (imageUrls == null || imageUrls.isEmpty) &&
+        price == null) {
       return null;
     }
-    final url = Uri.parse('${FileUploadService.baseUrl}/update_product');
-    Map<String, String> body = {'registration_number': regNumber};
-    if (barcode != null && barcode.isNotEmpty) {
-      body['barcode'] = barcode;
-    }
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      body['image_url'] = imageUrl;
-    }
+
+    final Map<String, dynamic> body = {'registration_number': regNumber};
+    if (barcode != null && barcode.isNotEmpty) body['barcode'] = barcode;
+    if (imageUrls != null && imageUrls.isNotEmpty)
+      body['image_urls'] = imageUrls;
+    if (price != null && price.isNotEmpty) body['price'] = price;
 
     try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
+      final bodyBytes = Uint8List.fromList(utf8.encode(jsonEncode(body)));
+      final response = await DeviceAuthService.instance.authenticatedPost(
+        '/v1/update_product',
+        bodyBytes,
       );
-      return response;
+      return response.statusCode;
     } catch (e) {
-      await Sentry.captureException(e, stackTrace: StackTrace.current);
+      await Sentry.captureException(e);
       return null;
     }
   }
@@ -225,34 +461,32 @@ class _ResultsScreenState extends State<ResultsScreen> {
       return; // User cancelled or failed to scan.
     }
 
-    setState(() {
-      _isSendingBarcode = true;
-    });
+    setState(() => _isSendingBarcode = true);
+    try {
+      final response = await _uploadProductImprovements(
+        barcode,
+        null,
+        null,
+        result.regNumber!,
+      ); // imageUrls: null — barcode-only submission
 
-    final response = await _uploadProductImprovements(
-      barcode,
-      null,
-      result.regNumber!,
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response?.statusCode == 200
-                ? 'Barcode added successfully! Thank you.'
-                : 'Failed to add barcode. Please try again.',
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response == 200
+                  ? 'Thanks! We\'ll check the barcode before it goes live.'
+                  : 'Failed to add barcode. Please try again.',
+            ),
+            backgroundColor: response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
           ),
-          backgroundColor: response?.statusCode == 200
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
-        ),
-      );
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingBarcode = false);
     }
-
-    setState(() {
-      _isSendingBarcode = false;
-    });
   }
 
   Future<void> _showPriceInputDialog(VerificationResult result) async {
@@ -294,8 +528,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: priceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Drug Price (Retail)',
                     prefixText: 'GHS ',
@@ -305,8 +540,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a price';
                     }
-                    if (double.tryParse(value) == null) {
+                    final parsed = double.tryParse(value);
+                    if (parsed == null) {
                       return 'Please enter a valid number';
+                    }
+                    if (parsed <= 0) {
+                      return 'Price must be greater than zero';
                     }
                     return null;
                   },
@@ -324,18 +563,22 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       backgroundColor: AppTheme.primaryGreen,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Submit Price',
-                        style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Submit Price',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppTheme.textLight)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppTheme.textLight),
+                  ),
                 ),
                 const SizedBox(height: 29),
               ],
-            ), 
+            ),
           ),
         );
       },
@@ -359,34 +602,36 @@ class _ResultsScreenState extends State<ResultsScreen> {
       return;
     }
 
-    setState(() {
-      _isAddingPrice = true;
-    });
-
-    final response = await _uploadProductImprovements(
-      null,
-      null,
-      result.regNumber!,
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response?.statusCode == 200
-                ? 'Price added successfully! Thank you.'
-                : 'Failed to add price. Please try again.',
-          ),
-          backgroundColor: response?.statusCode == 200
-              ? AppTheme.primaryGreen
-              : AppTheme.warningRed,
-        ),
+    setState(() => _isAddingPrice = true);
+    try {
+      final response = await _uploadProductImprovements(
+        null,
+        null,
+        price,
+        result.regNumber!,
       );
-    }
 
-    setState(() {
-      _isAddingPrice = false;
-    });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              // The typical price only appears once a few people have
+              // reported one, so don't promise it shows up straight away.
+              response == 200
+                  ? 'Thanks! Prices appear once a few people have reported them.'
+                  : response == 422
+                  ? 'That price doesn\'t look right. Enter the amount in cedis.'
+                  : 'Failed to add price. Please try again.',
+            ),
+            backgroundColor: response == 200
+                ? AppTheme.primaryGreen
+                : AppTheme.warningRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAddingPrice = false);
+    }
   }
 
   @override
@@ -426,7 +671,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Scan Result',
+          'Check Result',
           style: GoogleFonts.publicSans(
             color: AppTheme.textLight,
             fontWeight: FontWeight.bold,
@@ -452,7 +697,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             _buildImproveCard(context, result),
             const SizedBox(height: 16),
             Text(
-              'Scan results are based on data from the Food and Drugs Authority (FDA) Ghana.',
+              'Results are based on data from the Food and Drugs Authority (FDA) Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 12,
@@ -522,7 +767,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
             children: [
               GestureDetector(
                 onLongPress: () {
-                  if (result.imageUrl != null) {
+                  final urls = result.imageUrls;
+                  if (urls != null && urls.isNotEmpty) {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -532,33 +778,36 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: <Widget>[
-                              InteractiveViewer(
-                                child: Image.network(
-                                  result.imageUrl!,
-                                  fit: BoxFit.contain,
-                                  loadingBuilder:
-                                      (
-                                        BuildContext context,
-                                        Widget child,
-                                        ImageChunkEvent? loadingProgress,
-                                      ) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        }
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        );
-                                      },
+                              PageView.builder(
+                                itemCount: urls.length,
+                                itemBuilder: (context, i) => InteractiveViewer(
+                                  child: Image.network(
+                                    urls[i],
+                                    fit: BoxFit.contain,
+                                    loadingBuilder:
+                                        (
+                                          BuildContext context,
+                                          Widget child,
+                                          ImageChunkEvent? loadingProgress,
+                                        ) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -588,14 +837,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(12),
-                    image: result.imageUrl != null
+                    image:
+                        result.imageUrls != null && result.imageUrls!.isNotEmpty
                         ? DecorationImage(
-                            image: NetworkImage(result.imageUrl!),
+                            image: NetworkImage(result.imageUrls!.first),
                             fit: BoxFit.cover,
                           )
                         : null,
                   ),
-                  child: result.imageUrl == null
+                  child: result.imageUrls == null || result.imageUrls!.isEmpty
                       ? const Icon(
                           Icons.medication,
                           size: 40,
@@ -687,6 +937,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
               Icons.event_available,
               'Approval Date',
               DateFormat('dd MMM yyyy').format(result.approvalDate!),
+            ),
+          const Divider(height: 1, color: Colors.transparent),
+          if (result.price != null)
+            _buildDetailRow(
+              context,
+              Icons.event_busy,
+              'Price',
+              'GH₵ ${result.price}',
+              valueColor: AppTheme.textLight,
             ),
           const Divider(height: 1, color: Colors.transparent),
           if (result.expiryDate != null)
@@ -846,30 +1105,32 @@ class _ResultsScreenState extends State<ResultsScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildImproveButton(
-                  context,
-                  icon: Icons.qr_code_scanner,
-                  label: 'Scan Barcode',
-                  isLoading: _isSendingBarcode,
-                  onTap: () => _scanAndAddBarcode(result),
+          if (contributionsEnabled) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildImproveButton(
+                    context,
+                    icon: Icons.qr_code_scanner,
+                    label: 'Scan Barcode',
+                    isLoading: _isSendingBarcode,
+                    onTap: () => _scanAndAddBarcode(result),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildImproveButton(
-                  context,
-                  icon: Icons.photo_camera,
-                  label: 'Take Photo of Front',
-                  isLoading: _isUploadingPhoto,
-                  onTap: () => _takeAndUploadPhoto(result),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildImproveButton(
+                    context,
+                    icon: Icons.photo_camera,
+                    label: 'Add Photos',
+                    isLoading: _isUploadingPhotos,
+                    onTap: () => _showPhotoPickerSheet(result),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           GestureDetector(
             onTap: _isAddingPrice ? null : () => _showPriceInputDialog(result),
@@ -885,9 +1146,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   if (_isAddingPrice)
-                    Padding(
-                      padding: const EdgeInsetsGeometry.all(10),
-                      child: const SizedBox(
+                    const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: SizedBox(
                         height: 28,
                         width: 28,
                         child: CircularProgressIndicator(strokeWidth: 2),
@@ -895,42 +1156,48 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     )
                   else
                     Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondaryBackground,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Padding(padding: const EdgeInsetsGeometry.all(13),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondaryBackground,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(13),
                         child: Icon(
                           Icons.price_change,
                           color: AppTheme.textLight,
                           size: 28,
                         ),
-                        )
                       ),
+                    ),
                   const SizedBox(height: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Add Price',
-                        style: GoogleFonts.publicSans(fontWeight: FontWeight.w500),
+                        style: GoogleFonts.publicSans(
+                          fontWeight: FontWeight.w500,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       Text(
                         'Report current market price',
-                        style: GoogleFonts.publicSans(fontWeight: FontWeight.normal, color: AppTheme.secondaryText),
+                        style: GoogleFonts.publicSans(
+                          fontWeight: FontWeight.normal,
+                          color: AppTheme.secondaryText,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                   Padding(
-                      padding: const EdgeInsetsGeometry.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Icon(
                       Icons.arrow_forward_ios_outlined,
                       color: Colors.grey[500],
                       size: 20,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -978,7 +1245,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _buildBottomActions(BuildContext context, VerificationResult result) {
+  Widget _buildBottomActions(
+    BuildContext buildContext,
+    VerificationResult result,
+  ) {
     final showReport = _showReportButton(result.status);
 
     return Container(
@@ -1020,11 +1290,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(
-                showReport ? Icons.report_problem : Icons.qr_code_scanner,
-              ),
+              icon: Icon(showReport ? Icons.report_problem : Icons.search),
               label: Text(
-                showReport ? 'Report to FDA' : 'Scan Another Product',
+                showReport ? 'Report to FDA' : 'Check Another Medicine',
                 style: GoogleFonts.publicSans(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,

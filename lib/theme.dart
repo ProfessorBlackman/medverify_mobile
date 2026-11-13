@@ -13,6 +13,8 @@ class AppTheme {
   static const Color warningRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF59E0B); // Was expiredOrange
   static const Color recalledBlack = Color(0xFF000000); // Or dark grey
+  static const Color logoColor = Color(0xFFD0F2ED); // Or dark grey
+  static const Color logoColor2 = Color(0xFF26C2AD); // Or dark grey
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -31,12 +33,8 @@ class AppTheme {
           color: textLight,
           fontWeight: FontWeight.bold,
         ),
-        bodyLarge: GoogleFonts.notoSans(
-          color: textLight,
-        ),
-        bodyMedium: GoogleFonts.notoSans(
-          color: textLight,
-        ),
+        bodyLarge: GoogleFonts.notoSans(color: textLight),
+        bodyMedium: GoogleFonts.notoSans(color: textLight),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: backgroundLight,
@@ -47,9 +45,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: Colors.black,
-          textStyle: GoogleFonts.publicSans(
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -70,18 +66,15 @@ class AppTheme {
         onSurface: textDark,
         error: warningRed,
       ),
-      textTheme: GoogleFonts.publicSansTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: GoogleFonts.publicSans(
-          color: textDark,
-          fontWeight: FontWeight.bold,
-        ),
-        bodyLarge: GoogleFonts.notoSans(
-          color: textDark,
-        ),
-        bodyMedium: GoogleFonts.notoSans(
-          color: textDark,
-        ),
-      ),
+      textTheme: GoogleFonts.publicSansTextTheme(ThemeData.dark().textTheme)
+          .copyWith(
+            displayLarge: GoogleFonts.publicSans(
+              color: textDark,
+              fontWeight: FontWeight.bold,
+            ),
+            bodyLarge: GoogleFonts.notoSans(color: textDark),
+            bodyMedium: GoogleFonts.notoSans(color: textDark),
+          ),
       appBarTheme: const AppBarTheme(
         backgroundColor: backgroundDark,
         foregroundColor: textDark,
@@ -91,9 +84,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: Colors.black,
-          textStyle: GoogleFonts.publicSans(
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

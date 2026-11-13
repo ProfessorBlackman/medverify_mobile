@@ -16,8 +16,10 @@ class DashboardScreen extends StatelessWidget {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return 'Verified';
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return 'Nearing Expiry';
+      case VerificationStatus.expired:
+        return 'Expired';
       default:
         return 'Unverified';
     }
@@ -28,7 +30,7 @@ class DashboardScreen extends StatelessWidget {
       case VerificationStatus.verified:
       case VerificationStatus.valid:
         return AppTheme.primaryGreen;
-      case VerificationStatus.near_expiry:
+      case VerificationStatus.nearExpiry:
         return AppTheme.warningOrange;
       default:
         return AppTheme.warningRed;
@@ -50,7 +52,7 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   const DashboardHeader(),
                   const CustomSearchBar(),
-                  const ScanCard(),
+                  const VerifyProductCard(),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -73,7 +75,7 @@ class DashboardScreen extends StatelessWidget {
                           child: QuickActionCard(
                             icon: Icons.history,
                             title: 'View History',
-                            subtitle: 'Review past scans',
+                            subtitle: 'Review past checks',
                             iconColor: Colors.blue[600]!,
                             iconBgColor: Colors.blue[50]!,
                             onTap: () {
@@ -107,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Recent Scans',
+                          'Recent Checks',
                           style: GoogleFonts.publicSans(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -137,7 +139,7 @@ class DashboardScreen extends StatelessWidget {
                         return const Center(
                           child: Padding(
                             padding: EdgeInsets.all(20.0),
-                            child: Text('No recent scans to show.'),
+                            child: Text('No recent checks to show.'),
                           ),
                         );
                       }
@@ -155,15 +157,19 @@ class DashboardScreen extends StatelessWidget {
                               name: scan.productName ?? 'Unknown Product',
                               status: statusText,
                               time: scan.scannedAt != null
-                                  ? DateFormat('MMM d, h:mm a')
-                                      .format(scan.scannedAt!)
+                                  ? DateFormat(
+                                      'MMM d, h:mm a',
+                                    ).format(scan.scannedAt!)
                                   : 'N/A',
                               isSafe: statusText == 'Verified',
-                              imageUrl: scan.imageUrl,
+                              imageUrl: scan.imageUrls?.first,
                               statusColor: statusColor,
                               onTap: () {
-                                Navigator.pushNamed(context, '/results',
-                                    arguments: scan);
+                                Navigator.pushNamed(
+                                  context,
+                                  '/results',
+                                  arguments: scan,
+                                );
                               },
                             );
                           },

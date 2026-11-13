@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../models/verification_result.dart';
+import '../providers/app_provider.dart';
 import '../screens/feedback_screen.dart';
 import '../screens/how_it_works_screen.dart';
-import '../screens/scanner_screen.dart';
+import '../screens/verification_session_screen.dart';
+import '../services/verification_service.dart';
 import '../theme.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -32,31 +36,62 @@ class DashboardHeader extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey[200]!),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 2,
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.help_outline, color: AppTheme.textLight),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const HowItWorksScreen()),
-                );
-              },
-              padding: EdgeInsets.zero,
-            ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.help_outline,
+                    color: AppTheme.textLight,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HowItWorksScreen(),
+                      ),
+                    );
+                  },
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: AppTheme.textLight),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -64,68 +99,83 @@ class DashboardHeader extends StatelessWidget {
   }
 }
 
-class CustomSearchBar extends StatelessWidget {
+class CustomSearchBar extends StatefulWidget {
   const CustomSearchBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 8),
-                child: Icon(Icons.search, color: Colors.grey[400]),
-              ),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search brand or generic name...',
-                    hintStyle: GoogleFonts.publicSans(
-                      color: Colors.grey[400],
-                      fontSize: 16,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                  border: Border(left: BorderSide(color: Colors.grey[100]!)),
-                ),
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Search',
-                    style: GoogleFonts.publicSans(
-                      color: const Color(0xFF065F46), // emerald-800
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ));
-  }
+  State<CustomSearchBar> createState() => _CustomSearchBarState();
 }
 
-class ScanCard extends StatelessWidget {
-  const ScanCard({super.key});
+class _CustomSearchBarState extends State<CustomSearchBar> {
+  final _textController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _performSearch() async {
+    final query = _textController.text.trim();
+    if (query.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final service = context.read<VerificationService>();
+      final results = await service.verifyFuzzySearch(query);
+
+      if (!mounted) return;
+
+      if (results.isNotEmpty) {
+        final bestMatch = results.first;
+        final resultWithTimestamp = VerificationResult(
+          status: bestMatch.status,
+          productName: bestMatch.productName,
+          manufacturer: bestMatch.manufacturer,
+          countryOrigin: bestMatch.countryOrigin,
+          region: bestMatch.region,
+          regNumber: bestMatch.regNumber,
+          expiryDate: bestMatch.expiryDate,
+          activeIngredient: bestMatch.activeIngredient,
+          email: bestMatch.email,
+          approvalDate: bestMatch.approvalDate,
+          postalAddress: bestMatch.postalAddress,
+          registrationType: bestMatch.registrationType,
+          imageUrls: bestMatch.imageUrls,
+          barcode: bestMatch.barcode,
+          category: bestMatch.category,
+          message: bestMatch.message,
+          scannedAt: DateTime.now(),
+        );
+        context.read<AppProvider>().addScan(resultWithTimestamp);
+        setState(() => _isLoading = false);
+        Navigator.pushNamed(context, '/results', arguments: results.toList());
+      } else {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No matching drug found. Please check your spelling or try a different search term.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'An error occurred. Please check your connection and try again.',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +194,7 @@ class ScanCard extends StatelessWidget {
             ),
           ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
             Positioned(
@@ -161,61 +212,66 @@ class ScanCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Scan Medication',
-                            style: GoogleFonts.publicSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textLight,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          SizedBox(
-                            width: 200,
-                            child: Text(
-                              'Verify FDA approval instantly using your camera.',
-                              style: GoogleFonts.publicSans(
-                                fontSize: 14,
-                                color: Colors.grey[500],
+                  Text(
+                    'Check a Medicine',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Type the brand name, generic name or FDA registration '
+                    'number on the pack. Spelling doesn\'t have to be exact.',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 8),
+                          child: Icon(Icons.search, color: Colors.grey[400]),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (_) => _performSearch(),
+                            decoration: InputDecoration(
+                              hintText: 'e.g. Paracetamol or FDA/…',
+                              hintStyle: GoogleFonts.publicSans(
+                                color: Colors.grey[400],
+                                fontSize: 16,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.qr_code_scanner,
-                          size: 32,
-                          color: Color(0xFF047857), // emerald-700
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ScannerScreen()),
-                        );
-                      },
+                      onPressed: _isLoading ? null : _performSearch,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryGreen,
                         foregroundColor: const Color(0xFF102216),
@@ -225,20 +281,22 @@ class ScanCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.center_focus_weak, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Scan Now',
-                            style: GoogleFonts.publicSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF102216),
+                              ),
+                            )
+                          : Text(
+                              'Check',
+                              style: GoogleFonts.publicSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -393,7 +451,10 @@ class RecentScanItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -430,24 +491,33 @@ class CustomBottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.home_outlined, 'Home', true,
-              () => Navigator.pushNamed(context, '/dashboard')),
-          _buildScanButton(context),
           _buildNavItem(
-              Icons.feedback_outlined,
-              'Feedback',
-              false,
-              () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FeedbackScreen()))),
+            Icons.home_outlined,
+            'Home',
+            true,
+            () => Navigator.pushNamed(context, '/dashboard'),
+          ),
+          _buildVerifyButton(context),
+          _buildNavItem(
+            Icons.feedback_outlined,
+            'Feedback',
+            false,
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildNavItem(
-      IconData icon, String label, bool isSelected, VoidCallback onTap) {
+    IconData icon,
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8.0),
@@ -474,12 +544,12 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildScanButton(BuildContext context) {
+  Widget _buildVerifyButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ScannerScreen()),
+          MaterialPageRoute(builder: (_) => const VerificationSessionScreen()),
         );
       },
       child: Transform.translate(
@@ -503,14 +573,14 @@ class CustomBottomNavBar extends StatelessWidget {
                 ],
               ),
               child: const Icon(
-                Icons.qr_code_scanner,
+                Icons.fact_check_outlined,
                 color: AppTheme.primaryGreen,
                 size: 28,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Scan',
+              'Verify',
               style: GoogleFonts.publicSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
@@ -518,6 +588,109 @@ class CustomBottomNavBar extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class VerifyProductCard extends StatelessWidget {
+  const VerifyProductCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const VerificationSessionScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[200]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                offset: const Offset(0, 2),
+                blurRadius: 6,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1D4ED8).withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified_outlined,
+                  size: 28,
+                  color: Color(0xFF1D4ED8),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Multi-Evidence Verify',
+                          style: GoogleFonts.publicSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF1D4ED8,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'NEW',
+                            style: GoogleFonts.publicSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1D4ED8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Can\'t find it by name? Enter whatever the pack shows — manufacturer, ingredient, strength — for a confidence-scored match.',
+                      style: GoogleFonts.publicSans(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
+            ],
+          ),
         ),
       ),
     );

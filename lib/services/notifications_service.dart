@@ -1,26 +1,41 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
-import 'package:medverify_mobile/utils/variables.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../utils/globals.dart';
-import '../utils/user_identification.dart';
+import 'api_client.dart';
+import 'device_auth_service.dart';
 
 // ⚠️ TOP-LEVEL FUNCTION: Must be outside the class and annotated
 // This handles messages when the app is completely closed (Terminated)
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  if (kDebugMode) {
-    print('Background Message: ${message.notification?.title}');
-    print('Payload: ${message.data}');
-  }
+  // TODO: Implement background message handling if needed. Currently, this is a no-op because we don't need to handle background messages in this app.
 }
 
 class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
+
+  static const _trustedDomains = {'medverify.app', 'fdaghana.gov.gh'};
+
+  // Routes that FCM payloads are allowed to navigate to.
+  // Excluded: /results (requires arguments → crash), /scanner (unexpected UX),
+  // /welcome (resets onboarding), / (root), /manual (argument-sensitive).
+  static const _allowedRoutes = {
+    '/dashboard',
+    '/history',
+    '/info',
+    '/feedback',
+    '/how_it_works',
+    '/privacy',
+    '/about',
+  };
+  static const _kNotificationsEnabled = 'notifications_topics_enabled';
+  static const _topics = ['news', 'info'];
 
   // Setup for local notifications (to show banners when app is open)
   final _androidChannel = const AndroidNotificationChannel(
@@ -39,44 +54,61 @@ class FirebaseApi {
     // 2. Fetch the FCM Token
     final fCMToken = await _firebaseMessaging.getToken();
 
-    await _firebaseMessaging.subscribeToTopic('news');
-    await _firebaseMessaging.subscribeToTopic('info');
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kNotificationsEnabled) ?? true) {
+      await subscribeToTopics();
+    }
 
     // 1. Upload this token to your server immediately
     await uploadTokenToServer(fCMToken);
 
-    // 2. Listen for refreshes (Crucial!)
+    // Listen for token refreshes.
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
-      uploadTokenToServer(newToken);
+      uploadTokenToServer(newToken).catchError((_) {});
     });
-    // 1. APP TERMINATED: User taps notification while app is completely closed
-    _firebaseMessaging.getInitialMessage().then(handleMessage);
 
-    // 2. APP IN BACKGROUND: User taps notification while app is minimized
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
-
-    // 3. Initialize background settings
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
-    // 4. Initialize local notifications
+    // Message tap handlers and foreground banner are set up in these two
+    // methods — registering them here too would create duplicate listeners.
     initPushNotifications();
     initLocalNotifications();
+  }
+
+  /// Subscribes to all topics and persists the preference. Call this when the
+  /// user enables topic notifications in settings.
+  Future<void> subscribeToTopics() async {
+    for (final topic in _topics) {
+      await _firebaseMessaging.subscribeToTopic(topic);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, true);
+  }
+
+  /// Unsubscribes from all topics and persists the preference. Call this when
+  /// the user disables topic notifications in settings.
+  Future<void> unsubscribeFromTopics() async {
+    for (final topic in _topics) {
+      await _firebaseMessaging.unsubscribeFromTopic(topic);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, false);
   }
 
   Future<void> uploadTokenToServer(String? token) async {
     if (token == null) return;
 
-    // get user's unique identifier
-    String userId = await getUserId();
-
-    await http.post(
-      Uri.parse('$backendUrl/register-user'),
-      headers: {
-        'Content-Type': 'application/json',
-        'User-ID': userId, // Attach the UUID here
-      },
-      body: jsonEncode({'token': token}),
-    );
+    try {
+      final accessToken = await DeviceAuthService.instance
+          .getValidAccessToken();
+      await ApiClient.instance.dio.patch(
+        '/v1/device/fcm-token',
+        data: {'fcm_token': token},
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+    } catch (_) {
+      // Non-fatal: FCM token upload failing must not block the app
+    }
   }
 
   Future<void> initPushNotifications() async {
@@ -91,12 +123,13 @@ class FirebaseApi {
       final notification = message.notification;
       if (notification == null) return;
 
-      // Manually show a local notification
+      // Use hashCode as a per-notification ID so concurrent notifications
+      // don't silently overwrite each other in the system tray.
       _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _androidChannel.id,
             _androidChannel.name,
@@ -114,10 +147,13 @@ class FirebaseApi {
     const ios = DarwinInitializationSettings();
 
     await _localNotifications.initialize(
-      const InitializationSettings(android: android, iOS: ios),
+      settings: const InitializationSettings(android: android, iOS: ios),
       onDidReceiveNotificationResponse: (payload) {
-        final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
-        handleMessage(message);
+        if (payload.payload == null) return;
+        try {
+          final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
+          handleMessage(message);
+        } catch (_) {}
       },
     );
 
@@ -132,22 +168,27 @@ class FirebaseApi {
   void handleMessage(RemoteMessage? message) async {
     if (message == null) return;
 
-    // 1. Extract the data
     final data = message.data;
 
-    // 2. Check if a URL exists in the payload
     if (data.containsKey('url')) {
-      final urlString = data['url'];
-      final uri = Uri.parse(urlString);
+      final urlString = data['url'] as String?;
+      if (urlString == null || urlString.isEmpty) return;
+
+      final uri = Uri.tryParse(urlString);
+      if (uri == null || !uri.hasScheme || !uri.hasAuthority) return;
+
+      // Only allow HTTPS links to known trusted domains.
+      if (uri.scheme != 'https') return;
+      if (!_trustedDomains.contains(uri.host)) return;
 
       if (await canLaunchUrl(uri)) {
-        // mode: LaunchMode.externalApplication ensures it opens in Chrome/Safari, not inside the app
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
-    }
-    // 3. (Optional) Keep your existing navigation logic
-    else if (data.containsKey('route')) {
-      navigatorKey.currentState?.pushNamed(data['route']);
+    } else if (data.containsKey('route')) {
+      final route = data['route'] as String?;
+      if (route != null && _allowedRoutes.contains(route)) {
+        navigatorKey.currentState?.pushNamed(route);
+      }
     }
   }
 }

@@ -1,69 +1,144 @@
-
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:mime/mime.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import '../utils/variables.dart';
+import 'auth_exceptions.dart';
+import 'device_auth_service.dart';
 
-enum FilePurpose {
-  feedback,
-  improve,
+enum FilePurpose { feedback, improve, temporary }
+
+class UploadResult {
+  final String? url;
+  final String? error;
+
+  const UploadResult._({this.url, this.error});
+
+  static UploadResult success(String url) => UploadResult._(url: url);
+  static UploadResult failure(String error) => UploadResult._(error: error);
+
+  bool get isSuccess => url != null;
 }
 
 class FileUploadService {
-  static final String baseUrl = backendUrl; // Using the feedback service base URL
+  static const _timeout = Duration(seconds: 60);
 
-  Future<String?> uploadFile(File file, FilePurpose purpose) async {
-    try {
-      // Step 1: Get presigned URL from backend
-      final presignedUrlResponse = await _getPresignedUrl(file, purpose);
-      if (presignedUrlResponse == null) return null;
+  static const _allowedMimeTypes = {
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/pdf',
+  };
+  static const _maxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
 
-      // Step 2: Upload file directly to S3
-      final uploadSuccess = await _uploadToS3(
-        file,
-        presignedUrlResponse['upload_url']!,
-        presignedUrlResponse['content_type']!,
+  void _validateFile(File file) {
+    final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+    if (!_allowedMimeTypes.contains(mimeType)) {
+      throw const FileValidationException(
+        'Unsupported file type. Allowed types: JPEG, PNG, WebP, PDF.',
       );
+    }
+    if (file.lengthSync() > _maxFileSizeBytes) {
+      throw const FileValidationException(
+        'File too large. Maximum size is 10 MB.',
+      );
+    }
+  }
 
-      if (uploadSuccess) {
-        // Step 3: Optionally confirm upload with backend
-        await _confirmUpload(presignedUrlResponse['file_key']!);
+  Future<UploadResult> uploadFile(
+    File file,
+    FilePurpose purpose, {
+    void Function(double progress)? onProgress,
+  }) async {
+    try {
+      _validateFile(file);
+    } on FileValidationException catch (e) {
+      // User error — low severity, no Sentry
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'upload_failure',
+        parameters: {'stage': 'validation'},
+      );
+      return UploadResult.failure(e.message);
+    }
 
-        // Return the file URL for your backend to store
-        return presignedUrlResponse['file_url'];
+    try {
+      final presignedUrlResponse = await _getPresignedUrl(file, purpose);
+      if (presignedUrlResponse == null) {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'upload_failure',
+          parameters: {'stage': 'presign'},
+        );
+        return UploadResult.failure('Failed to get upload URL.');
       }
 
-      return null;
+      final uploadUrl = presignedUrlResponse['upload_url']!;
+      final uploadHost = Uri.parse(uploadUrl).host;
+      if (!uploadHost.endsWith('.amazonaws.com')) {
+        throw Exception('Unexpected upload host: $uploadHost');
+      }
+
+      final uploadSuccess = await _uploadToS3(
+        file,
+        uploadUrl,
+        presignedUrlResponse['content_type']!,
+        onProgress: onProgress,
+      );
+
+      if (!uploadSuccess) {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'upload_failure',
+          parameters: {'stage': 'upload'},
+        );
+        return UploadResult.failure('File upload failed.');
+      }
+
+      final confirmed = await _confirmUpload(presignedUrlResponse['file_key']!);
+      if (!confirmed) {
+        await Sentry.captureMessage(
+          'Upload confirmation failed for key: ${presignedUrlResponse['file_key']}',
+        );
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'upload_failure',
+          parameters: {'stage': 'confirm'},
+        );
+        return UploadResult.failure('Upload confirmation failed.');
+      }
+
+      return UploadResult.success(presignedUrlResponse['file_url']!);
     } catch (e) {
       await Sentry.captureException(e);
-      return null;
+      return UploadResult.failure('Upload failed due to an unexpected error.');
     }
   }
 
   Future<Map<String, dynamic>?> _getPresignedUrl(
-      File file, FilePurpose purpose) async {
+    File file,
+    FilePurpose purpose,
+  ) async {
     final fileName = file.path.split('/').last;
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/generate-upload-url'),
-      headers: {
-        'Content-Type': 'application/json',
-        // Add your authentication headers here if needed
-        // 'Authorization': 'Bearer $token',
-      },
-      body: json.encode({
-        'file_name': fileName,
-        'content_type': mimeType,
-        'file_purpose': purpose.name,
-      }),
+    // Serialize once — same bytes used for HMAC signing and the HTTP body
+    final bodyBytes = Uint8List.fromList(
+      utf8.encode(
+        json.encode({
+          'file_name': fileName,
+          'content_type': mimeType,
+          'file_purpose': purpose.name,
+        }),
+      ),
+    );
+
+    final response = await DeviceAuthService.instance.authenticatedPost(
+      '/v1/generate-upload-url',
+      bodyBytes,
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = response.data as Map<String, dynamic>;
       return {
         'upload_url': data['upload_url'],
         'file_key': data['file_key'],
@@ -71,36 +146,83 @@ class FileUploadService {
         'content_type': mimeType,
       };
     }
-    await Sentry.captureMessage('Server error: ${response.statusCode}');
+    await Sentry.captureMessage('Presigned URL error: ${response.statusCode}');
     return null;
   }
 
+  // Uploads to S3 using Dio for streaming progress and retry support.
+  // Retries up to 3 times with exponential backoff (1 s, 2 s, 4 s) on
+  // timeouts and 5xx responses; other errors are reported and not retried.
   Future<bool> _uploadToS3(
     File file,
     String uploadUrl,
-    String contentType,
-  ) async {
+    String contentType, {
+    void Function(double progress)? onProgress,
+  }) async {
+    final dio = Dio();
+    const maxAttempts = 3;
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        final fileSize = await file.length();
+
+        final response = await dio.put<void>(
+          uploadUrl,
+          data: file.openRead(),
+          options: Options(
+            headers: {'Content-Type': contentType, 'Content-Length': fileSize},
+            sendTimeout: _timeout,
+            receiveTimeout: _timeout,
+          ),
+          onSendProgress: (sent, total) {
+            // Use measured file size as fallback when Dio reports total = -1
+            final denominator = total > 0 ? total : fileSize;
+            onProgress?.call(sent / denominator);
+          },
+        );
+
+        return (response.statusCode ?? 0) == 200;
+      } on DioException catch (e) {
+        final isRetryable =
+            e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.connectionError ||
+            (e.response != null && (e.response!.statusCode ?? 0) >= 500);
+
+        if (!isRetryable || attempt == maxAttempts - 1) {
+          await Sentry.captureException(e);
+          return false;
+        }
+
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'upload_retry',
+          parameters: {'attempt': attempt + 1},
+        );
+
+        // Exponential backoff: 1 s, 2 s, 4 s
+        await Future.delayed(Duration(seconds: 1 << attempt));
+      } catch (e) {
+        await Sentry.captureException(e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> _confirmUpload(String fileKey) async {
     try {
-      final bytes = await file.readAsBytes();
-
-      final response = await http.put(
-        Uri.parse(uploadUrl),
-        headers: {'Content-Type': contentType},
-        body: bytes,
+      // Spec: POST /confirm-upload?file_key=<key> with empty body.
+      // Path used for signing is /confirm-upload (no query string).
+      final response = await DeviceAuthService.instance.authenticatedPost(
+        '/v1/confirm-upload',
+        Uint8List(0),
+        queryString: 'file_key=${Uri.encodeComponent(fileKey)}',
       );
-
       return response.statusCode == 200;
     } catch (e) {
       await Sentry.captureException(e);
       return false;
     }
-  }
-
-  Future<void> _confirmUpload(String fileKey) async {
-    await http.post(
-      Uri.parse('$baseUrl/confirm-upload'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'file_key': fileKey}),
-    );
   }
 }

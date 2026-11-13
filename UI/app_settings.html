@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>App Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1c3024",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111813] dark:text-[#e0e6e2] antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+<div class="flex items-center p-4 pb-2 justify-between max-w-md mx-auto w-full">
+<button class="text-[#111813] dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-[#111813] dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">App Settings</h2>
+<div class="size-12 shrink-0"></div>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center w-full max-w-md mx-auto px-4 pb-12 pt-6 gap-8">
+<div class="w-full flex flex-col gap-3">
+<h3 class="px-2 text-xs font-bold text-[#61896f] dark:text-[#8baea0] uppercase tracking-wider">About &amp; Feedback</h3>
+<div class="w-full bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800/50 overflow-hidden">
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-500 border border-orange-100 dark:border-orange-500/20">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="flex flex-col items-start">
+<span class="text-[#111813] dark:text-white text-sm font-semibold">Rate the App</span>
+<span class="text-[11px] text-[#61896f] dark:text-[#8baea0]">Love using the app? Let us know!</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</div>
+<span class="text-[#111813] dark:text-white text-sm font-semibold">Share App</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</div>
+<span class="text-[#111813] dark:text-white text-sm font-semibold">About MedVerify</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">policy</span>
+</div>
+<span class="text-[#111813] dark:text-white text-sm font-semibold">Privacy Policy</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="w-full flex flex-col gap-3">
+<h3 class="px-2 text-xs font-bold text-[#61896f] dark:text-[#8baea0] uppercase tracking-wider">Data Management</h3>
+<div class="w-full bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800/50 overflow-hidden">
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</div>
+<div class="flex flex-col items-start">
+<span class="text-[#111813] dark:text-white text-sm font-semibold">Scan History</span>
+<span class="text-[11px] text-[#61896f] dark:text-[#8baea0]">Manage your past scans</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">database</span>
+</div>
+<div class="flex flex-col items-start">
+<span class="text-[#111813] dark:text-white text-sm font-semibold">Offline Database</span>
+<span class="text-[11px] text-[#61896f] dark:text-[#8baea0]">Last updated: 2 days ago</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full p-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined text-[20px]">delete_outline</span>
+</div>
+<span class="text-red-600 dark:text-red-400 text-sm font-semibold">Clear All Data</span>
+</div>
+</button>
+</div>
+</div>
+<div class="text-center mt-4">
+<p class="text-xs text-[#61896f] dark:text-[#8baea0]">FDA Ghana Verifier v2.1.0</p>
+</div>
+</main>
+
+</body></html>

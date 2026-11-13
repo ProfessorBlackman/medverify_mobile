@@ -8,11 +8,16 @@ import 'package:medverify_mobile/services/analytics_service.dart';
 import 'package:medverify_mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_client.dart';
+import 'services/device_auth_service.dart';
+import 'services/file_upload_service.dart';
+import 'services/multi_evidence_verification_service.dart';
 import 'services/notifications_service.dart';
 import 'firebase_options.dart';
 import 'services/local_database.dart';
 import 'theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/verification_session_provider.dart';
 import 'services/verification_service.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -21,41 +26,65 @@ import 'screens/results_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/info_hub_screen.dart';
 import 'screens/manual_entry_screen.dart';
+import 'screens/verification_session_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'screens/app_settings_screen.dart';
+import 'screens/about_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // This must be called before any Hive operation.
-  await LocalDatabase.instance.init();
-
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseApi().initNotifications();
-
-  // Check shared preferences before running the app
-  final prefs = await SharedPreferences.getInstance();
-  final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+  SentryWidgetsFlutterBinding.ensureInitialized();
 
   await SentryFlutter.init(
     (options) {
-      options.dsn =
-          'https://b9d4cac4039c29c995a2cacfe4f0588a@o4506223513239552.ingest.us.sentry.io/4510612957954048';
-      options.tracesSampleRate = 1.0;
-      options.profilesSampleRate = 1.0;
+      options.dsn = const String.fromEnvironment('SENTRY_DSN');
+      options.tracesSampleRate = 0.2;
+      options.profilesSampleRate = 0.2;
     },
-    appRunner: () => runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => AppProvider()),
-          Provider(create: (_) => VerificationService()),
-        ],
-        child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
-      ),
-    ),
-  );
+    appRunner: () async {
+      // Infrastructure — fast, no network, must complete before runApp.
+      ApiClient.instance.init();
+      await LocalDatabase.instance.init();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
 
-  // Initialize your FCM helper
-  await FirebaseApi().initNotifications();
+      // Non-blocking platform work.
+      FirebaseApi().initNotifications();
+      AnalyticsService.instance.init();
+
+      final prefs = await SharedPreferences.getInstance();
+      final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+      final appProvider = AppProvider();
+
+      if (isFirstTime) {
+        // No splash screen for first-timers. Start device auth in the
+        // background while they read the welcome flow; by the time they
+        // reach the dashboard, registration will have completed.
+        DeviceAuthService.instance
+            .ensureRegistered()
+            .then((_) => appProvider.init())
+            .catchError((_) {});
+      }
+      // For returning users, SplashScreen drives device auth and history
+      // loading with a real progress bar — no blank-screen wait.
+
+      runApp(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: appProvider),
+            Provider(create: (_) => VerificationService()),
+            Provider(create: (_) => FileUploadService()),
+            Provider(create: (_) => MultiEvidenceVerificationService()),
+            ChangeNotifierProvider(
+              create: (_) => VerificationSessionProvider(),
+            ),
+          ],
+          child: SentryWidget(child: DrugCheckerApp(isFirstTime: isFirstTime)),
+        ),
+      );
+    },
+  );
 }
 
 class DrugCheckerApp extends StatelessWidget {
@@ -64,9 +93,8 @@ class DrugCheckerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AnalyticsService.instance.init();
     return MaterialApp(
-      title: 'DrugChecker',
+      title: 'MedVerify',
       navigatorKey: navigatorKey,
       navigatorObservers: [AnalyticsService.instance.observer],
       theme: AppTheme.lightTheme,
@@ -74,7 +102,8 @@ class DrugCheckerApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => isFirstTime ? const WelcomeScreen() : const SplashScreen(),
+        '/': (context) =>
+            isFirstTime ? const WelcomeScreen() : const SplashScreen(),
         '/welcome': (context) => const WelcomeScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/scanner': (context) => const ScannerScreen(),
@@ -85,6 +114,9 @@ class DrugCheckerApp extends StatelessWidget {
         '/feedback': (context) => const FeedbackScreen(),
         '/how_it_works': (context) => const HowItWorksScreen(),
         '/privacy': (context) => const PrivacyPolicyScreen(),
+        '/settings': (context) => const AppSettingsScreen(),
+        '/about': (context) => const AboutScreen(),
+        '/verify': (context) => const VerificationSessionScreen(),
       },
     );
   }

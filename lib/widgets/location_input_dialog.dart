@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
@@ -12,6 +11,12 @@ class LocationInputDialog extends StatefulWidget {
 
 class _LocationInputDialogState extends State<LocationInputDialog> {
   final TextEditingController _locationController = TextEditingController();
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +83,7 @@ class _LocationInputDialogState extends State<LocationInputDialog> {
               },
               child: Text(
                 'Cancel',
-                style: GoogleFonts.publicSans(
-                  color: AppTheme.textLight,
-                ),
+                style: GoogleFonts.publicSans(color: AppTheme.textLight),
               ),
             ),
           ],
@@ -89,4 +92,3 @@ class _LocationInputDialogState extends State<LocationInputDialog> {
     );
   }
 }
-

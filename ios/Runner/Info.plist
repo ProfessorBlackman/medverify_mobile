@@ -51,5 +51,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>MedVerify uses the camera to scan medicine barcodes and photograph packaging you choose to contribute.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MedVerify lets you attach photos from your library to feedback and contributions.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MedVerify uses your location to record where medicines are checked and to tag the pharmacy you bought from.</string>
 </dict>
 </plist>

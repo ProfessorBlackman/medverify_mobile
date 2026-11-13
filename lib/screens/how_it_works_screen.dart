@@ -38,7 +38,7 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Verify safety in 3 simple steps',
+              'Two ways to verify, instantly',
               style: GoogleFonts.publicSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -47,7 +47,7 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Follow this guide to ensure your medication is\ngenuine and approved by FDA Ghana.',
+              'Choose the method that suits you to check your\nmedication\'s registration status with FDA Ghana.',
               textAlign: TextAlign.center,
               style: GoogleFonts.publicSans(
                 fontSize: 14,
@@ -55,29 +55,67 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildStep(
-              icon: Icons.qr_code_scanner,
-              title: '1. Scan the Code',
-              subtitle:
-                  'Locate the barcode on the drug packaging and point your camera at it. Ensure there is good lighting.',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Choose a verification method',
+                  style: GoogleFonts.publicSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textLight,
+                  ),
+                ),
+              ),
             ),
-            _buildStep(
-              icon: Icons.cloud_sync,
-              title: '2. Instant Check',
+            const SizedBox(height: 12),
+            _buildMethodCard(
+              icon: Icons.search,
+              iconColor: AppTheme.primaryGreen,
+              title: 'Search',
               subtitle:
-                  'Our app instantly validates the code against the our database.',
+                  'Type the drug\'s brand name, generic name or FDA registration number into the search on the dashboard. Spelling doesn\'t have to be exact.',
             ),
-            _buildStep(
-              icon: Icons.loop,
-              title: '3. Fallback To Manual Entry',
+            _buildMethodCard(
+              icon: Icons.verified_outlined,
+              iconColor: const Color(0xFF1D4ED8),
+              title: 'Multi-Evidence Verify',
               subtitle:
-              'If the scan fails, you can enter the durg name or it\'s registration number to check',
+                  'Can\'t find it by name? Enter whatever the pack shows — registration number, manufacturer, active ingredient — for a confidence-scored result backed by multiple signals.',
             ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'What happens next',
+                  style: GoogleFonts.publicSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textLight,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             _buildStep(
               icon: Icons.verified_user,
-              title: '3. Verify Safety',
+              title: '1. Instant Verification',
               subtitle:
                   'Receive a green \'Verified\' check or a red \'Warning\' alert if the product is unregistered or expired.',
+            ),
+            _buildStep(
+              icon: Icons.local_pharmacy,
+              title: '2. Provide Details',
+              subtitle:
+                  'On the results page, you will be prompted to enter the pharmacy where you bought the drug.',
+            ),
+            _buildStep(
+              icon: Icons.volunteer_activism,
+              title: '3. Help the Community',
+              subtitle: 'Help others by adding the price you bought it at.',
               isLast: true,
             ),
             const SizedBox(height: 24),
@@ -105,6 +143,62 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 100),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMethodCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 12.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.publicSans(
+                      fontSize: 13,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

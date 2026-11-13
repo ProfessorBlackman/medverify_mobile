@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/app_provider.dart';
+import '../services/device_auth_service.dart';
 import '../theme.dart';
 import 'dashboard_screen.dart';
 
@@ -11,50 +15,85 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scanAnimation;
+
   double _progress = 0.0;
-  final String _loadingText = 'Initializing secure database...';
+  String _loadingText = 'Verifying device identity...';
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
 
     _scanAnimation = Tween<double>(begin: -1.5, end: 1.5).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
+    _loadVersion();
     _startLoading();
   }
 
-  void _startLoading() {
-    Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() => _version = 'v${info.version} (Build ${info.buildNumber})');
+    }
+  }
+
+  Future<void> _startLoading() async {
+    try {
+      // Step 1 — device auth (network call; main source of latency)
+      if (mounted) {
+        setState(() {
+          _progress = 0.05;
+          _loadingText = 'Verifying device identity...';
+        });
       }
+      // A degraded connection (DNS broken but link still "connected") can
+      // make each network attempt inside ensureRegistered() run to its full
+      // Dio timeout instead of failing fast — cap the total wait so the app
+      // always opens promptly. authenticatedPost() retries auth later when
+      // the user performs an action that actually needs the network.
+      await DeviceAuthService.instance.ensureRegistered().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {},
+      );
+
+      // Step 2 — load scan history from local storage
+      if (!mounted) return;
       setState(() {
-        _progress += 0.01;
-        if (_progress >= 1.0) {
-          _progress = 1.0;
-          timer.cancel();
-          _navigateToHome();
-        }
+        _progress = 0.7;
+        _loadingText = 'Loading your history...';
       });
-    });
+      await context.read<AppProvider>().init();
+
+      if (!mounted) return;
+      setState(() {
+        _progress = 1.0;
+        _loadingText = 'Ready!';
+      });
+
+      // Brief pause so the completed bar is visible before navigating.
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (_) {
+      // Auth or storage failure — navigate anyway. Individual screens
+      // surface errors when they need network or local data.
+    }
+
+    if (mounted) _navigateToHome();
   }
 
   void _navigateToHome() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
     );
   }
 
@@ -116,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       BoxShadow(
                         color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                         blurRadius: 10,
-                      )
+                      ),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -128,10 +167,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         color: AppTheme.primaryGreen,
                         size: 64,
                       ),
-                      // Scan line
+                      // Scan line animation
                       AnimatedBuilder(
                         animation: _scanAnimation,
-                        builder: (context, child) {
+                        builder: (context, _) {
                           return Transform.translate(
                             offset: Offset(0, _scanAnimation.value * 64),
                             child: Container(
@@ -143,7 +182,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    AppTheme.primaryGreen.withValues(alpha: 0.2),
+                                    AppTheme.primaryGreen.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     Colors.transparent,
                                   ],
                                 ),
@@ -236,7 +277,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'v1.0.0 (Build 2024)',
+                  _version,
                   style: GoogleFonts.publicSans(
                     color: Colors.grey[400],
                     fontSize: 10,

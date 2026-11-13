@@ -17,10 +17,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _messageController = TextEditingController();
   String _selectedFeedbackType = 'Report a Bug';
   final List<File> _attachments = [];
   bool _isLoading = false;
+  final ValueNotifier<double> _uploadProgress = ValueNotifier(0.0);
 
   final FeedbackService _feedbackService = FeedbackService();
 
@@ -28,7 +30,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _messageController.dispose();
+    _uploadProgress.dispose();
     super.dispose();
   }
 
@@ -39,14 +43,23 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     setState(() {
       _isLoading = true;
+      _uploadProgress.value = 0.0;
     });
 
     final success = await _feedbackService.sendFeedback(
-      name: _nameController.text,
-      email: _emailController.text,
+      name: _nameController.text.trim().isEmpty
+          ? null
+          : _nameController.text.trim(),
+      email: _emailController.text.trim().isEmpty
+          ? null
+          : _emailController.text.trim(),
+      phone: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
       feedbackType: _selectedFeedbackType,
       message: _messageController.text,
       attachments: _attachments,
+      onUploadProgress: (p) => _uploadProgress.value = p,
     );
 
     setState(() {
@@ -56,10 +69,14 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success
-              ? 'Feedback sent successfully!'
-              : 'Failed to send feedback. Please try again.'),
-          backgroundColor: success ? AppTheme.primaryGreen : AppTheme.warningRed,
+          content: Text(
+            success
+                ? 'Feedback sent successfully!'
+                : 'Failed to send feedback. Please try again.',
+          ),
+          backgroundColor: success
+              ? AppTheme.primaryGreen
+              : AppTheme.warningRed,
         ),
       );
       if (success) {
@@ -83,18 +100,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   _pickImages();
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.video_library),
-                title: const Text('Pick Video from Gallery'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _pickVideo();
-                },
-              ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Text(
-                  'Note: You can attach up to 5 images (max 5MB each) and 1 video (max 20MB).',
+                  'Note: You can attach up to 5 images (JPEG, PNG, WebP or PDF, max 10 MB each).',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
@@ -115,7 +124,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('You have already attached the maximum of 5 images.')),
+            content: Text('You have already attached the maximum of 5 images.'),
+          ),
         );
       }
       return;
@@ -141,6 +151,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       }
 
       if (validFiles.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _attachments.addAll(validFiles);
         });
@@ -150,50 +161,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         if (pickedFiles.length > slotsAvailable) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(
-                    'You can only attach up to 5 images. Some images were not added.')),
+              content: Text(
+                'You can only attach up to 5 images. Some images were not added.',
+              ),
+            ),
           );
         }
         if (oversizedFiles.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(
-                    'Some images were not added because they exceed the 5MB limit.')),
+              content: Text(
+                'Some images were not added because they exceed the 5MB limit.',
+              ),
+            ),
           );
         }
-      }
-    }
-  }
-
-  Future<void> _pickVideo() async {
-    final hasVideo = _attachments
-        .any((f) => (lookupMimeType(f.path) ?? '').startsWith('video/'));
-    if (hasVideo) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can only attach one video.')),
-        );
-      }
-      return;
-    }
-
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
-      if (await file.length() > 20 * 1024 * 1024) {
-        // 20MB limit
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text(
-                    'The selected video exceeds the 20MB size limit and was not added.')),
-          );
-        }
-      } else {
-        setState(() {
-          _attachments.add(file);
-        });
       }
     }
   }
@@ -250,13 +232,28 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               _buildTextField(
                 controller: _emailController,
-                label: 'Email Address',
+                label: 'Email Address (Optional)',
                 hint: 'name@example.com',
+                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (value == null ||
-                      value.isEmpty ||
-                      !value.contains('@')) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                  if (!emailRegex.hasMatch(value.trim())) {
                     return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              _buildTextField(
+                controller: _phoneController,
+                label: 'Phone Number (Optional)',
+                hint: '+233 XX XXX XXXX',
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final digits = value.replaceAll(RegExp(r'\D'), '');
+                  if (digits.length < 7) {
+                    return 'Please enter a valid phone number';
                   }
                   return null;
                 },
@@ -282,6 +279,34 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               _buildAttachmentsList(),
               const SizedBox(height: 24),
+              if (_isLoading && _attachments.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _uploadProgress,
+                    builder: (_, progress, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LinearProgressIndicator(
+                          value: progress > 0 ? progress : null,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppTheme.primaryGreen,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Uploading attachments (${(progress * 100).toInt()}%)...',
+                          style: GoogleFonts.publicSans(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               _buildSubmitButton(),
             ],
           ),
@@ -300,14 +325,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         spacing: 8,
         runSpacing: 8,
         children: _attachments
-            .map((file) => Chip(
-                  label: Text(file.path.split('/').last),
-                  onDeleted: () {
-                    setState(() {
-                      _attachments.remove(file);
-                    });
-                  },
-                ))
+            .map(
+              (file) => Chip(
+                label: Text(file.path.split('/').last),
+                onDeleted: () {
+                  setState(() {
+                    _attachments.remove(file);
+                  });
+                },
+              ),
+            )
             .toList(),
       ),
     );
@@ -320,9 +347,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: const Color(0xFF102216),
         minimumSize: const Size(double.infinity, 56),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       icon: _isLoading
           ? const SizedBox(
@@ -346,6 +371,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     required String label,
     required String hint,
     int maxLines = 1,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     return Padding(
@@ -365,6 +391,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           TextFormField(
             controller: controller,
             maxLines: maxLines,
+            keyboardType: keyboardType,
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.publicSans(color: Colors.grey[400]),
@@ -415,16 +442,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             ),
             initialValue: _selectedFeedbackType,
-            items: [
-              'Report a Bug',
-              'Feature Suggestion',
-              'Drug Verification Issue',
-              'General Inquiry',
-            ]
-                .map(
-                  (label) => DropdownMenuItem(value: label, child: Text(label)),
-                )
-                .toList(),
+            items:
+                [
+                      'Report a Bug',
+                      'Feature Suggestion',
+                      'Drug Verification Issue',
+                      'General Inquiry',
+                    ]
+                    .map(
+                      (label) =>
+                          DropdownMenuItem(value: label, child: Text(label)),
+                    )
+                    .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() {

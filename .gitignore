@@ -27,11 +27,16 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
 /coverage/
+
+# Flutter auto-generated files (do not commit)
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.swift
 
 # Symbolication related
 app.*.symbols
@@ -45,3 +50,16 @@ app.*.map.json
 /android/app/release
 /android/app/google-services.json
 /firebase.json
+
+# Keystore credentials — never commit
+android/key.properties
+*.jks
+*.keystore
+/android/key.properties
+/android/build/reports/problems/problems-report.html
+
+# Credentials and local artefacts — never commit
+keys_64.txt
+sentry.properties
+services.txt
+run_logs.txt
